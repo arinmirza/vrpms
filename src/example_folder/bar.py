@@ -1,5 +1,5 @@
 from datetime import date
 
-def example_function_call():
+def get_current_date():
     '''Returns the current date'''
-    return date.today().strftime('%Y-%m-%d')
+    return date.today().strftime('%d-%m-%Y')
