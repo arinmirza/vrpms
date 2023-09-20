@@ -5,8 +5,6 @@ from http.server import BaseHTTPRequestHandler
 #import src.utilities.today
 
 import os
-print('cwd:', os.getcwd())
-print('parent:', os.path.dirname(os.getcwd()))
 
 class handler(BaseHTTPRequestHandler):
 
@@ -22,7 +20,10 @@ class handler(BaseHTTPRequestHandler):
         #    'current_date': src.utilities.today.get_current_date(),
         #}
 
-        body = "{ 'Hello': 'World' }"
+        body = {
+            'cwd': os.getcwd(),
+            'parent': os.path.dirname(os.getcwd()),
+        }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode('utf-8')
