@@ -17,9 +17,9 @@ class handler(BaseHTTPRequestHandler):
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
-        body = json.dumps(data).encode('utf-8')
+        response_body = json.dumps(data).encode('utf-8')
 
         # Write response body into handler
-        self.wfile.write(body)
+        self.wfile.write(response_body)
         
         return
