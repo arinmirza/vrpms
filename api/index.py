@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler
 #from src.example_folder import bar
 #from src.foo import solve_vrp_problem
 #from src.foo import calculate_duration
-from ..src.example_folder import bar
+from src.example_folder import bar
 
 
 class handler(BaseHTTPRequestHandler):
