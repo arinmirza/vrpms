@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler
 import os
 import src.utilities.today
 import src.utilities.foo
-#import src.solver
+import src.solver
 
 class handler(BaseHTTPRequestHandler):
 
@@ -25,8 +25,8 @@ class handler(BaseHTTPRequestHandler):
 
         body = {
             #'today': src.utilities.today.get_current_date(),
-            #'solver': src.solver.get_current_date(),
-            'foo': src.utilities.foo.print_info(),
+            'solver': src.solver.solve_vrp_problem(),
+            #'foo': src.utilities.foo.print_info(),
             #'cwd': os.getcwd(),
             #'cwd_content': os.listdir(os.getcwd()),
             #'parent': os.path.dirname(os.getcwd()),
