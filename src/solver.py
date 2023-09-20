@@ -3,7 +3,7 @@ from random import shuffle
 
 #from src.utilities.today import get_current_date
 
-"""
+
 def calculate_duration(source: str, target: str, time_of_day: int = 0):
     '''Given a source address and a target address, calculates the travel duration.
     Optionally, time of day can be specified for this calculation.'''
@@ -14,7 +14,7 @@ def calculate_duration(source: str, target: str, time_of_day: int = 0):
     # Return the calculated duration as a dictionary
     return {'source': source, 'target': target, 'duration': duration, 'units': 'minutes'}
 
-"""
+
 def solve_vrp_problem():
     '''Solves the VRP problem, and returns tour and additional information.'''
     
