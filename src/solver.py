@@ -1,7 +1,7 @@
 from random import randint
 from random import shuffle
 
-#from src.utilities.today import get_current_date
+from src.utilities.today import get_current_date
 
 
 def calculate_duration(source: str, target: str, time_of_day: int = 0):
@@ -24,4 +24,4 @@ def solve_vrp_problem():
     tour = [0] + tour + [0]
 
     # Return the tour and total 
-    return {'tour': tour, 'total_time': 150, 'unvisited': [],} #'date': get_current_date()}
+    return {'tour': tour, 'total_time': 150, 'unvisited': [], 'date': get_current_date()}
