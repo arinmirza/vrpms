@@ -68,4 +68,4 @@ However, keep in mind this only works for local development and the environment 
 
 ### Deployment
 
-Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function [at this link](vrpms.vercel.app).
+Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms.vercel.app
