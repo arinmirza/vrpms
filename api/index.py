@@ -1,5 +1,6 @@
 import json
 from http.server import BaseHTTPRequestHandler
+from src.example_folder import bar
 
 
 class handler(BaseHTTPRequestHandler):
@@ -13,7 +14,8 @@ class handler(BaseHTTPRequestHandler):
         data = {
             'example-message': 'Hello from VRP microservice',
             'example-duration': '1 hour',
-            'example-status': 'working'
+            'example-status': 'working',
+            'today': bar.example_function_call(),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
