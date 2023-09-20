@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler
 #import src.utilities.today
 
 import os
+import src.utilities.today
 
 class handler(BaseHTTPRequestHandler):
 
@@ -21,6 +22,7 @@ class handler(BaseHTTPRequestHandler):
         #}
 
         body = {
+            'today': src.utilities.today.get_current_date(),
             'cwd': os.getcwd(),
             'cwd_content': os.listdir(os.getcwd()),
             'parent': os.path.dirname(os.getcwd()),
