@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
 
-import src.solver
-import src.utilities.today
+import api.src.solver
+import api.src.utilities.today
 
 class handler(BaseHTTPRequestHandler):
 
@@ -13,9 +13,9 @@ class handler(BaseHTTPRequestHandler):
 
         # Construct an example response 
         body = {
-            'vrp_solution': src.solver.solve_vrp_problem(),
-            'travel_duration': src.solver.calculate_duration("Unity Beta", "Marienplatz"),
-            'current_date': src.utilities.today.get_current_date(),
+            'vrp_solution': api.src.solver.solve_vrp_problem(),
+            'travel_duration': api.src.solver.calculate_duration("Unity Beta", "Marienplatz"),
+            'current_date': api.src.utilities.today.get_current_date(),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
