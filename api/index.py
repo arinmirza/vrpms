@@ -24,13 +24,13 @@ class handler(BaseHTTPRequestHandler):
         #}
 
         body = {
-            'today': src.utilities.today.get_current_date(),
+            #'today': src.utilities.today.get_current_date(),
             #'solver': src.solver.get_current_date(),
-            #'foo': src.utilities.foo.print_info(),
-            'cwd': os.getcwd(),
-            'cwd_content': os.listdir(os.getcwd()),
-            'parent': os.path.dirname(os.getcwd()),
-            'parent_content': os.listdir(os.path.dirname(os.getcwd())),
+            'foo': src.utilities.foo.print_info(),
+            #'cwd': os.getcwd(),
+            #'cwd_content': os.listdir(os.getcwd()),
+            #'parent': os.path.dirname(os.getcwd()),
+            #'parent_content': os.listdir(os.path.dirname(os.getcwd())),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8

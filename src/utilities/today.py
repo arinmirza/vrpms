@@ -6,5 +6,6 @@ print_info()
 
 def get_current_date():
     '''Returns the current date'''
-    return date.today().strftime('%d-%m-%Y')
+    #return date.today().strftime('%d-%m-%Y')
+    return print_info()
 
