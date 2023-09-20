@@ -55,7 +55,7 @@ You can run and test the functionality from the `main.py` file inside the root `
 Make sure not to put any API keys and other secrets in the application code, which needs to be placed in the `.env` file at the top level for local development. These can be set and then accessed as follows:
 
 `.env`
-```python
+```
 MY_API_KEY="12345678"
 ```
 `main.py`
