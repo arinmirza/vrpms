@@ -22,7 +22,9 @@ class handler(BaseHTTPRequestHandler):
 
         body = {
             'cwd': os.getcwd(),
+            'cwd_content': os.listdir(os.getcwd()),
             'parent': os.path.dirname(os.getcwd()),
+            'parent_content': os.listdir(os.path.dirname(os.getcwd())),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
