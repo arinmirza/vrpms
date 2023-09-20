@@ -1,8 +1,12 @@
 import json
 from http.server import BaseHTTPRequestHandler
 
-import src.solver
-import src.utilities.today
+#import src.solver
+#import src.utilities.today
+
+import os
+print('cwd:', os.getcwd())
+print('parent:', os.path.dirname(os.getcwd()))
 
 class handler(BaseHTTPRequestHandler):
 
@@ -12,11 +16,13 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         # Construct an example response 
-        body = {
-            'vrp_solution': src.solver.solve_vrp_problem(),
-            'travel_duration': src.solver.calculate_duration("Unity Beta", "Marienplatz"),
-            'current_date': src.utilities.today.get_current_date(),
-        }
+        #body = {
+        #    'vrp_solution': src.solver.solve_vrp_problem(),
+        #    'travel_duration': src.solver.calculate_duration("Unity Beta", "Marienplatz"),
+        #    'current_date': src.utilities.today.get_current_date(),
+        #}
+
+        body = "{ 'Hello': 'World' }"
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode('utf-8')
