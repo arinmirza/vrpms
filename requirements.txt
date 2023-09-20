@@ -1,0 +1,2 @@
+python-dotenv==1.0.0
+gurobipy==10.0.3 
