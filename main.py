@@ -1,5 +1,5 @@
 import src.solver as solver
-import src.utilities.helper.helper as helper
+import src.utilities.helper as helper
 
 # Test solver
 duration = solver.calculate_duration("A", "B")
