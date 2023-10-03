@@ -1,7 +1,7 @@
 from random import randint
 from random import shuffle
 
-from src.utilities.helper import get_current_date
+from src.utilities.helper.helper import get_current_date
 
 
 def calculate_duration(source: str, target: str, time_of_day: int = 0):

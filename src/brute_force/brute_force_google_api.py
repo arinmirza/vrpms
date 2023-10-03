@@ -1,5 +1,5 @@
 import itertools
-from src.common.helper.vrp_helper import get_google_and_load_data
+from src.utilities.helper.vrp_helper import get_google_and_load_data
 from datetime import datetime
 from typing import List, Tuple, Optional
 
@@ -9,7 +9,7 @@ INF = float("inf")
 N_TIME_ZONES = 12
 DEPOT = 0
 
-INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
+INPUT_FOLDER_PATH = "../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f'{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt' for hour in range(N_TIME_ZONES)]
 

@@ -1,5 +1,5 @@
 from typing import List, Tuple, Optional
-from src.common.data_gen.based.data_gen import get_time_data
+from src.utilities.data_gen.based.data_gen import get_time_data
 
 
 def read_time_data(input_file_time: str) -> List[List[float]]:

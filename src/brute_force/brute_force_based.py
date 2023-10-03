@@ -1,7 +1,7 @@
 import itertools
-from src.common.helper.vrp_helper import get_based_and_load_data
+from src.utilities.helper.vrp_helper import get_based_and_load_data
 from datetime import datetime
-from typing import List, Tuple, Optional, Union
+from typing import List, Tuple, Optional
 
 IGNORE_LONG_TRIP = True
 
