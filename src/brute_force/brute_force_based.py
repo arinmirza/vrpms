@@ -1,5 +1,5 @@
 import itertools
-from src.utilities.helper.vrp_helper import get_based_and_load_data
+from src.utilities.vrp_helper import get_based_and_load_data
 from datetime import datetime
 from typing import List, Tuple, Optional
 
@@ -54,7 +54,7 @@ def calculate_duration(q: int, perm: List[int], duration: List[List[List[float]]
     return curr_time, route
 
 
-def solve(n: int, k: int, q: int, duration: List[List[List[float]]], load: List[int]) -> None:
+def solve(n: int, k: int, q: int, duration: List[List[List[float]]], load: List[int]):
     """
     Solves VRP using brute force
 
@@ -83,10 +83,11 @@ def solve(n: int, k: int, q: int, duration: List[List[List[float]]], load: List[
         print(f"Best route: {best_route}")
     end_time = datetime.now()
     print(f"Time: {end_time-start_time}")
+    return best_dist, best_route
 
 
 # input_file_load: "../../../data/loads/data_load.txt"
-def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: float = 5, input_file_load: Optional[str] = None) -> None:
+def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: float = 5, input_file_load: Optional[str] = None):
     """
     Gets dynamic time data of the common dataset and solves VRP using brute force
 
@@ -98,7 +99,7 @@ def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: float = 5, input_file_l
         load is not unique
     """
     duration, load = get_based_and_load_data(input_file_load, n, per_km_time, True)
-    solve(n, k, q, duration, load)
+    return solve(n, k, q, duration, load)
 
 
 if __name__ == '__main__':
