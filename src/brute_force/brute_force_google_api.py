@@ -2,6 +2,8 @@ import itertools
 from src.utilities.vrp_helper import get_google_and_load_data
 from datetime import datetime
 from typing import List, Tuple, Optional
+from queue import PriorityQueue
+from collections import defaultdict
 
 IGNORE_LONG_TRIP = True
 
@@ -14,12 +16,13 @@ INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f'{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt' for hour in range(N_TIME_ZONES)]
 
 
-def calculate_duration(q: int, perm: List[int], duration: List[List[List[float]]], load: List[int]) \
-        -> Tuple[float, Optional[List[int]]]:
+def calculate_duration(q: int, m: int, perm: List[int], duration: List[List[List[float]]], load: List[int]) \
+        -> Tuple[float, Optional[defaultdict]]:
     """
     Calculates total time it takes to visit the locations in order and the route
 
     :param q: The locations to visit in order
+    :param m: Max number of vehicles
     :param perm: The locations to visit in order
     :param duration: Dynamic duration data of 12xNxN
     :param load: Loads of locations
@@ -27,44 +30,67 @@ def calculate_duration(q: int, perm: List[int], duration: List[List[List[float]]
     """
     perm = list(perm)
     perm.append(DEPOT)
-    last_node = DEPOT
-    route = [last_node]
-    curr_time, curr_capacity = 0, q
 
+    cycles = []
+    last_cycle = []
+    curr_capacity = q
     for node in perm:
-        req_capacity = load[node]
-        # Ignore DEPOT to DEPOT edge
-        if node == DEPOT and last_node == DEPOT:
-            continue
-        curr_time_slip = int(curr_time / 60)
-        if not IGNORE_LONG_TRIP:
-            curr_time_slip = min(curr_time_slip, N_TIME_ZONES-1)
-        # Fail conditions: time exceeds a day or capacity is not enough
-        if curr_time_slip >= N_TIME_ZONES or curr_capacity < req_capacity:
-            return INF, None
-        curr_time += duration[curr_time_slip][last_node][node]
-        if node == DEPOT:  # Go back to the depot and reset the capacity
-            curr_capacity = q
-        else:  # Deduct the load from the current capacity
-            curr_capacity -= req_capacity
-        # Add node to the tour
-        last_node = node
-        route.append(node)
+        if node == DEPOT:
+            if curr_capacity < 0:
+                return INF, None
+            else:
+                if len(last_cycle) > 0:
+                    cycle = [DEPOT]
+                    cycle.extend(last_cycle)
+                    cycle.append(DEPOT)
+                    cycles.append(cycle)
+                last_cycle = []
+                curr_capacity = q
+        else:
+            last_cycle.append(node)
+            curr_capacity -= load[node]
 
-    # Time exceeds a day
-    if IGNORE_LONG_TRIP and curr_time >= N_TIME_ZONES*60:
-        curr_time, route = INF, None
+    vehicle_routes = defaultdict(list)
 
-    return curr_time, route
+    vehicles = PriorityQueue()
+    for i in range(m):
+        vehicles.put((0, i))
+    for cycle in cycles:
+        vehicle = vehicles.get()
+        vehicle_t, vehicle_id = vehicle
+        curr_time = vehicle_t
+        last_node = DEPOT
+        for node in cycle[1:]:
+            curr_time_slip = int(curr_time / 60)
+            if not IGNORE_LONG_TRIP:
+                curr_time_slip = min(curr_time_slip, N_TIME_ZONES-1)
+            if curr_time_slip >= N_TIME_ZONES:
+                return INF, None
+            curr_time += duration[curr_time_slip][last_node][node]
+            last_node = node
+        vehicles.put((curr_time, vehicle_id))
+        vehicle_routes[vehicle_id].append(cycle)
+
+    route_time = 0
+    while not vehicles.empty():
+        vehicle = vehicles.get()
+        vehicle_t, _ = vehicle
+        route_time = vehicle_t
+
+    if IGNORE_LONG_TRIP and route_time >= N_TIME_ZONES*60:
+        return INF, None
+
+    return route_time, vehicle_routes
 
 
-def solve(n: int, k: int, q: int, duration: List[List[List[float]]], load: List[int]):
+def solve(n: int, k: int, q: int, m: int, duration: List[List[List[float]]], load: List[int]):
     """
     Solves VRP using brute force
 
     :param n: Number of locations
     :param k: Max number of cycles
     :param q: Capacity of vehicle
+    :param m: Max number of vehicles
     :param duration: Dynamic duration data
     :param load: Loads of locations
     """
@@ -72,37 +98,40 @@ def solve(n: int, k: int, q: int, duration: List[List[List[float]]], load: List[
     nodes = [i for i in range(1, n)]
     for _ in range(k-1):
         nodes.append(DEPOT)
-    best_dist, best_route = INF, None
+    best_route_time, best_vehicle_routes = INF, None
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
-        total_dist, route = calculate_duration(q, list(perm), duration, load)
+        route_time, vehicle_routes = calculate_duration(q, m, list(perm), duration, load)
         # Check if it is the best order
-        if route is not None and total_dist < best_dist:
-            best_dist = total_dist
-            best_route = route
-    if best_route is None:
+        if vehicle_routes is not None and route_time < best_route_time:
+            best_route_time = route_time
+            best_vehicle_routes = vehicle_routes
+    if best_vehicle_routes is None:
         print("No feasible solution")
     else:
-        print(f"Total distance: {best_dist}")
-        print(f"Best route: {best_route}")
+        print(f"Best route time: {best_route_time}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            print(f"{vehicle_id}: {vehicle_cycles}")
     end_time = datetime.now()
     print(f"Time: {end_time-start_time}")
-    return best_dist, best_route
+    return best_route_time, best_vehicle_routes
 
 
 # input_file_load: "../../../data/loads/data_load.txt"
-def run(n: int = 8, k: int = 3, q: int = 3, input_file_load: Optional[str] = None):
+def run(n: int = 8, k: int = 3, q: int = 3, m: int = 2, input_file_load: Optional[str] = None) \
+        -> Tuple[float, Optional[defaultdict]]:
     """
     Gets dynamic time data of Google Maps dataset and solves VRP using brute force
 
     :param n: Number of locations
     :param k: Max number of cycles
     :param q: Capacity of vehicle
+    :param m: Max number of vehicles
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
     """
     duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n, False)
-    return solve(n, k, q, duration, load)
+    return solve(n, k, q, m, duration, load)
 
 
 if __name__ == '__main__':
