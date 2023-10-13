@@ -70,11 +70,8 @@ However, keep in mind this only works for local development and the environment 
 
 Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms.vercel.app
 
-Developer guide
-===============
 
-Formatting
-----------
+### Formatting
 
 Code is formatted with black and isort and both can be set up as pre-commit-hooks via pre-commit. To get started, install the dependencies.
 

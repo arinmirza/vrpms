@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from src.brute_force.brute_force import solve
 from src.utilities.vrp_helper import convert_duration, get_google_and_load_data
@@ -21,6 +21,7 @@ def run(
     q: int = 3,
     m: int = 2,
     input_file_load: Optional[str] = None,
+    ignored_customers: Optional[List[int]] = None,
 ) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Gets dynamic time data of Google Maps dataset and solves VRP using brute force
@@ -31,12 +32,15 @@ def run(
     :param m: Max number of vehicles
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
+    :param ignored_customers: List of customers to be ignored by the algorithm
+    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
+        the routes for each driver
     """
     duration_old, load = get_google_and_load_data(
         INPUT_FILES_TIME, input_file_load, n, False
     )
     duration = convert_duration(n, duration_old)
-    return solve(n, k, q, m, duration, load)
+    return solve(n, k, q, m, duration, load, ignored_customers)
 
 
 if __name__ == "__main__":

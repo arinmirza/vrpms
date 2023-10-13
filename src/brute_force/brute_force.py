@@ -104,7 +104,13 @@ def calculate_duration_perm(
 
 
 def solve(
-    n: int, k: int, q: int, m: int, duration: List[List[List[float]]], load: List[int]
+    n: int,
+    k: int,
+    q: int,
+    m: int,
+    duration: List[List[List[float]]],
+    load: List[int],
+    ignored_customers: Optional[List[int]] = None,
 ) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Solves VRP using brute force and gets total time it takes to visit the locations for the latest driver, sum of the
@@ -116,11 +122,15 @@ def solve(
     :param m: Max number of vehicles
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
-    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
-        the routes for each driver
+    :param ignored_customers: List of customers to be ignored by the algorithm
+    :return: Among the all possible routes, total time it takes to visit the locations for the latest driver, sum of the
+        durations of each driver and the routes for each driver
     """
     start_time = datetime.now()
-    nodes = [i for i in range(1, n)]
+    nodes = []
+    for i in range(1, n):
+        if ignored_customers is None or i not in ignored_customers:
+            nodes.append(i)
     for _ in range(k - 1):
         nodes.append(DEPOT)
     best_route_max_time, best_route_sum_time, best_vehicle_routes = INF, INF, None
