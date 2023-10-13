@@ -84,3 +84,9 @@ Then install the pre-commit hooks:
 You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
 
 Follow the same steps to set up a file watcher for isort, but make sure isort comes before black in the file watchers list.
+
+### Test
+
+You should install the required packages for testing first.
+
+    $ pip install -r requirements.test
