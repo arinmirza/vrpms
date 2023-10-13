@@ -1,4 +1,5 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from src.utilities.data_gen.based.data_gen import get_time_data
 
 
@@ -36,8 +37,12 @@ def read_load_data(input_file_load: str) -> List[int]:
     return load
 
 
-def get_google_and_load_data(input_files_time: List[str], input_file_load: Optional[str], n: int = 50,
-                             convert_matrix: bool = False) -> Tuple[List[List[List[float]]], List[int]]:
+def get_google_and_load_data(
+    input_files_time: List[str],
+    input_file_load: Optional[str],
+    n: int = 50,
+    convert_matrix: bool = False,
+) -> Tuple[List[List[List[float]]], List[int]]:
     """
     Reads max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
 
@@ -68,8 +73,12 @@ def get_google_and_load_data(input_files_time: List[str], input_file_load: Optio
     return duration, load
 
 
-def get_based_and_load_data(input_file_load: Optional[str], n: int = 50, per_km_time: float = 5,
-                            convert_matrix: bool = False) -> Tuple[List[List[List[float]]], List[int]]:
+def get_based_and_load_data(
+    input_file_load: Optional[str],
+    n: int = 50,
+    per_km_time: float = 5,
+    convert_matrix: bool = False,
+) -> Tuple[List[List[List[float]]], List[int]]:
     """
     Gets max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
 
@@ -100,7 +109,9 @@ def get_based_and_load_data(input_file_load: Optional[str], n: int = 50, per_km_
     return duration, load
 
 
-def convert_duration(n: int, duration_old: List[List[List[float]]]) -> List[List[List[float]]]:
+def convert_duration(
+    n: int, duration_old: List[List[List[float]]]
+) -> List[List[List[float]]]:
     """
     Converts duration matrix from 12xNxN to NxNx12
 

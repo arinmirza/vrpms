@@ -1,6 +1,7 @@
 import os
-import numpy as np
 from typing import List
+
+import numpy as np
 
 INPUT_FILE_PATH = "../../../../data/google_api/static/duration_50_1689674014_0.txt"
 OUTPUT_FOLDER_PATH = "../../../../data/google_api/dynamic"
@@ -12,7 +13,9 @@ MU_DIVIDED_BY_SIGMA = 100
 GLOBAL_TIME_MULTIPLIER = 0.6
 
 
-def get_dynamic_duration(static_duration: List[List[float]], forecast_hours: int) -> List[List[float]]:
+def get_dynamic_duration(
+    static_duration: List[List[float]], forecast_hours: int
+) -> List[List[float]]:
     """
     Static to dynamic conversion by multiply with some factors inspired from the traffic flow during a day
 
@@ -30,7 +33,9 @@ def get_dynamic_duration(static_duration: List[List[float]], forecast_hours: int
             else:
                 mu = static_duration[i][j] * MULTIPLIERS[forecast_hours]
                 sigma = mu / MU_DIVIDED_BY_SIGMA
-                seconds = float(np.random.normal(mu, sigma, 1)[0]) * GLOBAL_TIME_MULTIPLIER
+                seconds = (
+                    float(np.random.normal(mu, sigma, 1)[0]) * GLOBAL_TIME_MULTIPLIER
+                )
                 minutes = seconds / 60
                 dynamic_duration_src.append(minutes)
         dynamic_duration.append(dynamic_duration_src)
@@ -65,12 +70,18 @@ def output_file(dynamic_duration: List[List[float]], forecast_hours: int) -> Non
     """
     os.makedirs(f"{OUTPUT_FOLDER_PATH}/float/", exist_ok=True)
     output_file_name = f"{OUTPUT_FOLDER_PATH}/float/{OUTPUT_FILE_NAME_PREFIX}_float_{forecast_hours}.txt"
-    with open(output_file_name, 'w') as file:
-        file.writelines(' '.join(str(float(j)) for j in i) + '\n' for i in dynamic_duration)
+    with open(output_file_name, "w") as file:
+        file.writelines(
+            " ".join(str(float(j)) for j in i) + "\n" for i in dynamic_duration
+        )
     os.makedirs(f"{OUTPUT_FOLDER_PATH}/int/", exist_ok=True)
-    output_file_name = f"{OUTPUT_FOLDER_PATH}/int/{OUTPUT_FILE_NAME_PREFIX}_int_{forecast_hours}.txt"
-    with open(output_file_name, 'w') as file:
-        file.writelines(' '.join(str(int(j)) for j in i) + '\n' for i in dynamic_duration)
+    output_file_name = (
+        f"{OUTPUT_FOLDER_PATH}/int/{OUTPUT_FILE_NAME_PREFIX}_int_{forecast_hours}.txt"
+    )
+    with open(output_file_name, "w") as file:
+        file.writelines(
+            " ".join(str(int(j)) for j in i) + "\n" for i in dynamic_duration
+        )
 
 
 def run() -> None:
@@ -83,5 +94,5 @@ def run() -> None:
         output_file(dynamic_duration, forecast_hours)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

@@ -1,6 +1,6 @@
 import math
 import random
-from typing import Tuple, Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 
 def get_random_by_log(low: float, high: float) -> float:
@@ -13,15 +13,17 @@ def get_random_by_log(low: float, high: float) -> float:
     """
     log_low, log_high = math.log10(low), math.log10(high)
     log_random = random.uniform(log_low, log_high)
-    random_value = 10 ** log_random
+    random_value = 10**log_random
     return random_value
 
 
-def get_hyperparams(range_n_iterations: Tuple[int, int],
-                    range_q: Tuple[float, float],
-                    range_alpha: Tuple[int, int],
-                    range_beta: Tuple[int, int],
-                    range_rho: Tuple[float, float]) -> Dict[str, Union[int, float]]:
+def get_hyperparams(
+    range_n_iterations: Tuple[int, int],
+    range_q: Tuple[float, float],
+    range_alpha: Tuple[int, int],
+    range_beta: Tuple[int, int],
+    range_rho: Tuple[float, float],
+) -> Dict[str, Union[int, float]]:
     """
     Gets a random hyperparameter settings based on the given ranges
 
@@ -32,10 +34,10 @@ def get_hyperparams(range_n_iterations: Tuple[int, int],
     :param range_rho: Range for the forgetting rate to be used in ACO as a hyperparameter
     :return: Random hyperparameter settings based on the given ranges
     """
-    n_iterations = random.randrange(range_n_iterations[0], range_n_iterations[1]+1)
+    n_iterations = random.randrange(range_n_iterations[0], range_n_iterations[1] + 1)
     q = get_random_by_log(range_q[0], range_q[1])
-    alpha = random.randrange(range_alpha[0], range_alpha[1]+1)
-    beta = random.randrange(range_beta[0], range_beta[1]+1)
+    alpha = random.randrange(range_alpha[0], range_alpha[1] + 1)
+    beta = random.randrange(range_beta[0], range_beta[1] + 1)
     rho = random.uniform(range_rho[0], range_rho[1])
     hyperparams = {
         "N_ITERATIONS": n_iterations,
@@ -47,8 +49,14 @@ def get_hyperparams(range_n_iterations: Tuple[int, int],
     return hyperparams
 
 
-def print_sol_1(result_idx: int, best_vrp_route_cost: float, best_iter: int, best_vrp_route: List[List[int]],
-                hyperparams: Dict[str, Union[int, float]], print_route: bool = False) -> None:
+def print_sol_1(
+    result_idx: int,
+    best_vrp_route_cost: float,
+    best_iter: int,
+    best_vrp_route: List[List[int]],
+    hyperparams: Dict[str, Union[int, float]],
+    print_route: bool = False,
+) -> None:
     """
     Prints one of the best solutions
 
@@ -69,8 +77,14 @@ def print_sol_1(result_idx: int, best_vrp_route_cost: float, best_iter: int, bes
                 print(f"Ant {ant_idx}: {ant_route}")
 
 
-def print_sol_2(result_idx: int, best_vrp_route_cost: float, best_iter: int, best_vrp_route: List[int],
-                hyperparams: Dict[str, Union[int, float]], print_route: bool = False) -> None:
+def print_sol_2(
+    result_idx: int,
+    best_vrp_route_cost: float,
+    best_iter: int,
+    best_vrp_route: List[int],
+    hyperparams: Dict[str, Union[int, float]],
+    print_route: bool = False,
+) -> None:
     """
     Prints one of the best solutions
 

@@ -1,7 +1,8 @@
 import os
-import requests
 import time
 from typing import List, Tuple
+
+import requests
 
 N_NODES = 2  # Set it to 50
 API_FILE_NAME = "api.txt"  # Google Maps API is not free
@@ -28,8 +29,12 @@ def get_duration_from_response(request_url: str) -> List[int]:
     return duration_single_source
 
 
-def get_source_and_destination(coordinates: List[Tuple[float, float, str]], source_id: int,
-                               dest_id_lower: int, dest_id_upper: int) -> Tuple[str, str]:
+def get_source_and_destination(
+    coordinates: List[Tuple[float, float, str]],
+    source_id: int,
+    dest_id_lower: int,
+    dest_id_upper: int,
+) -> Tuple[str, str]:
     """
     Gets parts of the request to send from the given source, destinations and coordinates
 
@@ -50,8 +55,14 @@ def get_source_and_destination(coordinates: List[Tuple[float, float, str]], sour
     return source, destination
 
 
-def get_request(coordinates: List[Tuple[float, float, str]], source_id: int, dest_id_lower: int, dest_id_upper: int,
-                api_key: str, forecast_hours: int):
+def get_request(
+    coordinates: List[Tuple[float, float, str]],
+    source_id: int,
+    dest_id_lower: int,
+    dest_id_upper: int,
+    api_key: str,
+    forecast_hours: int,
+):
     """
     Constructs the request to send to Google Maps API
 
@@ -63,8 +74,10 @@ def get_request(coordinates: List[Tuple[float, float, str]], source_id: int, des
     :param forecast_hours: The hour (time slice) in FORECAST_HOURS_RANGE
     :return: Request to send to Google Maps API
     """
-    seconds = int(time.time()) + forecast_hours*3600
-    src, dest = get_source_and_destination(coordinates, source_id, dest_id_lower, dest_id_upper)
+    seconds = int(time.time()) + forecast_hours * 3600
+    src, dest = get_source_and_destination(
+        coordinates, source_id, dest_id_lower, dest_id_upper
+    )
     url = "https://maps.googleapis.com/maps/api/distancematrix/json?"
     request_url = f"{url}mode=driving&departure_time={seconds}&origins={src}&destinations={dest}&key={api_key}"
     return request_url
@@ -91,7 +104,12 @@ The request includes a valid departure_time parameter. The departure_time can be
 """
 
 
-def get_duration(api_key: str, coordinates: List[Tuple[float, float, str]], forecast_hours: int, jump: int = 10):
+def get_duration(
+    api_key: str,
+    coordinates: List[Tuple[float, float, str]],
+    forecast_hours: int,
+    jump: int = 10,
+):
     """
     Gets duration matrix N by N in seconds for the first hour of the day
 
@@ -105,7 +123,14 @@ def get_duration(api_key: str, coordinates: List[Tuple[float, float, str]], fore
     for source_id in range(N_NODES):
         for dest_id_lower in range(0, N_NODES, jump):
             dest_id_upper = min(dest_id_lower + jump, N_NODES)
-            request_url = get_request(coordinates, source_id, dest_id_lower, dest_id_upper, api_key, forecast_hours)
+            request_url = get_request(
+                coordinates,
+                source_id,
+                dest_id_lower,
+                dest_id_upper,
+                api_key,
+                forecast_hours,
+            )
             idx = 0
             duration_single_source = get_duration_from_response(request_url)
             for dest_id in range(dest_id_lower, dest_id_upper):
@@ -151,7 +176,9 @@ def get_api_key() -> str:
     return api_key
 
 
-def output_file(duration: List[List[float]], time_in_sec: int, forecast_hours: int) -> None:
+def output_file(
+    duration: List[List[float]], time_in_sec: int, forecast_hours: int
+) -> None:
     """
     Saves duration matrix for the given hour of the day
 
@@ -160,9 +187,11 @@ def output_file(duration: List[List[float]], time_in_sec: int, forecast_hours: i
     :param forecast_hours: The hour (time slice) in FORECAST_HOURS_RANGE
     """
     os.makedirs(f"{OUTPUT_FOLDER_PATH}/", exist_ok=True)
-    output_file_name = f"{OUTPUT_FOLDER_PATH}/duration_{N_NODES}_{time_in_sec}_{forecast_hours}.txt"
-    with open(output_file_name, 'w') as file:
-        file.writelines(' '.join(str(j) for j in i) + '\n' for i in duration)
+    output_file_name = (
+        f"{OUTPUT_FOLDER_PATH}/duration_{N_NODES}_{time_in_sec}_{forecast_hours}.txt"
+    )
+    with open(output_file_name, "w") as file:
+        file.writelines(" ".join(str(j) for j in i) + "\n" for i in duration)
 
 
 def run() -> None:
@@ -179,5 +208,5 @@ def run() -> None:
         print(duration)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

@@ -63,7 +63,7 @@ COORDINATE_LIST = [
     (48.1701, 11.5244),
     (48.1479, 11.5570),
     (48.1130, 11.5716),
-    (48.0972, 11.5793)
+    (48.0972, 11.5793),
 ]
 
 
@@ -81,7 +81,9 @@ def guess_traffic_density() -> List[float]:
     return hourly_density_list
 
 
-def get_tdttm(initial_tts: List[float], hourly_traffic_densities: List[float]) -> List[List[float]]:
+def get_tdttm(
+    initial_tts: List[float], hourly_traffic_densities: List[float]
+) -> List[List[float]]:
     """
     Calculates dynamic duration data from static one for a specific source
 
@@ -93,7 +95,7 @@ def get_tdttm(initial_tts: List[float], hourly_traffic_densities: List[float]) -
     for initial_tt in initial_tts:
         current_tt_list = [initial_tt]  # generated based on real tt data
         for hourly_density in hourly_traffic_densities:
-            current_tt_list.append(initial_tt*hourly_density)
+            current_tt_list.append(initial_tt * hourly_density)
         tdttm.append(current_tt_list)
     return tdttm
 
@@ -108,7 +110,9 @@ def degrees_to_radians(degrees: float) -> float:
     return degrees * math.pi / 180
 
 
-def distance_in_km_between_coordinates(source: Tuple[float, float], destination: Tuple[float, float]) -> float:
+def distance_in_km_between_coordinates(
+    source: Tuple[float, float], destination: Tuple[float, float]
+) -> float:
     """
     Gets km distance between given two locations
 
@@ -118,13 +122,14 @@ def distance_in_km_between_coordinates(source: Tuple[float, float], destination:
     """
     lat1, lon1 = source
     lat2, lon2 = destination
-    d_lat = degrees_to_radians(lat2-lat1)
-    d_lon = degrees_to_radians(lon2-lon1)
+    d_lat = degrees_to_radians(lat2 - lat1)
+    d_lon = degrees_to_radians(lon2 - lon1)
     lat1 = degrees_to_radians(lat1)
     lat2 = degrees_to_radians(lat2)
-    a = math.sin(d_lat/2) * math.sin(d_lat/2) + \
-        math.sin(d_lon/2) * math.sin(d_lon/2) * math.cos(lat1) * math.cos(lat2)
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    a = math.sin(d_lat / 2) * math.sin(d_lat / 2) + math.sin(d_lon / 2) * math.sin(
+        d_lon / 2
+    ) * math.cos(lat1) * math.cos(lat2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return EARTH_RADIUS_KM * c
 
 
@@ -139,8 +144,10 @@ def get_time_data(per_km_time: float = 5) -> List[List[List[float]]]:
     for src_coordinate in COORDINATE_LIST:
         current_tt_list = []
         for dest_coordinate in COORDINATE_LIST:
-            cur_dist = distance_in_km_between_coordinates(src_coordinate, dest_coordinate)
-            current_tt_list.append(cur_dist*per_km_time)
+            cur_dist = distance_in_km_between_coordinates(
+                src_coordinate, dest_coordinate
+            )
+            current_tt_list.append(cur_dist * per_km_time)
         tt_list.append(current_tt_list)
     hourly_traffic_densities = guess_traffic_density()
     time_data = []
@@ -160,5 +167,5 @@ def run(per_km_time: float = 5) -> None:
     print(time_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

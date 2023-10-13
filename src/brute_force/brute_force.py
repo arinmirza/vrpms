@@ -1,8 +1,8 @@
 import itertools
-from datetime import datetime
-from typing import List, Tuple, Optional
-from queue import PriorityQueue
 from collections import defaultdict
+from datetime import datetime
+from queue import PriorityQueue
+from typing import List, Optional, Tuple
 
 IGNORE_LONG_TRIP = True
 
@@ -11,8 +11,13 @@ N_TIME_ZONES = 12
 DEPOT = 0
 
 
-def calculate_duration(q: int, m: int, cycles: List[List[int]], duration: List[List[List[float]]], load: List[int]) -> \
-        Tuple[float, float, Optional[defaultdict]]:
+def calculate_duration(
+    q: int,
+    m: int,
+    cycles: List[List[int]],
+    duration: List[List[List[float]]],
+    load: List[int],
+) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Calculates total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
         the routes for each driver, given list of cycles
@@ -42,7 +47,7 @@ def calculate_duration(q: int, m: int, cycles: List[List[int]], duration: List[L
                 return INF, INF, None
             curr_time_slip = int(curr_time / 60)
             if not IGNORE_LONG_TRIP:
-                curr_time_slip = min(curr_time_slip, N_TIME_ZONES-1)
+                curr_time_slip = min(curr_time_slip, N_TIME_ZONES - 1)
             if curr_time_slip >= N_TIME_ZONES:
                 return INF, INF, None
             curr_time += duration[last_node][node][curr_time_slip]
@@ -58,14 +63,15 @@ def calculate_duration(q: int, m: int, cycles: List[List[int]], duration: List[L
         route_max_time = vehicle_t
         route_sum_time += vehicle_t
 
-    if IGNORE_LONG_TRIP and route_max_time >= N_TIME_ZONES*60:
+    if IGNORE_LONG_TRIP and route_max_time >= N_TIME_ZONES * 60:
         return INF, INF, None
 
     return route_max_time, route_sum_time, vehicle_routes
 
 
-def calculate_duration_perm(q: int, m: int, perm: List[int], duration: List[List[List[float]]], load: List[int]) \
-        -> Tuple[float, float, Optional[defaultdict]]:
+def calculate_duration_perm(
+    q: int, m: int, perm: List[int], duration: List[List[List[float]]], load: List[int]
+) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Calculates total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
         the routes for each driver, given permutation of nodes
@@ -97,8 +103,9 @@ def calculate_duration_perm(q: int, m: int, perm: List[int], duration: List[List
     return calculate_duration(q, m, cycles, duration, load)
 
 
-def solve(n: int, k: int, q: int, m: int, duration: List[List[List[float]]], load: List[int]) \
-        -> Tuple[float, float, Optional[defaultdict]]:
+def solve(
+    n: int, k: int, q: int, m: int, duration: List[List[List[float]]], load: List[int]
+) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Solves VRP using brute force and gets total time it takes to visit the locations for the latest driver, sum of the
         durations of each driver and the routes for each driver
@@ -114,12 +121,14 @@ def solve(n: int, k: int, q: int, m: int, duration: List[List[List[float]]], loa
     """
     start_time = datetime.now()
     nodes = [i for i in range(1, n)]
-    for _ in range(k-1):
+    for _ in range(k - 1):
         nodes.append(DEPOT)
     best_route_max_time, best_route_sum_time, best_vehicle_routes = INF, INF, None
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
-        route_max_time, route_sum_time, vehicle_routes = calculate_duration_perm(q, m, list(perm), duration, load)
+        route_max_time, route_sum_time, vehicle_routes = calculate_duration_perm(
+            q, m, list(perm), duration, load
+        )
         # Check if it is the best order
         if vehicle_routes is not None and route_max_time < best_route_max_time:
             best_route_max_time = route_max_time

@@ -1,10 +1,10 @@
-import random
 import datetime
+import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.ant_colony.aco_helper import get_hyperparams, print_sol_1
-from src.utilities.vrp_helper import get_google_and_load_data, get_based_and_load_data
-
+from src.utilities.vrp_helper import (get_based_and_load_data,
+                                      get_google_and_load_data)
 
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes
@@ -13,7 +13,10 @@ IGNORE_LONG_TRIP = True
 
 INPUT_FOLDER_PATH = "../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
-INPUT_FILES_TIME = [f'{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt' for hour in range(N_TIME_ZONES)]
+INPUT_FILES_TIME = [
+    f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt"
+    for hour in range(N_TIME_ZONES)
+]
 
 RANGE_N_ITERATIONS = (100, 1000)
 RANGE_Q = (1, 1000)
@@ -101,7 +104,9 @@ class VRP:
                 return True
         return False
 
-    def update_pheromone(self, vrp_route: List[List[int]], ant_route_costs: List[float]) -> None:
+    def update_pheromone(
+        self, vrp_route: List[List[int]], ant_route_costs: List[float]
+    ) -> None:
         """
         Updates pheromone values to be used while selecting next location to visit. For more information on update:
             https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms
@@ -193,7 +198,7 @@ class VRP:
                             finished = True
                             continue
                         else:
-                            hour = N_TIME_ZONES-1
+                            hour = N_TIME_ZONES - 1
                     ant_node = ant_route[-1]
                     nodes = []
                     # Fetch unvisited nodes where it is possible to visit next considering load constraints
@@ -201,7 +206,9 @@ class VRP:
                         if not visited[node] and capacity >= self.load[node]:
                             nodes.append(node)
                     # Get the next node based on pheromones
-                    next_node = self.get_next_node(nodes, ant_node, hour) if nodes else 0
+                    next_node = (
+                        self.get_next_node(nodes, ant_node, hour) if nodes else 0
+                    )
                     visited[next_node] = True
                     capacity -= self.load[next_node]
                     ant_route.append(next_node)
@@ -216,7 +223,9 @@ class VRP:
                     ant_route_costs.append(ant_route_cost)
             # Check if exceeds the time limit
             if not fail:
-                if vrp_route_cost > TOTAL_TIME or self.check_unvisited_node_exists(visited):
+                if vrp_route_cost > TOTAL_TIME or self.check_unvisited_node_exists(
+                    visited
+                ):
                     fail = True
             if not fail:
                 # Add to solutions
@@ -232,9 +241,16 @@ class VRP:
 
 
 # input_file_load: "../../../data/loads/data_load.txt"
-def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: int = 5,
-        n_hyperparams: int = 100, n_best_hyperparamas: int = 3,
-        input_file_load: Optional[str] = None, use_google_data: bool = False) -> None:
+def run(
+    n: int = 8,
+    k: int = 3,
+    q: int = 5,
+    per_km_time: int = 5,
+    n_hyperparams: int = 100,
+    n_best_hyperparamas: int = 3,
+    input_file_load: Optional[str] = None,
+    use_google_data: bool = False,
+) -> None:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
@@ -248,13 +264,17 @@ def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: int = 5,
     :param use_google_data: Flag to use Google Maps data or not
     """
     if use_google_data:
-        duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n, False)
+        duration, load = get_google_and_load_data(
+            INPUT_FILES_TIME, input_file_load, n, False
+        )
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time, False)
     time_start = datetime.datetime.now()
     all_hyperparams = []
-    for _ in range(n_hyperparams//2):
-        hyperparams = get_hyperparams(RANGE_N_ITERATIONS, RANGE_Q, RANGE_ALPHA, RANGE_BETA, RANGE_RHO)
+    for _ in range(n_hyperparams // 2):
+        hyperparams = get_hyperparams(
+            RANGE_N_ITERATIONS, RANGE_Q, RANGE_ALPHA, RANGE_BETA, RANGE_RHO
+        )
         all_hyperparams.append(hyperparams)
         hyperparams["Q"], hyperparams["RHO"] = 0, 1
         all_hyperparams.append(hyperparams)
@@ -263,12 +283,21 @@ def run(n: int = 8, k: int = 3, q: int = 5, per_km_time: int = 5,
         vrp = VRP(n, k, q, duration, load, hyperparams)
         best_iter, best_vrp_route_cost, best_vrp_route = vrp.solve()
         if best_vrp_route is not None:
-            results.append((best_vrp_route_cost, best_iter, best_vrp_route, hyperparams))
+            results.append(
+                (best_vrp_route_cost, best_iter, best_vrp_route, hyperparams)
+            )
     results.sort(key=lambda x: x[0])
     time_end = datetime.datetime.now()
     for result_idx, result in reversed(list(enumerate(results[:n_best_hyperparamas]))):
         best_vrp_route_cost, best_iter, best_vrp_route, hyperparams = result
-        print_sol_1(result_idx, best_vrp_route_cost, best_iter, best_vrp_route, hyperparams, print_route=True)
+        print_sol_1(
+            result_idx,
+            best_vrp_route_cost,
+            best_iter,
+            best_vrp_route,
+            hyperparams,
+            print_route=True,
+        )
     print(f"\nTime elapsed = {time_end-time_start}")
 
 

@@ -1,12 +1,19 @@
+from collections import defaultdict
+from typing import Optional, Tuple
+
 from src.brute_force.brute_force import solve
 from src.utilities.vrp_helper import get_based_and_load_data
-from typing import Tuple, Optional
-from collections import defaultdict
 
 
 # input_file_load: "../../../data/loads/data_load.txt"
-def run(n: int = 8, k: int = 3, q: int = 5, m: int = 2, per_km_time: float = 5, input_file_load: Optional[str] = None) \
-        -> Tuple[float, Optional[defaultdict]]:
+def run(
+    n: int = 8,
+    k: int = 3,
+    q: int = 5,
+    m: int = 2,
+    per_km_time: float = 5,
+    input_file_load: Optional[str] = None,
+) -> Tuple[float, float, Optional[defaultdict]]:
     """
     Gets dynamic time data of the common dataset and solves VRP using brute force
 
@@ -22,5 +29,5 @@ def run(n: int = 8, k: int = 3, q: int = 5, m: int = 2, per_km_time: float = 5, 
     return solve(n, k, q, m, duration, load)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()
