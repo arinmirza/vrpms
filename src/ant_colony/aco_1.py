@@ -3,8 +3,7 @@ import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.ant_colony.aco_helper import get_hyperparams, print_sol_1
-from src.utilities.vrp_helper import (get_based_and_load_data,
-                                      get_google_and_load_data)
+from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_load_data
 
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes

@@ -73,7 +73,7 @@ Commit and push the changes to `main` branch. The serverless function will autom
 
 ### Formatting
 
-Code is formatted with black and isort and both can be set up as pre-commit-hooks via pre-commit. To get started, install the dependencies.
+Code is formatted with black, and it can be set up as pre-commit-hooks via pre-commit. To get started, install the dependencies.
 
     $ pip install -r requirements.dev
 
@@ -82,8 +82,6 @@ Then install the pre-commit hooks:
     $ pre-commit install
 
 You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
-
-Follow the same steps to set up a file watcher for isort, but make sure isort comes before black in the file watchers list.
 
 ### Test
 
