@@ -22,8 +22,9 @@ def run(
     m: int = 2,
     input_file_load: Optional[str] = None,
     ignored_customers: Optional[List[int]] = None,
+    vehicles_start_times: Optional[List[float]] = None,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
-) -> Tuple[float, float, Optional[defaultdict]]:
+) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
     """
     Gets dynamic time data of Google Maps dataset and solves VRP using brute force
 
@@ -34,16 +35,16 @@ def run(
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
     :param ignored_customers: List of customers to be ignored by the algorithm
+    :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
+        as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
         for the latest driver or sum of the durations of each driver
-    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
-        the routes for each driver
+    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
+        routes for each driver and the travel duration for each driver
     """
-    duration_old, load = get_google_and_load_data(
-        INPUT_FILES_TIME, input_file_load, n, False
-    )
+    duration_old, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n, False)
     duration = convert_duration(n, duration_old)
-    return solve(n, k, q, m, duration, load, ignored_customers, objective_func_type)
+    return solve(n, k, q, m, duration, load, ignored_customers, vehicles_start_times, objective_func_type)
 
 
 if __name__ == "__main__":

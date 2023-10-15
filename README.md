@@ -81,6 +81,10 @@ Then install the pre-commit hooks:
 
     $ pre-commit install
 
+Format the entire codebase under the root:
+
+    $ black .
+
 You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
 
 ### Test
