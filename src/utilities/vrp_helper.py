@@ -109,9 +109,7 @@ def get_based_and_load_data(
     return duration, load
 
 
-def convert_duration(
-    n: int, duration_old: List[List[List[float]]]
-) -> List[List[List[float]]]:
+def convert_duration(n: int, duration_old: List[List[List[float]]]) -> List[List[List[float]]]:
     """
     Converts duration matrix from 12xNxN to NxNx12
 

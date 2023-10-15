@@ -75,9 +75,7 @@ def get_request(
     :return: Request to send to Google Maps API
     """
     seconds = int(time.time()) + forecast_hours * 3600
-    src, dest = get_source_and_destination(
-        coordinates, source_id, dest_id_lower, dest_id_upper
-    )
+    src, dest = get_source_and_destination(coordinates, source_id, dest_id_lower, dest_id_upper)
     url = "https://maps.googleapis.com/maps/api/distancematrix/json?"
     request_url = f"{url}mode=driving&departure_time={seconds}&origins={src}&destinations={dest}&key={api_key}"
     return request_url
@@ -176,9 +174,7 @@ def get_api_key() -> str:
     return api_key
 
 
-def output_file(
-    duration: List[List[float]], time_in_sec: int, forecast_hours: int
-) -> None:
+def output_file(duration: List[List[float]], time_in_sec: int, forecast_hours: int) -> None:
     """
     Saves duration matrix for the given hour of the day
 
@@ -187,9 +183,7 @@ def output_file(
     :param forecast_hours: The hour (time slice) in FORECAST_HOURS_RANGE
     """
     os.makedirs(f"{OUTPUT_FOLDER_PATH}/", exist_ok=True)
-    output_file_name = (
-        f"{OUTPUT_FOLDER_PATH}/duration_{N_NODES}_{time_in_sec}_{forecast_hours}.txt"
-    )
+    output_file_name = f"{OUTPUT_FOLDER_PATH}/duration_{N_NODES}_{time_in_sec}_{forecast_hours}.txt"
     with open(output_file_name, "w") as file:
         file.writelines(" ".join(str(j) for j in i) + "\n" for i in duration)
 

@@ -76,7 +76,12 @@ def calculate_duration(
 
 
 def calculate_duration_perm(
-    q: int, m: int, perm: List[int], duration: List[List[List[float]]], load: List[int], vehicles_start_times: List[float],
+    q: int,
+    m: int,
+    perm: List[int],
+    duration: List[List[List[float]]],
+    load: List[int],
+    vehicles_start_times: List[float],
 ) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
     """
     Calculates total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
@@ -168,14 +173,8 @@ def solve(
         )
         # Check if it is the best order
         if vehicle_times is not None and (
-            (
-                objective_func_type == "min_max_time"
-                and route_max_time < best_route_max_time
-            )
-            or (
-                objective_func_type == "min_sum_time"
-                and route_sum_time < best_route_sum_time
-            )
+            (objective_func_type == "min_max_time" and route_max_time < best_route_max_time)
+            or (objective_func_type == "min_sum_time" and route_sum_time < best_route_sum_time)
         ):
             best_route_max_time = route_max_time
             best_route_sum_time = route_sum_time

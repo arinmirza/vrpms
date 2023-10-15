@@ -83,7 +83,7 @@ Then install the pre-commit hooks:
 
 Format the entire codebase under the root:
 
-    $ black .
+    $ black --line-length 120 .
 
 You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
 
