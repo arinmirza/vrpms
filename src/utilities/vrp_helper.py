@@ -3,6 +3,27 @@ from typing import List, Optional, Tuple
 from src.utilities.data_gen.based.data_gen import get_time_data
 
 
+def get_load_data(input_file_load: Optional[str], n: int) -> List[int]:
+    """
+    Reads required capacities of locations for a problem where the loads are unique
+
+    :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
+        load is not unique
+    :param n: Size of load data
+    :return: Loads (required capacities) of locations
+    """
+    if input_file_load:
+        input_file = open(input_file_load, "r")
+        load = []
+        for i, line in enumerate(input_file):
+            values = line.split(" ")
+            load.append(int(values[0]))
+        load = load[:n]
+    else:
+        load = [0 if i == 0 else 1 for i in range(n)]
+    return load
+
+
 def read_time_data(input_file_time: str) -> List[List[float]]:
     """
     Reads a matrix of duration data for a specific hour
@@ -21,27 +42,34 @@ def read_time_data(input_file_time: str) -> List[List[float]]:
     return duration
 
 
-def read_load_data(input_file_load: str) -> List[int]:
+def get_subset_time_data(
+    duration_old: List[List[List[float]]], n: int = 50, convert_matrix: bool = False
+) -> List[List[List[float]]]:
     """
-    Reads required capacities of locations for a problem where the loads are unique
+    Gets the subset of time data with a specific size
 
-    :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
-        load is not unique
-    :return: Loads (required capacities) of locations
+    :param duration_old: Entire time data
+    :param n: Size of new data
+    :param convert_matrix: Flag if first dimension of duration_old is t or not
+    :return: Time data of NxNx12 to be worked on
     """
-    input_file = open(input_file_load, "r")
-    load = []
-    for i, line in enumerate(input_file):
-        values = line.split(" ")
-        load.append(int(values[0]))
-    return load
+    duration = []
+    for i in range(n):
+        duration_src = []
+        for j in range(n):
+            duration_src_dest = []
+            for t in range(12):
+                value = duration_old[t][i][j] if convert_matrix else duration_old[i][j][t]
+                duration_src_dest.append(value)
+            duration_src.append(duration_src_dest)
+        duration.append(duration_src)
+    return duration
 
 
 def get_google_and_load_data(
     input_files_time: List[str],
     input_file_load: Optional[str],
     n: int = 50,
-    convert_matrix: bool = False,
 ) -> Tuple[List[List[List[float]]], List[int]]:
     """
     Reads max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
@@ -50,26 +78,14 @@ def get_google_and_load_data(
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
     :param n: Number of locations to be fetched from the dataset
-    :param convert_matrix: Flag to convert duration matrix from 12xNxN to NxNx12
     :return: Max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
     """
     duration_old = []
     for input_file_time in input_files_time:
         duration_hour = read_time_data(input_file_time)
         duration_old.append(duration_hour)
-    duration = []
-    for t in range(12):
-        duration_t = []
-        for i in range(n):
-            duration_t.append(duration_old[t][i][:n])
-        duration.append(duration_t)
-    if input_file_load:
-        load = read_load_data(input_file_load)
-        load = load[:n]
-    else:
-        load = [0 if i == 0 else 1 for i in range(n)]
-    if convert_matrix:
-        duration = convert_duration(n, duration)
+    duration = get_subset_time_data(duration_old, n, True)
+    load = get_load_data(input_file_load, n)
     return duration, load
 
 
@@ -77,7 +93,6 @@ def get_based_and_load_data(
     input_file_load: Optional[str],
     n: int = 50,
     per_km_time: float = 5,
-    convert_matrix: bool = False,
 ) -> Tuple[List[List[List[float]]], List[int]]:
     """
     Gets max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
@@ -86,44 +101,9 @@ def get_based_and_load_data(
         load is not unique
     :param n: Number of locations to be fetched from the dataset
     :param per_km_time: Multiplier to calculate duration from distance in km
-    :param convert_matrix: Flag to convert duration matrix from 12xNxN to NxNx12
     :return: Max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
     """
     duration_old = get_time_data(per_km_time=per_km_time)
-    duration = []
-    for t in range(12):
-        duration_t = []
-        for i in range(n):
-            duration_t_src = []
-            for j in range(n):
-                duration_t_src.append(duration_old[i][j][t])
-            duration_t.append(duration_t_src)
-        duration.append(duration_t)
-    if input_file_load:
-        load = read_load_data(input_file_load)
-        load = load[:n]
-    else:
-        load = [0 if i == 0 else 1 for i in range(n)]
-    if convert_matrix:
-        duration = convert_duration(n, duration)
+    duration = get_subset_time_data(duration_old, n, False)
+    load = get_load_data(input_file_load, n)
     return duration, load
-
-
-def convert_duration(n: int, duration_old: List[List[List[float]]]) -> List[List[List[float]]]:
-    """
-    Converts duration matrix from 12xNxN to NxNx12
-
-    :param n: Number of locations to be fetched from the dataset
-    :param duration_old: 12xNxN duration matrix
-    :return: NxNx12 duration matrix
-    """
-    duration = []
-    for i in range(n):
-        duration_src = []
-        for j in range(n):
-            duration_src_dest = []
-            for t in range(12):
-                duration_src_dest.append(duration_old[t][i][j])
-            duration_src.append(duration_src_dest)
-        duration.append(duration_src)
-    return duration

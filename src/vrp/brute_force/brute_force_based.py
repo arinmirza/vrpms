@@ -35,7 +35,7 @@ def run(
     :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
         routes for each driver and the travel duration for each driver
     """
-    duration, load = get_based_and_load_data(input_file_load, n, per_km_time, True)
+    duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     return solve(n, k, q, m, duration, load, ignored_customers, vehicles_start_times, objective_func_type)
 
 

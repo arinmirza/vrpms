@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import List, Literal, Optional, Tuple
 
 from src.vrp.brute_force.brute_force import solve
-from src.utilities.vrp_helper import convert_duration, get_google_and_load_data
+from src.utilities.vrp_helper import get_google_and_load_data
 
 N_TIME_ZONES = 12
 
@@ -39,8 +39,7 @@ def run(
     :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
         routes for each driver and the travel duration for each driver
     """
-    duration_old, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n, False)
-    duration = convert_duration(n, duration_old)
+    duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     return solve(n, k, q, m, duration, load, ignored_customers, vehicles_start_times, objective_func_type)
 
 

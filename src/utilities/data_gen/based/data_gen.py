@@ -81,23 +81,6 @@ def guess_traffic_density() -> List[float]:
     return hourly_density_list
 
 
-def get_tdttm(initial_tts: List[float], hourly_traffic_densities: List[float]) -> List[List[float]]:
-    """
-    Calculates dynamic duration data from static one for a specific source
-
-    :param initial_tts: Duration time data for a specific source for the initial hour
-    :param hourly_traffic_densities: Traffic density for each hour in [9, 21)
-    :return: Dynamic duration time data for a specific source
-    """
-    tdttm = []
-    for initial_tt in initial_tts:
-        current_tt_list = [initial_tt]  # generated based on real tt data
-        for hourly_density in hourly_traffic_densities:
-            current_tt_list.append(initial_tt * hourly_density)
-        tdttm.append(current_tt_list)
-    return tdttm
-
-
 def degrees_to_radians(degrees: float) -> float:
     """
     Makes degrees to radians conversion
@@ -136,18 +119,19 @@ def get_time_data(per_km_time: float = 5) -> List[List[List[float]]]:
     :param per_km_time: Multiplier to calculate duration from distance in km
     :return: Dynamic duration time data
     """
-    tt_list = []
-    for src_coordinate in COORDINATE_LIST:
-        current_tt_list = []
-        for dest_coordinate in COORDINATE_LIST:
-            cur_dist = distance_in_km_between_coordinates(src_coordinate, dest_coordinate)
-            current_tt_list.append(cur_dist * per_km_time)
-        tt_list.append(current_tt_list)
     hourly_traffic_densities = guess_traffic_density()
     time_data = []
-    for tt_list_src in tt_list:
-        updated_tt_list_src = get_tdttm(tt_list_src, hourly_traffic_densities)
-        time_data.append(updated_tt_list_src)
+    for src_coordinate in COORDINATE_LIST:
+        time_data_src = []
+        for dest_coordinate in COORDINATE_LIST:
+            time_data_src_dest = []
+            dist_km = distance_in_km_between_coordinates(src_coordinate, dest_coordinate)
+            static_duration = dist_km * per_km_time
+            for density in hourly_traffic_densities:
+                dynamic_duration = density * static_duration
+                time_data_src_dest.append(dynamic_duration)
+            time_data_src.append(time_data_src_dest)
+        time_data.append(time_data_src)
     return time_data
 
 
