@@ -1,26 +1,11 @@
-import datetime
-import random
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.vrp.ant_colony.aco import ACO_VRP
-from src.vrp.ant_colony.aco_helper import get_hyperparams, print_sol_2
-from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_load_data
 
+DEPOT = 0  # id of the depot
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes
 TOTAL_TIME = N_TIME_ZONES * TIME_UNITS
-IGNORE_LONG_TRIP = True
-
-INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
-INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
-INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
-
-N_SUB_ITERATIONS = 5
-RANGE_N_ITERATIONS = (100, 1000)
-RANGE_Q = (1, 1000)
-RANGE_ALPHA = (2, 5)
-RANGE_BETA = (2, 5)
-RANGE_RHO = (0.8, 1)
 
 INF = float("inf")
 
@@ -31,43 +16,48 @@ class ACO_VRP_2(ACO_VRP):
         n: int,
         m: int,
         init_capacity: int,
+        add_depot: bool,
+        ignore_long_trip: bool,
         duration: List[List[List[float]]],
         load: List[int],
         hyperparams: Dict[str, Any],
-    ):
+    ) -> None:
         """
         Constructor of VRP with ACO
 
         :param n: Number of locations
         :param m: Max number of cycles
         :param init_capacity: Capacity of vehicle
+        :param add_depot: Add depot as a candidate place to visit next
+        :param ignore_long_trip: Flag to ignore long trips
         :param duration: Dynamic duration data
         :param load: Loads of locations
         :param hyperparams: Hyperparameter settings for the given best tour
         """
-        super().__init__(n, m, init_capacity, duration, load, hyperparams)
+        super().__init__(n, m, init_capacity, add_depot, ignore_long_trip, duration, load, hyperparams)
+        self.N_SUB_ITERATIONS = hyperparams["N_SUB_ITERATIONS"]
 
-    def update_pheromone(self, ant_routes: List[List[int]], ant_route_costs: List[float]) -> None:
+    def __str__(self) -> str:
+        return "ACO_2"
+
+    @staticmethod
+    def split_path_to_cycles(path: List[int]) -> List[List[int]]:
         """
-        Updates pheromone values to be used while selecting next location to visit. For more information on update:
-            https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms
+        Parses a given path to the cycles
 
-        :param ant_routes: Completed VRP tour, including visited locations in order
-        :param ant_route_costs: Costs for each ant
+        :param path: Path to be parsed
+        :return: Cycles given in the path
         """
-        for i in range(self.n):
-            for j in range(self.n):
-                self.pheromone[i][j] *= self.RHO
-        n_ants = len(ant_route_costs)
-        for i in range(n_ants):
-            ant_route = ant_routes[i]
-            ant_route_cost = ant_route_costs[i]
-            ant_route_len = len(ant_route)
-            for idx in range(ant_route_len):
-                u, v = ant_route[idx - 1], ant_route[idx]
-                self.pheromone[u][v] += self.Q / ant_route_cost
+        indices = [idx for idx, node in enumerate(path) if node == 0]
+        n_zeroes = len(indices)
+        cycles = []
+        for i in range(n_zeroes - 1):
+            idx_l, idx_r = indices[i], indices[i + 1]
+            cycle = path[idx_l : idx_r + 1]
+            cycles.append(cycle)
+        return cycles
 
-    def solve(self) -> Tuple[int, float, List[int]]:
+    def solve(self) -> Tuple[int, Optional[float], Optional[List[List[int]]]]:
         """
         Solves VRP problem by using ACO
 
@@ -83,7 +73,7 @@ class ACO_VRP_2(ACO_VRP):
             best_ant_route_cost = INF
             ant_routes = []
             ant_route_costs = []
-            for _ in range(N_SUB_ITERATIONS):
+            for _ in range(self.N_SUB_ITERATIONS):
                 visited = [False for _ in range(self.n)]
                 visited[0] = True
                 fail = False
@@ -96,7 +86,7 @@ class ACO_VRP_2(ACO_VRP):
                     hour = int(vrp_route_cost / TIME_UNITS)
                     # Check if exceeds the time limit
                     if hour >= N_TIME_ZONES:
-                        if IGNORE_LONG_TRIP:
+                        if self.ignore_long_trip:
                             fail = True
                             break
                         else:
@@ -105,11 +95,11 @@ class ACO_VRP_2(ACO_VRP):
                     nodes = []
                     # Fetch unvisited nodes to visit next
                     for node in range(self.n):
-                        if not visited[node]:
+                        if (capacity >= self.load[node] and not visited[node]) or (node == DEPOT and self.add_depot):
                             nodes.append(node)
                     # Get the next node based on pheromones
                     next_node = self.get_next_node(nodes, ant_node, hour) if nodes else 0
-                    if next_node != 0 and capacity >= self.load[next_node]:
+                    if next_node != 0:
                         # Keep the cycle, add the node to the current cycle
                         capacity -= self.load[next_node]
                         vrp_route.append(next_node)
@@ -123,9 +113,10 @@ class ACO_VRP_2(ACO_VRP):
                         capacity = self.init_capacity
                         vrp_route_cost += self.duration[ant_node][next_node][hour]
                 # Check if exceeds the time limit
-                if not fail:
-                    if vrp_route_cost > TOTAL_TIME or self.check_unvisited_node_exists(visited):
-                        fail = True
+                if vrp_route_cost >= TOTAL_TIME and self.ignore_long_trip:
+                    fail = True
+                elif self.check_unvisited_node_exists(visited):
+                    fail = True
                 if not fail:
                     # Add to solutions
                     ant_routes.append(vrp_route)
@@ -141,63 +132,6 @@ class ACO_VRP_2(ACO_VRP):
                     best_of_best_cost = best_ant_route_cost
                     best_of_best_route = best_ant_route
                 self.update_pheromone(ant_routes, ant_route_costs)
+        if best_of_best_route is not None:
+            best_of_best_route = self.split_path_to_cycles(best_of_best_route)
         return best_iter, best_of_best_cost, best_of_best_route
-
-
-# input_file_load: "../../../data/loads/data_load.txt"
-def run(
-    n: int = 8,
-    k: int = 3,
-    q: int = 5,
-    per_km_time: int = 5,
-    n_hyperparams: int = 100,
-    n_best_hyperparamas: int = 3,
-    input_file_load: Optional[str] = None,
-    use_google_data: bool = False,
-) -> None:
-    """
-    Gets input data, try different hyperparamater settings and solve VRP with ACO
-
-    :param n: Number of locations
-    :param k: Max number of cycles
-    :param q: Capacity of vehicle
-    :param per_km_time: Multiplier to calculate duration from distance in km
-    :param n_hyperparams: Number of hyperparamater settings to try
-    :param n_best_hyperparamas: Number of best hyperparamater settings to print
-    :param input_file_load: Path to the input file including loads (required capacities) of locations
-    :param use_google_data: Flag to use Google Maps data or not
-    """
-    if use_google_data:
-        duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
-    else:
-        duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    time_start = datetime.datetime.now()
-    all_hyperparams = []
-    for _ in range(n_hyperparams // 2):
-        hyperparams = get_hyperparams(RANGE_N_ITERATIONS, RANGE_Q, RANGE_ALPHA, RANGE_BETA, RANGE_RHO)
-        all_hyperparams.append(hyperparams)
-        hyperparams["Q"], hyperparams["RHO"] = 0, 1
-        all_hyperparams.append(hyperparams)
-    results = []
-    for hyperparams in all_hyperparams:
-        vrp = ACO_VRP_2(n, k, q, duration, load, hyperparams)
-        best_iter, best_vrp_route_cost, best_vrp_route = vrp.solve()
-        if best_vrp_route is not None:
-            results.append((best_vrp_route_cost, best_iter, best_vrp_route, hyperparams))
-    results.sort(key=lambda x: x[0])
-    time_end = datetime.datetime.now()
-    for result_idx, result in reversed(list(enumerate(results[:n_best_hyperparamas]))):
-        best_vrp_route_cost, best_iter, best_vrp_route, hyperparams = result
-        print_sol_2(
-            result_idx,
-            best_vrp_route_cost,
-            best_iter,
-            best_vrp_route,
-            hyperparams,
-            print_route=True,
-        )
-    print(f"\nTime elapsed = {time_end-time_start}")
-
-
-if __name__ == "__main__":
-    run()
