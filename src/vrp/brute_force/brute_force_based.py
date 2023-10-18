@@ -11,6 +11,7 @@ def run(
     k: int = 3,
     q: int = 5,
     m: int = 2,
+    ignore_long_trip: bool = False,
     per_km_time: float = 5,
     input_file_load: Optional[str] = None,
     ignored_customers: Optional[List[int]] = None,
@@ -24,6 +25,7 @@ def run(
     :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
@@ -36,7 +38,9 @@ def run(
         routes for each driver and the travel duration for each driver
     """
     duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    return solve(n, k, q, m, duration, load, ignored_customers, vehicles_start_times, objective_func_type)
+    return solve(
+        n, k, q, m, ignore_long_trip, duration, load, ignored_customers, vehicles_start_times, objective_func_type
+    )
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ class ACO_VRP_2(ACO_VRP):
         super().__init__(n, m, init_capacity, add_depot, ignore_long_trip, duration, load, hyperparams)
         self.N_SUB_ITERATIONS = hyperparams["N_SUB_ITERATIONS"]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "ACO_2"
 
     @staticmethod

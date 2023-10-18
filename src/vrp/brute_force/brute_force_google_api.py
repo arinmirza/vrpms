@@ -17,6 +17,7 @@ def run(
     k: int = 3,
     q: int = 3,
     m: int = 2,
+    ignore_long_trip: bool = False,
     input_file_load: Optional[str] = None,
     ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
@@ -29,6 +30,7 @@ def run(
     :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique
     :param ignored_customers: List of customers to be ignored by the algorithm
@@ -40,7 +42,9 @@ def run(
         routes for each driver and the travel duration for each driver
     """
     duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
-    return solve(n, k, q, m, duration, load, ignored_customers, vehicles_start_times, objective_func_type)
+    return solve(
+        n, k, q, m, ignore_long_trip, duration, load, ignored_customers, vehicles_start_times, objective_func_type
+    )
 
 
 if __name__ == "__main__":

@@ -4,8 +4,6 @@ from datetime import datetime
 from queue import PriorityQueue
 from typing import List, Literal, Optional, Tuple
 
-IGNORE_LONG_TRIP = True
-
 INF = float("inf")
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes
@@ -15,6 +13,7 @@ DEPOT = 0
 def calculate_duration(
     q: int,
     m: int,
+    ignore_long_trip: bool,
     cycles: List[List[int]],
     duration: List[List[List[float]]],
     load: List[int],
@@ -26,6 +25,7 @@ def calculate_duration(
 
     :param q: Capacity of vehicle
     :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
     :param cycles: The cycles to be assigned where one cycle is demonstrated as [DEPOT, c_i, ..., c_j, DEPOT]
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
@@ -51,7 +51,7 @@ def calculate_duration(
             if curr_capacity < 0:
                 return INF, INF, None, None
             curr_time_slip = int(curr_time / TIME_UNITS)
-            if not IGNORE_LONG_TRIP:
+            if not ignore_long_trip:
                 curr_time_slip = min(curr_time_slip, N_TIME_ZONES - 1)
             if curr_time_slip >= N_TIME_ZONES:
                 return INF, INF, None, None
@@ -69,7 +69,7 @@ def calculate_duration(
         route_max_time = vehicle_t
         route_sum_time += vehicle_t
 
-    if IGNORE_LONG_TRIP and route_max_time >= N_TIME_ZONES * TIME_UNITS:
+    if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
 
     return route_max_time, route_sum_time, vehicle_routes, vehicle_times
@@ -78,6 +78,7 @@ def calculate_duration(
 def calculate_duration_perm(
     q: int,
     m: int,
+    ignore_long_trip: bool,
     perm: List[int],
     duration: List[List[List[float]]],
     load: List[int],
@@ -89,6 +90,7 @@ def calculate_duration_perm(
 
     :param q: Capacity of vehicle
     :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
     :param perm: The locations to visit in order
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
@@ -113,7 +115,7 @@ def calculate_duration_perm(
         else:
             last_cycle.append(node)
 
-    return calculate_duration(q, m, cycles, duration, load, vehicles_start_times)
+    return calculate_duration(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times)
 
 
 def solve(
@@ -121,6 +123,7 @@ def solve(
     k: int,
     q: int,
     m: int,
+    ignore_long_trip: bool,
     duration: List[List[List[float]]],
     load: List[int],
     ignored_customers: Optional[List[int]],
@@ -135,6 +138,7 @@ def solve(
     :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
     :param ignored_customers: List of customers to be ignored by the algorithm
@@ -169,7 +173,7 @@ def solve(
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
         route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(
-            q, m, list(perm), duration, load, vehicles_start_times
+            q, m, ignore_long_trip, list(perm), duration, load, vehicles_start_times
         )
         # Check if it is the best order
         if vehicle_times is not None and (

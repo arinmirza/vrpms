@@ -36,7 +36,7 @@ class ACO_VRP_1(ACO_VRP):
         """
         super().__init__(n, m, init_capacity, add_depot, ignore_long_trip, duration, load, hyperparams)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return "ACO_1"
 
     def solve(self) -> Tuple[int, Optional[float], Optional[List[List[int]]]]:

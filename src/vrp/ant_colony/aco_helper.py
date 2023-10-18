@@ -1,6 +1,6 @@
 import math
 import random
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 RANGE_N_ITERATIONS = (5, 25)
 RANGE_N_SUB_ITERATIONS = (2, 5)
