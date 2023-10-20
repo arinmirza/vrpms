@@ -34,43 +34,60 @@ def calculate_duration(
     :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
         routes for each driver and the travel duration for each driver
     """
+    # Initialize vehicle id to cycles and times mapping
     vehicle_routes = defaultdict(list)
     vehicle_times = defaultdict(float)
 
+    # Initialize the PQ of vehicles (drivers) with given (expected) start time
     vehicles = PriorityQueue()
     for i in range(m):
         vehicles.put((vehicles_start_times[i], i))
+
+    # Cycle: [DEPOT, customer_1, customer_2, ..., customer_k, DEPOT]
+    # Cycles: [cycle_1, cycle_2, ...]
     for cycle in cycles:
+        # Get the vehicle (driver) with the earliest available time
         vehicle = vehicles.get()
         vehicle_t, vehicle_id = vehicle
         curr_time = vehicle_t
         last_node = DEPOT
         curr_capacity = q
+        # Go over each edge in the cycle
         for node in cycle[1:]:
+            # Update capacity and check if it exceeds the initial capacity
             curr_capacity -= load[node]
             if curr_capacity < 0:
                 return INF, INF, None, None
+            # Determine the hour and check if it exceeds the number of time zones (based on ignore_long_trip)
             curr_time_slip = int(curr_time / TIME_UNITS)
             if not ignore_long_trip:
                 curr_time_slip = min(curr_time_slip, N_TIME_ZONES - 1)
             if curr_time_slip >= N_TIME_ZONES:
                 return INF, INF, None, None
+            # Update time and node
             curr_time += duration[last_node][node][curr_time_slip]
             last_node = node
+        # Update PQ with the chosen vehicle and updated time
         vehicles.put((curr_time, vehicle_id))
         vehicle_routes[vehicle_id].append(cycle)
 
+    # Pull elements from PQ and update vehicle id to cycles and times mapping
+    # route_max_time: max of duration among all vehicles (drivers)
+    # route_sum_time: sum of duration of all vehicles (drivers)
     route_max_time, route_sum_time = 0, 0
     while not vehicles.empty():
         vehicle = vehicles.get()
         vehicle_t, vehicle_id = vehicle
         vehicle_times[vehicle_id] = vehicle_t
-        route_max_time = vehicle_t
+        route_max_time = max(route_max_time, vehicle_t)  # "route_max_time = vehicle_t" should be fine (min-heap)
         route_sum_time += vehicle_t
 
+    # Check if it exceeds the number of time zones (based on ignore_long_trip)
+    # Probably it is not that necessary since all cycles checked
     if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
 
+    # Return :)
     return route_max_time, route_sum_time, vehicle_routes, vehicle_times
 
 
@@ -110,7 +127,7 @@ def calculate_duration_perm(
                 cycle.extend(last_cycle)
                 cycle.append(DEPOT)
                 cycles.append(cycle)
-            last_cycle = []
+                last_cycle = []
         else:
             last_cycle.append(node)
 
