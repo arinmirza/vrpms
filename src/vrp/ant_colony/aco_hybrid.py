@@ -70,6 +70,7 @@ def print_sol(
     vehicle_times: defaultdict,
     hyperparams: Dict[str, Union[int, float]],
     consider_depot: bool,
+    pheromone_use_first_hour: bool,
     aco_method: str,
 ) -> None:
     """
@@ -83,6 +84,7 @@ def print_sol(
     :param vehicle_times: The travel duration for each driver
     :param hyperparams: Hyperparameter settings for the given best tour
     :param consider_depot: Flag to consider depot as a candidate place to visit next
+    :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
     :param aco_method: Name of the ACO method
     """
     print()
@@ -90,6 +92,7 @@ def print_sol(
     print(f"Best iteration: {best_iter}")
     print(f"ACO method: {aco_method}")
     print(f"Consider depot: {consider_depot}")
+    print(f"Pheromone use first hour: {pheromone_use_first_hour}")
     print(f"Hyperparams: {hyperparams}")
     print(f"Route max time: {route_max_time}")
     print(f"Route sum time: {route_sum_time}")
@@ -158,6 +161,7 @@ def run(
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
+    pheromone_uses_first_hour: List[bool] = [False, True],
 ) -> None:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
@@ -178,7 +182,8 @@ def run(
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
         for the latest driver or sum of the durations of each driver
     :param aco_sols: ACO methods to run
-    :param consider_depots: Flags to consider depot as a candidate place to visit next or not
+    :param consider_depots: Flags to consider depot as a candidate place to visit next
+    :param pheromone_uses_first_hour: Flags to consider first hour of duration data for pheromone calculations
     """
     objective_func_type = objective_func_type.lower()
     assert objective_func_type in [
@@ -213,37 +218,46 @@ def run(
     for hyperparams in all_hyperparams:
         for aco_sol in aco_sols:
             for consider_depot in consider_depots:
-                vrp = aco_sol(
-                    n=n,
-                    m=m,
-                    k=k,
-                    q=q,
-                    consider_depot=consider_depot,
-                    ignore_long_trip=ignore_long_trip,
-                    objective_func_type=objective_func_type,
-                    ignored_customers=ignored_customers,
-                    vehicles_start_times=vehicles_start_times,
-                    duration=duration,
-                    load=load,
-                    hyperparams=hyperparams,
-                )
-                best_iter, route_max_time, route_sum_time, vehicle_routes, vehicle_times = vrp.solve()
-                if best_iter is not None:
-                    validate_solution(
-                        m, route_max_time, route_sum_time, vehicle_routes, vehicle_times, vehicles_start_times, duration
+                for pheromone_use_first_hour in pheromone_uses_first_hour:
+                    vrp = aco_sol(
+                        n=n,
+                        m=m,
+                        k=k,
+                        q=q,
+                        consider_depot=consider_depot,
+                        pheromone_use_first_hour=pheromone_use_first_hour,
+                        ignore_long_trip=ignore_long_trip,
+                        objective_func_type=objective_func_type,
+                        ignored_customers=ignored_customers,
+                        vehicles_start_times=vehicles_start_times,
+                        duration=duration,
+                        load=load,
+                        hyperparams=hyperparams,
                     )
-                    results.append(
-                        (
+                    best_iter, route_max_time, route_sum_time, vehicle_routes, vehicle_times = vrp.solve()
+                    if best_iter is not None:
+                        validate_solution(
+                            m,
                             route_max_time,
                             route_sum_time,
-                            best_iter,
                             vehicle_routes,
                             vehicle_times,
-                            hyperparams,
-                            consider_depot,
-                            str(aco_sol),
+                            vehicles_start_times,
+                            duration,
                         )
-                    )
+                        results.append(
+                            (
+                                route_max_time,
+                                route_sum_time,
+                                best_iter,
+                                vehicle_routes,
+                                vehicle_times,
+                                hyperparams,
+                                consider_depot,
+                                pheromone_use_first_hour,
+                                str(aco_sol),
+                            )
+                        )
     if objective_func_type == "min_max_time":
         results.sort(key=lambda x: x[0])
     else:
@@ -260,6 +274,7 @@ def run(
             vehicle_times,
             hyperparams,
             consider_depot,
+            pheromone_use_first_hour,
             aco_method,
         ) = result
         print_sol(
@@ -271,6 +286,7 @@ def run(
             vehicle_times=vehicle_times,
             hyperparams=hyperparams,
             consider_depot=consider_depot,
+            pheromone_use_first_hour=pheromone_use_first_hour,
             aco_method=aco_method,
         )
 

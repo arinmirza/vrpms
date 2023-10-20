@@ -18,6 +18,7 @@ class ACO_VRP_1(ACO_VRP):
         k: int,
         q: int,
         consider_depot: bool,
+        pheromone_use_first_hour: bool,
         ignore_long_trip: bool,
         objective_func_type: str,
         ignored_customers: List[int],
@@ -34,6 +35,7 @@ class ACO_VRP_1(ACO_VRP):
         :param k: Max number of cycles
         :param q: Capacity of vehicle
         :param consider_depot: Consider depot as a candidate place to visit next
+        :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
         :param ignore_long_trip: Flag to ignore long trips
         :param ignored_customers: List of customers to be ignored by the algorithm
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
@@ -49,6 +51,7 @@ class ACO_VRP_1(ACO_VRP):
         )
         self.k = k
         self.q = q
+        self.pheromone_use_first_hour = pheromone_use_first_hour
         self.objective_func_type = objective_func_type
 
     def __str__(self):
@@ -101,7 +104,8 @@ class ACO_VRP_1(ACO_VRP):
                     capacity -= self.load[next_node]
                     pheromone_path.append(next_node)
                     vehicle_t += self.duration[last_node][next_node][hour]
-                    pheromone_path_cost += self.duration[last_node][next_node][hour]  # hour = 0 can be considered
+                    pheromone_hour = 0 if self.pheromone_use_first_hour else hour
+                    pheromone_path_cost += self.duration[last_node][next_node][pheromone_hour]
                     finished = bool(next_node == DEPOT)
                     last_node = next_node
                 # Check if exceeds the time limit
