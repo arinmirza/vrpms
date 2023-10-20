@@ -8,9 +8,9 @@ from src.utilities.vrp_helper import get_based_and_load_data
 # input_file_load: "../../../data/loads/data_load.txt"
 def run(
     n: int = 8,
+    m: int = 2,
     k: int = 3,
     q: int = 5,
-    m: int = 2,
     ignore_long_trip: bool = False,
     per_km_time: float = 5,
     input_file_load: Optional[str] = None,
@@ -22,9 +22,9 @@ def run(
     Gets dynamic time data of the common dataset and solves VRP using brute force
 
     :param n: Number of locations
+    :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
-    :param m: Max number of vehicles
     :param ignore_long_trip: Flag to ignore long trips
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
@@ -39,16 +39,16 @@ def run(
     """
     duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     return solve(
-        n,
-        k,
-        q,
-        m,
-        ignore_long_trip,
-        duration,
-        load,
-        ignored_customers,
-        vehicles_start_times,
-        objective_func_type,
+        n=n,
+        m=m,
+        k=k,
+        q=q,
+        ignore_long_trip=ignore_long_trip,
+        duration=duration,
+        load=load,
+        ignored_customers=ignored_customers,
+        vehicles_start_times=vehicles_start_times,
+        objective_func_type=objective_func_type,
     )
 
 

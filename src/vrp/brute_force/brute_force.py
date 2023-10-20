@@ -119,9 +119,9 @@ def calculate_duration_perm(
 
 def solve(
     n: int,
+    m: int,
     k: int,
     q: int,
-    m: int,
     ignore_long_trip: bool,
     duration: List[List[List[float]]],
     load: List[int],
@@ -134,9 +134,9 @@ def solve(
         durations of each driver and the routes for each driver
 
     :param n: Number of locations
+    :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
-    :param m: Max number of vehicles
     :param ignore_long_trip: Flag to ignore long trips
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations

@@ -33,9 +33,9 @@ def run(
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
     :param n: Number of locations
+    :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
-    :param m: Max number of vehicles
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param n_hyperparams: Number of hyperparamater settings to try
     :param n_best_hyperparamas: Number of best hyperparamater settings to print
