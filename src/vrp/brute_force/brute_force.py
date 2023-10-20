@@ -39,6 +39,7 @@ def calculate_duration(
     vehicle_times = defaultdict(float)
 
     # Initialize the PQ of vehicles (drivers) with given (expected) start time
+    # How to use PQ: https://www.linode.com/docs/guides/python-priority-queue/
     vehicles = PriorityQueue()
     for i in range(m):
         vehicles.put((vehicles_start_times[i], i))
