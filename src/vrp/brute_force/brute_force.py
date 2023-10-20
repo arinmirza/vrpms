@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime
 from queue import PriorityQueue
 from typing import List, Literal, Optional, Tuple
+from src.vrp.vehicles_pq import VehiclesPQ
 
 INF = float("inf")
 N_TIME_ZONES = 12  # hours = time slices
@@ -39,18 +40,13 @@ def calculate_duration(
     vehicle_times = defaultdict(float)
 
     # Initialize the PQ of vehicles (drivers) with given (expected) start time
-    # How to use PQ: https://www.linode.com/docs/guides/python-priority-queue/
-    vehicles = PriorityQueue()
-    for i in range(m):
-        vehicles.put((vehicles_start_times[i], i))
+    vehicles_pq = VehiclesPQ(vehicles_start_times)
 
     # Cycle: [DEPOT, customer_1, customer_2, ..., customer_k, DEPOT]
     # Cycles: [cycle_1, cycle_2, ...]
     for cycle in cycles:
         # Get the vehicle (driver) with the earliest available time
-        vehicle = vehicles.get()
-        vehicle_t, vehicle_id = vehicle
-        curr_time = vehicle_t
+        vehicle_t, vehicle_id = vehicles_pq.get_vehicle()
         last_node = DEPOT
         curr_capacity = q
         # Go over each edge in the cycle
@@ -60,31 +56,25 @@ def calculate_duration(
             if curr_capacity < 0:
                 return INF, INF, None, None
             # Determine the hour and check if it exceeds the number of time zones (based on ignore_long_trip)
-            curr_time_slip = int(curr_time / TIME_UNITS)
+            hour = int(vehicle_t / TIME_UNITS)
             if not ignore_long_trip:
-                curr_time_slip = min(curr_time_slip, N_TIME_ZONES - 1)
-            if curr_time_slip >= N_TIME_ZONES:
+                hour = min(hour, N_TIME_ZONES - 1)
+            if hour >= N_TIME_ZONES:
                 return INF, INF, None, None
             # Update time and node
-            curr_time += duration[last_node][node][curr_time_slip]
+            vehicle_t += duration[last_node][node][hour]
             last_node = node
         # Update PQ with the chosen vehicle and updated time
-        vehicles.put((curr_time, vehicle_id))
+        vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
         vehicle_routes[vehicle_id].append(cycle)
 
     # Pull elements from PQ and update vehicle id to cycles and times mapping
     # route_max_time: max of duration among all vehicles (drivers)
     # route_sum_time: sum of duration of all vehicles (drivers)
-    route_max_time, route_sum_time = 0, 0
-    while not vehicles.empty():
-        vehicle = vehicles.get()
-        vehicle_t, vehicle_id = vehicle
-        vehicle_times[vehicle_id] = vehicle_t
-        route_max_time = max(route_max_time, vehicle_t)  # "route_max_time = vehicle_t" should be fine (min-heap)
-        route_sum_time += vehicle_t
+    route_max_time, route_sum_time, vehicle_times = vehicles_pq.get_route_and_vehicle_times()
 
     # Check if it exceeds the number of time zones (based on ignore_long_trip)
-    # Probably it is not that necessary since all cycles checked
+    # Actually, it is not that necessary since all cycles checked
     if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
 
@@ -192,6 +182,7 @@ def solve(
         best_vehicle_routes,
         best_vehicle_times,
     ) = (INF, INF, None, None)
+
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
         (

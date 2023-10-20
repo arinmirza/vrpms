@@ -1,7 +1,6 @@
 import random
-from typing import Any, Dict, List, Tuple
-from queue import PriorityQueue
-from collections import defaultdict
+from typing import Any, Dict, List
+from src.vrp.vehicles_pq import VehiclesPQ
 
 N_TIME_ZONES = 12  # hours = time slices
 
@@ -11,8 +10,12 @@ class ACO_VRP:
         self,
         n: int,
         m: int,
+        k: int,
+        q: int,
         consider_depot: bool,
+        pheromone_use_first_hour: bool,
         ignore_long_trip: bool,
+        objective_func_type: str,
         ignored_customers: List[int],
         vehicles_start_times: List[float],
         duration: List[List[List[float]]],
@@ -24,19 +27,28 @@ class ACO_VRP:
 
         :param n: Number of locations
         :param m: Max number of vehicles
+        :param k: Max number of cycles
+        :param q: Capacity of vehicle
         :param consider_depot: Consider depot as a candidate place to visit next
+        :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
         :param ignore_long_trip: Flag to ignore long trips
         :param ignored_customers: List of customers to be ignored by the algorithm
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
             assumed as zero.
+        :param objective_func_type: Type of the objective function to minimize total time it takes to visit the
+            locations for the latest driver or sum of the durations of each driver
         :param duration: Dynamic duration data
         :param load: Loads of locations
         :param hyperparams: Hyperparameter settings for the given best tour
         """
         self.n = n
         self.m = m
+        self.k = k
+        self.q = q
         self.consider_depot = consider_depot
+        self.pheromone_use_first_hour = pheromone_use_first_hour
         self.ignore_long_trip = ignore_long_trip
+        self.objective_func_type = objective_func_type
         self.ignored_customers = ignored_customers
         self.vehicles_start_times = vehicles_start_times
         self.duration = duration
@@ -48,52 +60,7 @@ class ACO_VRP:
         self.RHO = hyperparams["RHO"]
         self.pheromone = self.init_pheromone()
         self.duration_power = self.init_duration_power()
-        self.vehicles = PriorityQueue()
-
-    def init_vehicles(self) -> None:
-        """
-        Initializes times of vehicles based on the given start times
-        """
-        while not self.vehicles.empty():
-            self.vehicles.get()
-        for i in range(self.m):
-            self.vehicles.put((self.vehicles_start_times[i], i))
-
-    def get_vehicle(self) -> Tuple[float, int]:
-        """
-        Gets the vehicle with the earliest available time
-
-        :return: Vehicle available time and vehicle id
-        """
-        vehicle = self.vehicles.get()
-        vehicle_t, vehicle_id = vehicle
-        return vehicle_t, vehicle_id
-
-    def put_vehicle(self, vehicle_t: float, vehicle_id: int) -> None:
-        """
-        Pushes the vehicle back to the PQ along with available time
-
-        :param vehicle_t: Vehicle available time
-        :param vehicle_id: Vehicle id
-        """
-        self.vehicles.put((vehicle_t, vehicle_id))
-
-    def get_route_and_vehicle_times(self) -> Tuple[float, float, defaultdict]:
-        """
-        Gets the vehicle with the earliest available time
-
-        :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver,
-            the travel duration for each driver
-        """
-        vehicle_times = defaultdict(float)
-        route_max_time, route_sum_time = 0, 0
-        while not self.vehicles.empty():
-            vehicle = self.vehicles.get()
-            vehicle_t, vehicle_id = vehicle
-            vehicle_times[vehicle_id] = vehicle_t
-            route_max_time = vehicle_t
-            route_sum_time += vehicle_t
-        return route_max_time, route_sum_time, vehicle_times
+        self.vehicles_pq = VehiclesPQ(vehicles_start_times)
 
     def init_duration_power(self) -> List[List[List[float]]]:
         """

@@ -47,12 +47,20 @@ class ACO_VRP_1(ACO_VRP):
         :param hyperparams: Hyperparameter settings for the given best tour
         """
         super().__init__(
-            n, m, consider_depot, ignore_long_trip, ignored_customers, vehicles_start_times, duration, load, hyperparams
+            n=n,
+            m=m,
+            k=k,
+            q=q,
+            consider_depot=consider_depot,
+            pheromone_use_first_hour=pheromone_use_first_hour,
+            ignore_long_trip=ignore_long_trip,
+            objective_func_type=objective_func_type,
+            ignored_customers=ignored_customers,
+            vehicles_start_times=vehicles_start_times,
+            duration=duration,
+            load=load,
+            hyperparams=hyperparams,
         )
-        self.k = k
-        self.q = q
-        self.pheromone_use_first_hour = pheromone_use_first_hour
-        self.objective_func_type = objective_func_type
 
     def __str__(self):
         return "ACO_1"
@@ -68,7 +76,7 @@ class ACO_VRP_1(ACO_VRP):
         best_vehicle_routes, best_vehicle_times, best_iter = None, None, None
         # At each iteration, start over
         for iter_idx in range(self.N_ITERATIONS):
-            self.init_vehicles()
+            self.vehicles_pq.init_vehicles()
             visited = [bool(i in self.ignored_customers) for i in range(self.n)]
             visited[DEPOT] = True
             fail = False
@@ -77,7 +85,7 @@ class ACO_VRP_1(ACO_VRP):
             # Fill each cycle
             for _ in range(self.k):
                 pheromone_path, pheromone_path_cost = [DEPOT], 0
-                vehicle_t, vehicle_id = self.get_vehicle()
+                vehicle_t, vehicle_id = self.vehicles_pq.get_vehicle()
                 finished = False
                 capacity = self.q
                 last_node = DEPOT
@@ -112,7 +120,7 @@ class ACO_VRP_1(ACO_VRP):
                 if fail:
                     break
                 else:
-                    self.put_vehicle(vehicle_t, vehicle_id)
+                    self.vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
                     pheromone_paths.append(pheromone_path)
                     pheromone_paths_costs.append(pheromone_path_cost)
                     vehicle_routes[vehicle_id].append(pheromone_path)
@@ -121,7 +129,7 @@ class ACO_VRP_1(ACO_VRP):
                 fail = True
             if not fail:
                 # Check if it is the best
-                route_max_time, route_sum_time, vehicle_times = self.get_route_and_vehicle_times()
+                route_max_time, route_sum_time, vehicle_times = self.vehicles_pq.get_route_and_vehicle_times()
                 if self.ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
                     continue
                 if (self.objective_func_type == "min_max_time" and route_max_time < best_route_max_time) or (
