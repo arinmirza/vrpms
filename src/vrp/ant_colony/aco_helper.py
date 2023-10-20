@@ -1,6 +1,7 @@
 import math
 import random
-from typing import Dict, List, Union
+from typing import Dict, Union
+from collections import defaultdict
 
 RANGE_N_ITERATIONS = (5, 25)
 RANGE_N_SUB_ITERATIONS = (2, 5)
@@ -48,8 +49,10 @@ def get_hyperparams() -> Dict[str, Union[int, float]]:
 def print_sol(
     result_idx: int,
     best_iter: int,
-    vrp_route_cost: float,
-    vrp_route: List[List[int]],
+    route_max_time: float,
+    route_sum_time: float,
+    vehicle_routes: defaultdict,
+    vehicle_times: defaultdict,
     hyperparams: Dict[str, Union[int, float]],
     add_depot: bool,
     aco_method: str,
@@ -59,18 +62,23 @@ def print_sol(
 
     :param result_idx: Rank of the best result among all hyperparameter settings
     :param best_iter: Index of the best tour among iterations
-    :param vrp_route_cost: Total cost of the best tour
-    :param vrp_route: Locations in the best tour, in order
+    :param route_max_time: Total time it takes to visit the locations for the latest driver
+    :param route_sum_time: Sum of the durations of each driver
+    :param vehicle_routes: The routes for each driver
+    :param vehicle_times: The travel duration for each driver
     :param hyperparams: Hyperparameter settings for the given best tour
     :param add_depot: Flag to add depot as a candidate place to visit next
     :param aco_method: Name of the ACO method
     """
     print()
     print(f"Best result: #{result_idx+1}")
+    print(f"Best iteration: {best_iter}")
     print(f"ACO method: {aco_method}")
     print(f"Add depot: {add_depot}")
     print(f"Hyperparams: {hyperparams}")
-    print(f"Best iteration: {best_iter}")
-    print(f"Best cost: {vrp_route_cost}")
-    for ant_idx, ant_route in enumerate(vrp_route):
-        print(f"Ant {ant_idx}: {ant_route}")
+    print(f"Route max time: {route_max_time}")
+    print(f"Route sum time: {route_sum_time}")
+    for vehicle_id, vehicle_cycles in vehicle_routes.items():
+        print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+    for vehicle_id, vehicle_time in vehicle_times.items():
+        print(f"Time of vehicle {vehicle_id}: {vehicle_time}")

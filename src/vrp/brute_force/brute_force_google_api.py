@@ -43,7 +43,16 @@ def run(
     """
     duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     return solve(
-        n, k, q, m, ignore_long_trip, duration, load, ignored_customers, vehicles_start_times, objective_func_type
+        n,
+        k,
+        q,
+        m,
+        ignore_long_trip,
+        duration,
+        load,
+        ignored_customers,
+        vehicles_start_times,
+        objective_func_type,
     )
 
 

@@ -1,5 +1,7 @@
 import random
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
+from queue import PriorityQueue
+from collections import defaultdict
 
 N_TIME_ZONES = 12  # hours = time slices
 
@@ -9,9 +11,10 @@ class ACO_VRP:
         self,
         n: int,
         m: int,
-        init_capacity: int,
         add_depot: bool,
         ignore_long_trip: bool,
+        ignored_customers: List[int],
+        vehicles_start_times: List[float],
         duration: List[List[List[float]]],
         load: List[int],
         hyperparams: Dict[str, Any],
@@ -20,19 +23,22 @@ class ACO_VRP:
         Constructor of VRP with ACO
 
         :param n: Number of locations
-        :param m: Max number of cycles
-        :param init_capacity: Capacity of vehicle
+        :param m: Max number of vehicles
         :param add_depot: Add depot as a candidate place to visit next
         :param ignore_long_trip: Flag to ignore long trips
+        :param ignored_customers: List of customers to be ignored by the algorithm
+        :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
+            assumed as zero.
         :param duration: Dynamic duration data
         :param load: Loads of locations
         :param hyperparams: Hyperparameter settings for the given best tour
         """
         self.n = n
         self.m = m
-        self.init_capacity = init_capacity
         self.add_depot = add_depot
         self.ignore_long_trip = ignore_long_trip
+        self.ignored_customers = ignored_customers
+        self.vehicles_start_times = vehicles_start_times
         self.duration = duration
         self.load = load
         self.N_ITERATIONS = hyperparams["N_ITERATIONS"]
@@ -42,6 +48,52 @@ class ACO_VRP:
         self.RHO = hyperparams["RHO"]
         self.pheromone = self.init_pheromone()
         self.duration_power = self.init_duration_power()
+        self.vehicles = PriorityQueue()
+
+    def init_vehicles(self) -> None:
+        """
+        Initializes times of vehicles based on the given start times
+        """
+        while not self.vehicles.empty():
+            self.vehicles.get()
+        for i in range(self.m):
+            self.vehicles.put((self.vehicles_start_times[i], i))
+
+    def get_vehicle(self) -> Tuple[float, int]:
+        """
+        Gets the vehicle with the earliest available time
+
+        :return: Vehicle available time and vehicle id
+        """
+        vehicle = self.vehicles.get()
+        vehicle_t, vehicle_id = vehicle
+        return vehicle_t, vehicle_id
+
+    def put_vehicle(self, vehicle_t: float, vehicle_id: int) -> None:
+        """
+        Pushes the vehicle back to the PQ along with available time
+
+        :param vehicle_t: Vehicle available time
+        :param vehicle_id: Vehicle id
+        """
+        self.vehicles.put((vehicle_t, vehicle_id))
+
+    def get_route_and_vehicle_times(self) -> Tuple[float, float, defaultdict]:
+        """
+        Gets the vehicle with the earliest available time
+
+        :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver,
+            the travel duration for each driver
+        """
+        vehicle_times = defaultdict(float)
+        route_max_time, route_sum_time = 0, 0
+        while not self.vehicles.empty():
+            vehicle = self.vehicles.get()
+            vehicle_t, vehicle_id = vehicle
+            vehicle_times[vehicle_id] = vehicle_t
+            route_max_time = vehicle_t
+            route_sum_time += vehicle_t
+        return route_max_time, route_sum_time, vehicle_times
 
     def init_duration_power(self) -> List[List[List[float]]]:
         """
@@ -74,16 +126,15 @@ class ACO_VRP:
             pheromone.append(pheromone_src)
         return pheromone
 
-    @staticmethod
-    def check_unvisited_node_exists(visited: List[bool]) -> bool:
+    def check_unvisited_node_exists(self, visited: List[bool]) -> bool:
         """
         Checks if there is at least one unvisited location
 
         :param visited: Flags indicating that if a location is visited or not, for each location
         :return: Flag indicating that there is at least one unvisited location
         """
-        for mark in visited:
-            if not mark:
+        for node, mark in enumerate(visited):
+            if node > 0 and not mark and node not in self.ignored_customers:
                 return True
         return False
 

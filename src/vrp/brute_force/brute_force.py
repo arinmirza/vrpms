@@ -60,8 +60,7 @@ def calculate_duration(
         vehicles.put((curr_time, vehicle_id))
         vehicle_routes[vehicle_id].append(cycle)
 
-    route_max_time = 0
-    route_sum_time = 0
+    route_max_time, route_sum_time = 0, 0
     while not vehicles.empty():
         vehicle = vehicles.get()
         vehicle_t, vehicle_id = vehicle
@@ -169,12 +168,20 @@ def solve(
     for _ in range(k - 1):
         nodes.append(DEPOT)
 
-    best_route_max_time, best_route_sum_time, best_vehicle_routes, best_vehicle_times = INF, INF, None, None
+    (
+        best_route_max_time,
+        best_route_sum_time,
+        best_vehicle_routes,
+        best_vehicle_times,
+    ) = (INF, INF, None, None)
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
-        route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(
-            q, m, ignore_long_trip, list(perm), duration, load, vehicles_start_times
-        )
+        (
+            route_max_time,
+            route_sum_time,
+            vehicle_routes,
+            vehicle_times,
+        ) = calculate_duration_perm(q, m, ignore_long_trip, list(perm), duration, load, vehicles_start_times)
         # Check if it is the best order
         if vehicle_times is not None and (
             (objective_func_type == "min_max_time" and route_max_time < best_route_max_time)
@@ -198,4 +205,9 @@ def solve(
     end_time = datetime.now()
     print(f"Time: {end_time-start_time}")
 
-    return best_route_max_time, best_route_sum_time, best_vehicle_routes, best_vehicle_times
+    return (
+        best_route_max_time,
+        best_route_sum_time,
+        best_vehicle_routes,
+        best_vehicle_times,
+    )

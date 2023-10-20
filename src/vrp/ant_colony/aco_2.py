@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 from src.vrp.ant_colony.aco import ACO_VRP
 
@@ -15,9 +15,13 @@ class ACO_VRP_2(ACO_VRP):
         self,
         n: int,
         m: int,
-        init_capacity: int,
+        k: int,
+        q: int,
         add_depot: bool,
         ignore_long_trip: bool,
+        ignored_customers: List[int],
+        vehicles_start_times: List[float],
+        objective_func_type: Literal["min_max_time", "min_sum_time"],
         duration: List[List[List[float]]],
         load: List[int],
         hyperparams: Dict[str, Any],
@@ -26,15 +30,34 @@ class ACO_VRP_2(ACO_VRP):
         Constructor of VRP with ACO
 
         :param n: Number of locations
-        :param m: Max number of cycles
-        :param init_capacity: Capacity of vehicle
+        :param m: Max number of vehicles
+        :param k: Max number of cycles
+        :param q: Capacity of vehicle
         :param add_depot: Add depot as a candidate place to visit next
         :param ignore_long_trip: Flag to ignore long trips
+        :param ignored_customers: List of customers to be ignored by the algorithm
+        :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
+            assumed as zero.
+        :param objective_func_type: Type of the objective function to minimize total time it takes to visit the
+            locations for the latest driver or sum of the durations of each driver
         :param duration: Dynamic duration data
         :param load: Loads of locations
         :param hyperparams: Hyperparameter settings for the given best tour
         """
-        super().__init__(n, m, init_capacity, add_depot, ignore_long_trip, duration, load, hyperparams)
+        super().__init__(
+            n,
+            m,
+            add_depot,
+            ignore_long_trip,
+            ignored_customers,
+            vehicles_start_times,
+            duration,
+            load,
+            hyperparams,
+        )
+        self.k = k
+        self.q = q
+        self.objective_func_type = objective_func_type
         self.N_SUB_ITERATIONS = hyperparams["N_SUB_ITERATIONS"]
 
     def __str__(self):
@@ -80,9 +103,9 @@ class ACO_VRP_2(ACO_VRP):
                 vrp_route = [0]
                 vrp_route_cost = 0
                 n_tours = 0
-                capacity = self.init_capacity
+                capacity = self.q
                 # Check if constraint based on the number of cycles satisfied
-                while n_tours < self.m:
+                while n_tours < self.k:
                     hour = int(vrp_route_cost / TIME_UNITS)
                     # Check if exceeds the time limit
                     if hour >= N_TIME_ZONES:
@@ -95,8 +118,11 @@ class ACO_VRP_2(ACO_VRP):
                     nodes = []
                     # Fetch unvisited nodes to visit next
                     for node in range(self.n):
-                        if (capacity >= self.load[node] and not visited[node]) or (node == DEPOT and self.add_depot):
-                            nodes.append(node)
+                        if node not in self.ignored_customers:
+                            if (capacity >= self.load[node] and not visited[node]) or (
+                                ant_node != DEPOT and node == DEPOT and self.add_depot
+                            ):
+                                nodes.append(node)
                     # Get the next node based on pheromones
                     next_node = self.get_next_node(nodes, ant_node, hour) if nodes else 0
                     if next_node != 0:
@@ -110,7 +136,7 @@ class ACO_VRP_2(ACO_VRP):
                         next_node = 0
                         n_tours += 1
                         vrp_route.append(next_node)
-                        capacity = self.init_capacity
+                        capacity = self.q
                         vrp_route_cost += self.duration[ant_node][next_node][hour]
                 # Check if exceeds the time limit
                 if vrp_route_cost >= TOTAL_TIME and self.ignore_long_trip:

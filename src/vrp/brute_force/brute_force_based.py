@@ -39,7 +39,16 @@ def run(
     """
     duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     return solve(
-        n, k, q, m, ignore_long_trip, duration, load, ignored_customers, vehicles_start_times, objective_func_type
+        n,
+        k,
+        q,
+        m,
+        ignore_long_trip,
+        duration,
+        load,
+        ignored_customers,
+        vehicles_start_times,
+        objective_func_type,
     )
 
 
