@@ -9,7 +9,10 @@ from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_loa
 
 from typing import Dict, List, Literal, Optional, Union
 
+EPS = 1e-6
+
 N_TIME_ZONES = 12  # hours = time slices
+TIME_UNITS = 60  # hour = 60 minutes
 
 INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
@@ -66,7 +69,7 @@ def print_sol(
     vehicle_routes: defaultdict,
     vehicle_times: defaultdict,
     hyperparams: Dict[str, Union[int, float]],
-    add_depot: bool,
+    consider_depot: bool,
     aco_method: str,
 ) -> None:
     """
@@ -79,14 +82,14 @@ def print_sol(
     :param vehicle_routes: The routes for each driver
     :param vehicle_times: The travel duration for each driver
     :param hyperparams: Hyperparameter settings for the given best tour
-    :param add_depot: Flag to add depot as a candidate place to visit next
+    :param consider_depot: Flag to consider depot as a candidate place to visit next
     :param aco_method: Name of the ACO method
     """
     print()
     print(f"Best result: #{result_idx+1}")
     print(f"Best iteration: {best_iter}")
     print(f"ACO method: {aco_method}")
-    print(f"Add depot: {add_depot}")
+    print(f"Consider depot: {consider_depot}")
     print(f"Hyperparams: {hyperparams}")
     print(f"Route max time: {route_max_time}")
     print(f"Route sum time: {route_sum_time}")
@@ -94,6 +97,49 @@ def print_sol(
         print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
     for vehicle_id, vehicle_time in vehicle_times.items():
         print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+
+def validate_solution(
+    m: int,
+    route_max_time: float,
+    route_sum_time: float,
+    vehicle_routes: defaultdict,
+    vehicle_times: defaultdict,
+    vehicles_start_times: List[float],
+    duration: List[List[List[float]]],
+) -> None:
+    """
+    Validates if the given result is correct according to the vehicle_times and vehicles_start_times
+
+    :param m: Max number of vehicles
+    :param route_max_time: Total time it takes to visit the locations for the latest driver
+    :param route_sum_time: Sum of the durations of each driver
+    :param vehicle_routes: The routes for each driver
+    :param vehicle_times: The travel duration for each driver
+    :param vehicles_start_times: List of (expected) start times of the vehicle
+    :param duration: Dynamic duration data
+    """
+    real_route_max_time, real_route_sum_time = 0, 0
+    for vehicle_id in range(m):
+        real_vehicle_t = vehicles_start_times[vehicle_id]
+        if vehicle_id not in vehicle_routes:
+            continue
+        for path in vehicle_routes[vehicle_id]:
+            path_len = len(path)
+            for idx in range(1, path_len):
+                hour = int(real_vehicle_t / TIME_UNITS)
+                u, v = path[idx - 1], path[idx]
+                real_vehicle_t += duration[u][v][hour]
+        vehicle_t = vehicle_times[vehicle_id]
+        assert abs(real_vehicle_t - vehicle_t) < EPS, f"Vehicle time should be {real_vehicle_t} instead of {vehicle_t}"
+        real_route_max_time = max(real_route_max_time, real_vehicle_t)
+        real_route_sum_time += real_vehicle_t
+    assert (
+        abs(real_route_max_time - route_max_time) < EPS
+    ), f"Route max time should be {real_route_max_time} instead of {route_max_time}"
+    assert (
+        abs(real_route_sum_time - route_sum_time) < EPS
+    ), f"Route sum time should be {real_route_sum_time} instead of {route_sum_time}"
 
 
 def run(
@@ -109,7 +155,9 @@ def run(
     ignore_long_trip: bool = False,
     ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
-    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
+    aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
+    consider_depots: List[bool] = [False, True],
 ) -> None:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
@@ -129,6 +177,8 @@ def run(
         as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
         for the latest driver or sum of the durations of each driver
+    :param aco_sols: ACO methods to run
+    :param consider_depots: Flags to consider depot as a candidate place to visit next or not
     """
     objective_func_type = objective_func_type.lower()
     assert objective_func_type in [
@@ -159,19 +209,16 @@ def run(
         hyperparams_zero["Q"], hyperparams_zero["RHO"] = 0, 1
         all_hyperparams.append(hyperparams_zero)
 
-    # aco_sols = [ACO_VRP_1, ACO_VRP_2]
-    aco_sols = [ACO_VRP_1]
-    add_depots = [False, True]
     results = []
     for hyperparams in all_hyperparams:
         for aco_sol in aco_sols:
-            for add_depot in add_depots:
+            for consider_depot in consider_depots:
                 vrp = aco_sol(
                     n=n,
                     m=m,
                     k=k,
                     q=q,
-                    add_depot=add_depot,
+                    consider_depot=consider_depot,
                     ignore_long_trip=ignore_long_trip,
                     objective_func_type=objective_func_type,
                     ignored_customers=ignored_customers,
@@ -181,7 +228,10 @@ def run(
                     hyperparams=hyperparams,
                 )
                 best_iter, route_max_time, route_sum_time, vehicle_routes, vehicle_times = vrp.solve()
-                if iter is not None:
+                if best_iter is not None:
+                    validate_solution(
+                        m, route_max_time, route_sum_time, vehicle_routes, vehicle_times, vehicles_start_times, duration
+                    )
                     results.append(
                         (
                             route_max_time,
@@ -190,7 +240,7 @@ def run(
                             vehicle_routes,
                             vehicle_times,
                             hyperparams,
-                            add_depot,
+                            consider_depot,
                             str(aco_sol),
                         )
                     )
@@ -209,7 +259,7 @@ def run(
             vehicle_routes,
             vehicle_times,
             hyperparams,
-            add_depot,
+            consider_depot,
             aco_method,
         ) = result
         print_sol(
@@ -220,7 +270,7 @@ def run(
             vehicle_routes=vehicle_routes,
             vehicle_times=vehicle_times,
             hyperparams=hyperparams,
-            add_depot=add_depot,
+            consider_depot=consider_depot,
             aco_method=aco_method,
         )
 

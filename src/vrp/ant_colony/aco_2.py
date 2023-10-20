@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Literal, Optional, Tuple
-
+from collections import defaultdict
 from src.vrp.ant_colony.aco import ACO_VRP
 
 DEPOT = 0  # id of the depot
@@ -17,11 +17,11 @@ class ACO_VRP_2(ACO_VRP):
         m: int,
         k: int,
         q: int,
-        add_depot: bool,
+        consider_depot: bool,
         ignore_long_trip: bool,
+        objective_func_type: str,
         ignored_customers: List[int],
         vehicles_start_times: List[float],
-        objective_func_type: Literal["min_max_time", "min_sum_time"],
         duration: List[List[List[float]]],
         load: List[int],
         hyperparams: Dict[str, Any],
@@ -33,7 +33,7 @@ class ACO_VRP_2(ACO_VRP):
         :param m: Max number of vehicles
         :param k: Max number of cycles
         :param q: Capacity of vehicle
-        :param add_depot: Add depot as a candidate place to visit next
+        :param consider_depot: Consider depot as a candidate place to visit next
         :param ignore_long_trip: Flag to ignore long trips
         :param ignored_customers: List of customers to be ignored by the algorithm
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
@@ -45,15 +45,7 @@ class ACO_VRP_2(ACO_VRP):
         :param hyperparams: Hyperparameter settings for the given best tour
         """
         super().__init__(
-            n,
-            m,
-            add_depot,
-            ignore_long_trip,
-            ignored_customers,
-            vehicles_start_times,
-            duration,
-            load,
-            hyperparams,
+            n, m, consider_depot, ignore_long_trip, ignored_customers, vehicles_start_times, duration, load, hyperparams
         )
         self.k = k
         self.q = q
@@ -63,101 +55,81 @@ class ACO_VRP_2(ACO_VRP):
     def __str__(self):
         return "ACO_2"
 
-    @staticmethod
-    def split_path_to_cycles(path: List[int]) -> List[List[int]]:
+    def solve(self) -> Tuple[int, float, float, Optional[defaultdict], Optional[defaultdict]]:
         """
-        Parses a given path to the cycles
+        Solves VRP problem by using ACO (2nd method)
 
-        :param path: Path to be parsed
-        :return: Cycles given in the path
+        :return: Index of the best tour among iterations, total time it takes to visit the locations for the latest
+            driver, sum of the durations of each driver, the routes for each driver, the travel duration for each driver
         """
-        indices = [idx for idx, node in enumerate(path) if node == 0]
-        n_zeroes = len(indices)
-        cycles = []
-        for i in range(n_zeroes - 1):
-            idx_l, idx_r = indices[i], indices[i + 1]
-            cycle = path[idx_l : idx_r + 1]
-            cycles.append(cycle)
-        return cycles
-
-    def solve(self) -> Tuple[int, Optional[float], Optional[List[List[int]]]]:
-        """
-        Solves VRP problem by using ACO
-
-        :return: Index of the best tour among iterations, total cost of the best tour and locations in the best tour,
-            in order
-        """
-        best_of_best_cost = INF
-        best_of_best_route = None
-        best_iter = None
+        best_route_max_time, best_route_sum_time = INF, INF
+        best_vehicle_routes, best_vehicle_times, best_iter = None, None, None
         # At each iteration, start over
         for iter_idx in range(self.N_ITERATIONS):
-            best_ant_route = None
-            best_ant_route_cost = INF
-            ant_routes = []
-            ant_route_costs = []
+            pheromone_paths, pheromone_paths_costs = [], []
             for _ in range(self.N_SUB_ITERATIONS):
-                visited = [False for _ in range(self.n)]
+                self.init_vehicles()
+                visited = [bool(i in self.ignored_customers) for i in range(self.n)]
                 visited[0] = True
                 fail = False
-                vrp_route = [0]
-                vrp_route_cost = 0
-                n_tours = 0
-                capacity = self.q
-                # Check if constraint based on the number of cycles satisfied
-                while n_tours < self.k:
-                    hour = int(vrp_route_cost / TIME_UNITS)
-                    # Check if exceeds the time limit
-                    if hour >= N_TIME_ZONES:
-                        if self.ignore_long_trip:
+                vehicle_routes = defaultdict(list)
+                pheromone_path, pheromone_path_cost = [DEPOT], 0
+                for _ in range(self.k):
+                    vehicle_t, vehicle_id = self.get_vehicle()
+                    finished = False
+                    capacity = self.q
+                    last_node = DEPOT
+                    vehicle_route = [DEPOT]
+                    while not finished:
+                        hour = int(vehicle_t / TIME_UNITS)
+                        # Check if exceeds the time limit
+                        if not self.ignore_long_trip:
+                            hour = min(hour, N_TIME_ZONES - 1)
+                        if hour >= N_TIME_ZONES:
                             fail = True
                             break
-                        else:
-                            hour = N_TIME_ZONES - 1
-                    ant_node = vrp_route[-1]
-                    nodes = []
-                    # Fetch unvisited nodes to visit next
-                    for node in range(self.n):
-                        if node not in self.ignored_customers:
-                            if (capacity >= self.load[node] and not visited[node]) or (
-                                ant_node != DEPOT and node == DEPOT and self.add_depot
-                            ):
-                                nodes.append(node)
-                    # Get the next node based on pheromones
-                    next_node = self.get_next_node(nodes, ant_node, hour) if nodes else 0
-                    if next_node != 0:
-                        # Keep the cycle, add the node to the current cycle
-                        capacity -= self.load[next_node]
-                        vrp_route.append(next_node)
+                        nodes = []
+                        # Fetch unvisited nodes to visit next
+                        for node in range(self.n):
+                            if node not in self.ignored_customers:
+                                if (capacity >= self.load[node] and not visited[node]) or (
+                                    last_node != DEPOT and node == DEPOT and self.consider_depot
+                                ):
+                                    nodes.append(node)
+                        # Get the next node based on pheromones
+                        next_node = self.get_next_node(nodes, last_node, hour) if nodes else DEPOT
                         visited[next_node] = True
-                        vrp_route_cost += self.duration[ant_node][next_node][hour]
+                        capacity -= self.load[next_node]
+                        pheromone_path.append(next_node)
+                        vehicle_route.append(next_node)
+                        vehicle_t += self.duration[last_node][next_node][hour]
+                        pheromone_path_cost += self.duration[last_node][next_node][hour]
+                        finished = bool(next_node == DEPOT)
+                        last_node = next_node
+                    if fail:
+                        break
                     else:
-                        # Finish the cycle by adding the depot
-                        next_node = 0
-                        n_tours += 1
-                        vrp_route.append(next_node)
-                        capacity = self.q
-                        vrp_route_cost += self.duration[ant_node][next_node][hour]
-                # Check if exceeds the time limit
-                if vrp_route_cost >= TOTAL_TIME and self.ignore_long_trip:
-                    fail = True
-                elif self.check_unvisited_node_exists(visited):
+                        self.put_vehicle(vehicle_t, vehicle_id)
+                        vehicle_routes[vehicle_id].append(vehicle_route)
+                if self.check_unvisited_node_exists(visited):
                     fail = True
                 if not fail:
-                    # Add to solutions
-                    ant_routes.append(vrp_route)
-                    ant_route_costs.append(vrp_route_cost)
                     # Check if it is the best among sub-iterations
-                    if vrp_route_cost < best_ant_route_cost:
-                        best_ant_route_cost = vrp_route_cost
-                        best_ant_route = vrp_route
+                    route_max_time, route_sum_time, vehicle_times = self.get_route_and_vehicle_times()
+                    if self.ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
+                        continue
+                    # Add to solutions
+                    pheromone_paths.append(pheromone_path)
+                    pheromone_paths_costs.append(pheromone_path_cost)
+                    if (self.objective_func_type == "min_max_time" and route_max_time < best_route_max_time) or (
+                        self.objective_func_type == "min_sum_time" and route_sum_time < best_route_sum_time
+                    ):
+                        best_iter = iter_idx
+                        best_route_max_time = route_max_time
+                        best_route_sum_time = route_sum_time
+                        best_vehicle_routes = vehicle_routes
+                        best_vehicle_times = vehicle_times
             # Check if it is the best among iterations
-            if best_ant_route is not None:
-                if best_ant_route_cost < best_of_best_cost:
-                    best_iter = iter_idx
-                    best_of_best_cost = best_ant_route_cost
-                    best_of_best_route = best_ant_route
-                self.update_pheromone(ant_routes, ant_route_costs)
-        if best_of_best_route is not None:
-            best_of_best_route = self.split_path_to_cycles(best_of_best_route)
-        return best_iter, best_of_best_cost, best_of_best_route
+            if pheromone_paths:
+                self.update_pheromone(pheromone_paths, pheromone_paths_costs)
+        return best_iter, best_route_max_time, best_route_sum_time, best_vehicle_routes, best_vehicle_times

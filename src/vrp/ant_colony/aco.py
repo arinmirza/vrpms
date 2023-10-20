@@ -11,7 +11,7 @@ class ACO_VRP:
         self,
         n: int,
         m: int,
-        add_depot: bool,
+        consider_depot: bool,
         ignore_long_trip: bool,
         ignored_customers: List[int],
         vehicles_start_times: List[float],
@@ -24,7 +24,7 @@ class ACO_VRP:
 
         :param n: Number of locations
         :param m: Max number of vehicles
-        :param add_depot: Add depot as a candidate place to visit next
+        :param consider_depot: Consider depot as a candidate place to visit next
         :param ignore_long_trip: Flag to ignore long trips
         :param ignored_customers: List of customers to be ignored by the algorithm
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
@@ -35,7 +35,7 @@ class ACO_VRP:
         """
         self.n = n
         self.m = m
-        self.add_depot = add_depot
+        self.consider_depot = consider_depot
         self.ignore_long_trip = ignore_long_trip
         self.ignored_customers = ignored_customers
         self.vehicles_start_times = vehicles_start_times
@@ -174,28 +174,28 @@ class ACO_VRP:
                 next_node = last_next_node_candidate
         return next_node
 
-    def update_pheromone(self, vrp_route: List[List[int]], ant_route_costs: List[float]) -> None:
+    def update_pheromone(self, paths: List[List[int]], paths_costs: List[float]) -> None:
         """
         Updates pheromone values to be used while selecting next location to visit. For more information on update:
             https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms
 
-        :param vrp_route: Completed VRP tour, including visited locations in order
-        :param ant_route_costs: Costs for each ant
+        :param paths: Paths for each ant
+        :param paths_costs: Costs for each path
         """
         # Multiply with rho
         for i in range(self.n):
             for j in range(self.n):
                 self.pheromone[i][j] *= self.RHO
         # Update based on the paths
-        n_ants = len(ant_route_costs)
-        for ant_id in range(n_ants):
-            ant_route = vrp_route[ant_id]
-            ant_route_len = len(ant_route)
-            ant_route_cost = ant_route_costs[ant_id]
-            for idx in range(ant_route_len):
-                u, v = ant_route[idx - 1], ant_route[idx]
+        n_paths = len(paths)
+        for path_id in range(n_paths):
+            path = paths[path_id]
+            path_len = len(path)
+            path_cost = paths_costs[path_id]
+            for idx in range(1, path_len):
+                u, v = path[idx - 1], path[idx]
                 if u != v:
-                    self.pheromone[u][v] += self.Q / ant_route_cost
+                    self.pheromone[u][v] += self.Q / path_cost
         # Normalize
         sum_pheromone = 0
         for i in range(self.n):
