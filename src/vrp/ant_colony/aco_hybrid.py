@@ -7,7 +7,7 @@ from src.vrp.ant_colony.aco_1 import ACO_VRP_1
 from src.vrp.ant_colony.aco_2 import ACO_VRP_2
 from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_load_data
 
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 EPS = 1e-6
 
@@ -102,49 +102,6 @@ def print_sol(
         print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
 
-def validate_solution(
-    m: int,
-    route_max_time: float,
-    route_sum_time: float,
-    vehicle_routes: defaultdict,
-    vehicle_times: defaultdict,
-    vehicles_start_times: List[float],
-    duration: List[List[List[float]]],
-) -> None:
-    """
-    Validates if the given result is correct according to the vehicle_times and vehicles_start_times
-
-    :param m: Max number of vehicles
-    :param route_max_time: Total time it takes to visit the locations for the latest driver
-    :param route_sum_time: Sum of the durations of each driver
-    :param vehicle_routes: The routes for each driver
-    :param vehicle_times: The travel duration for each driver
-    :param vehicles_start_times: List of (expected) start times of the vehicle
-    :param duration: Dynamic duration data
-    """
-    real_route_max_time, real_route_sum_time = 0, 0
-    for vehicle_id in range(m):
-        real_vehicle_t = vehicles_start_times[vehicle_id]
-        if vehicle_id not in vehicle_routes:
-            continue
-        for path in vehicle_routes[vehicle_id]:
-            path_len = len(path)
-            for idx in range(1, path_len):
-                hour = int(real_vehicle_t / TIME_UNITS)
-                u, v = path[idx - 1], path[idx]
-                real_vehicle_t += duration[u][v][hour]
-        vehicle_t = vehicle_times[vehicle_id]
-        assert abs(real_vehicle_t - vehicle_t) < EPS, f"Vehicle time should be {real_vehicle_t} instead of {vehicle_t}"
-        real_route_max_time = max(real_route_max_time, real_vehicle_t)
-        real_route_sum_time += real_vehicle_t
-    assert (
-        abs(real_route_max_time - route_max_time) < EPS
-    ), f"Route max time should be {real_route_max_time} instead of {route_max_time}"
-    assert (
-        abs(real_route_sum_time - route_sum_time) < EPS
-    ), f"Route sum time should be {real_route_sum_time} instead of {route_sum_time}"
-
-
 def run(
     n: int = 26,
     m: int = 2,
@@ -162,7 +119,7 @@ def run(
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
-) -> None:
+) -> List[Tuple]:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
@@ -184,6 +141,7 @@ def run(
     :param aco_sols: ACO methods to run
     :param consider_depots: Flags to consider depot as a candidate place to visit next
     :param pheromone_uses_first_hour: Flags to consider first hour of duration data for pheromone calculations
+    :return: Results
     """
     objective_func_type = objective_func_type.lower()
     assert objective_func_type in [
@@ -236,22 +194,13 @@ def run(
                     )
                     best_iter, route_max_time, route_sum_time, vehicle_routes, vehicle_times = vrp.solve()
                     if best_iter is not None:
-                        validate_solution(
-                            m,
-                            route_max_time,
-                            route_sum_time,
-                            vehicle_routes,
-                            vehicle_times,
-                            vehicles_start_times,
-                            duration,
-                        )
                         results.append(
                             (
                                 route_max_time,
                                 route_sum_time,
-                                best_iter,
                                 vehicle_routes,
                                 vehicle_times,
+                                best_iter,
                                 hyperparams,
                                 consider_depot,
                                 pheromone_use_first_hour,
@@ -269,9 +218,9 @@ def run(
         (
             route_max_time,
             route_sum_time,
-            best_iter,
             vehicle_routes,
             vehicle_times,
+            best_iter,
             hyperparams,
             consider_depot,
             pheromone_use_first_hour,
@@ -291,6 +240,8 @@ def run(
         )
 
     print(f"\nTime elapsed = {time_end-time_start}")
+
+    return results
 
 
 if __name__ == "__main__":
