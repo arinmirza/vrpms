@@ -159,8 +159,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-## Vscode
+# Vscode
 .vscode/
 
-## MacOS
+# MacOS
 .DS_Store
+
+# Supabase
+src/db/supabase/supabase_url_key.txt
