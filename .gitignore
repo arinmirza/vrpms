@@ -167,3 +167,4 @@ cython_debug/
 
 # Supabase
 src/db/supabase/supabase_url_key.txt
+src/db/supabase/supabase_user.txt
