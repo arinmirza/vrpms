@@ -26,7 +26,7 @@ Q = 11
 M = 3
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 100000 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 10000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
@@ -174,7 +174,7 @@ def select_based_on_fitness_proportional(permutations):
 
         end = datetime.now()
 
-        if (end - start).seconds >= 10:
+        if (end - start).seconds >= 1:
             # current implementation of the fitness proportional method might take some time
             # current time limit is 10 seconds
             # if the threshold is exceeded than selection mode is switched to RANDOM selection
@@ -713,7 +713,7 @@ def ga(permutations = None):
 
     return res
 
-def run(multithreaded=True):
+def run(multithreaded=False):
 
     start_time = datetime.now()  # used for runtime calculation
     entries = []
@@ -730,9 +730,12 @@ def run(multithreaded=True):
     processed_list = Parallel(n_jobs=num_cores)(delayed(ga)() for i in inputs)
 
     # save the output of the current iteration
-    entries.append(copy.deepcopy(processed_list))
+    #entries.append(copy.deepcopy(processed_list))
 
     iteration_count = 0
+
+    best = []
+
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
@@ -744,21 +747,23 @@ def run(multithreaded=True):
         for elem in processed_list:
 
             # calculate total element count and total sum
-            total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
-            total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
+            #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
+            #total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
 
-            if total_elem_count == 0:
+            #if total_elem_count == 0:
                 # prevents division by zero error in some cases
-                total_elem_count = 1
-
-            print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+                #total_elem_count = 1
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            best.append(copy.deepcopy(elem[0]))
             print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
-            current_best_entries.append(elem[0])
+            #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
         # save the last results of each thread
-        entries.append(copy.deepcopy(processed_list))
+        #entries.append(copy.deepcopy(processed_list))
         print("**********************************************")
         print("**********************************************")
         print("**********************************************")
@@ -770,18 +775,20 @@ def run(multithreaded=True):
 
     # All iterations are done
     # select the best results from the saved results of the iterations
-    best_result_list = []
-    for elem in entries:
-        for pl in elem:
-            sorted(pl, key=lambda x: x[2], reverse=False)
-            for entry in pl:
-                #best_result_list.append([entry[2], entry[1]])
-                if entry[2] != INF:
-                    best_result_list.append(entry)
+    #best_result_list = []
+    #for elem in entries:
+    #    for pl in elem:
+    #        sorted(pl, key=lambda x: x[2], reverse=False)
+    #        for entry in pl:
+    #            #best_result_list.append([entry[2], entry[1]])
+    #            if entry[2] != INF:
+    #                best_result_list.append(entry)
+
+
 
 
     # sort the best results and get the first element as the solution
-    best_result_list = sorted(best_result_list, key=lambda x: x[0], reverse=False)
+    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
@@ -816,4 +823,4 @@ def run(multithreaded=True):
 
 
 if __name__ == '__main__':
-    run(multithreaded=True)
+    run(multithreaded=False)
