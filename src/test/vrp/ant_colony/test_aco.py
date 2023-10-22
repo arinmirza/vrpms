@@ -1,7 +1,7 @@
 from typing import List
 
 from collections import defaultdict
-from src.vrp.ant_colony.aco_hybrid import run
+from src.vrp.ant_colony.aco_hybrid import solve
 from src.utilities.vrp_helper import get_based_and_load_data
 
 EPS = 1e-6
@@ -40,10 +40,10 @@ def check_times(
     ), f"Route sum time should be {real_route_sum_time} instead of {route_sum_time}"
 
 
-def test_aco(n=26, m=3, per_km_time=2):
+def test_aco(n=26, m=3, k=5, q=5, per_km_time=2):
     vehicles_start_times = [0 for _ in range(m)]
     duration, load = get_based_and_load_data(None, n, per_km_time)
-    results = run(n=n, m=m, per_km_time=per_km_time, n_hyperparams=100, n_best_hyperparamas=100)
+    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=100, n_best_results=100)
     for result in results:
         route_max_time, route_sum_time, vehicle_routes, vehicle_times = result[:4]
         check_times(
@@ -57,19 +57,26 @@ def test_aco(n=26, m=3, per_km_time=2):
         )
 
 
-def test_aco_long_trip_per_km_time(n=26, m=3, per_km_time=100):
-    results = run(n=n, m=m, per_km_time=per_km_time, n_hyperparams=100, n_best_hyperparamas=100, ignore_long_trip=True)
+def test_aco_long_trip_per_km_time(n=26, m=3, k=5, q=5, per_km_time=100):
+    duration, load = get_based_and_load_data(None, n, per_km_time)
+    results = solve(
+        n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=100, n_best_results=100, ignore_long_trip=True
+    )
     assert not results
 
 
-def test_aco_long_trip_vehicles_start_times(n=26, m=3, per_km_time=1):
+def test_aco_long_trip_vehicles_start_times(n=26, m=3, k=5, q=5, per_km_time=1):
+    duration, load = get_based_and_load_data(None, n, per_km_time)
     vehicles_start_times = [700 for _ in range(m)]
-    results = run(
+    results = solve(
         n=n,
         m=m,
-        per_km_time=per_km_time,
+        k=k,
+        q=q,
+        duration=duration,
+        load=load,
         n_hyperparams=100,
-        n_best_hyperparamas=100,
+        n_best_results=100,
         ignore_long_trip=True,
         vehicles_start_times=vehicles_start_times,
     )

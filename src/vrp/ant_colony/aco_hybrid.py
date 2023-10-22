@@ -9,8 +9,8 @@ from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_loa
 
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
+DEPOT = 0
 EPS = 1e-6
-
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes
 
@@ -102,36 +102,34 @@ def print_sol(
         print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
 
-def run(
-    n: int = 26,
-    m: int = 2,
-    k: int = 5,
-    q: int = 5,
-    per_km_time: int = 1,
+def solve(
+    n: int,
+    m: int,
+    k: int,
+    q: int,
+    duration: List[List[List[float]]],
+    load: Optional[List[int]] = None,
     n_hyperparams: int = 100,
-    n_best_hyperparamas: int = 10,
-    input_file_load: Optional[str] = None,
-    use_google_data: bool = False,
+    n_best_results: int = 1,
     ignore_long_trip: bool = False,
     ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
-    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
 ) -> List[Tuple]:
     """
-    Gets input data, try different hyperparamater settings and solve VRP with ACO
+    Try different hyperparamater settings and solve VRP with ACO
 
     :param n: Number of locations
     :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
-    :param per_km_time: Multiplier to calculate duration from distance in km
+    :param duration: Dynamic duration data
+    :param load: Loads of locations
     :param n_hyperparams: Number of hyperparamater settings to try
-    :param n_best_hyperparamas: Number of best hyperparamater settings to print
-    :param input_file_load: Path to the input file including loads (required capacities) of locations
-    :param use_google_data: Flag to use Google Maps data or not
+    :param n_best_results: Number of best results (hyperparamater settings) to print
     :param ignore_long_trip: Flag to ignore long trips
     :param ignored_customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
@@ -141,13 +139,17 @@ def run(
     :param aco_sols: ACO methods to run
     :param consider_depots: Flags to consider depot as a candidate place to visit next
     :param pheromone_uses_first_hour: Flags to consider first hour of duration data for pheromone calculations
-    :return: Results
+    :return: Best results
     """
     objective_func_type = objective_func_type.lower()
     assert objective_func_type in [
         "min_max_time",
         "min_sum_time",
     ], f"{objective_func_type} as a function type is not implemented"
+
+    if load is None:
+        load = [1 for _ in range(n)]
+        load[DEPOT] = 0
 
     if vehicles_start_times is None:
         vehicles_start_times = [0 for _ in range(m)]
@@ -156,11 +158,6 @@ def run(
 
     if ignored_customers is None:
         ignored_customers = []
-
-    if use_google_data:
-        duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
-    else:
-        duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
 
     time_start = datetime.datetime.now()
 
@@ -214,7 +211,7 @@ def run(
 
     time_end = datetime.datetime.now()
 
-    for result_idx, result in reversed(list(enumerate(results[:n_best_hyperparamas]))):
+    for result_idx, result in reversed(list(enumerate(results[:n_best_results]))):
         (
             route_max_time,
             route_sum_time,
@@ -242,6 +239,25 @@ def run(
     print(f"\nTime elapsed = {time_end-time_start}")
 
     return results
+
+
+def run(
+    n: int = 26, per_km_time: int = 1, input_file_load: Optional[str] = None, use_google_data: bool = False
+) -> List[Tuple]:
+    """
+    Gets input data, try different hyperparamater settings and solve VRP with ACO
+
+    :param n: Number of locations
+    :param per_km_time: Multiplier to calculate duration from distance in km
+    :param input_file_load: Path to the input file including loads (required capacities) of locations
+    :param use_google_data: Flag to use Google Maps data or not
+    :return: Best results
+    """
+    if use_google_data:
+        duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
+    else:
+        duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
+    return solve(n=n, m=2, k=5, q=5, duration=duration, load=load)
 
 
 if __name__ == "__main__":
