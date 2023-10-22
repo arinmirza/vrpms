@@ -18,10 +18,10 @@ K = 5
 Q = 5
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 300  # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 500  # Genetic Algorithm initial sample size
 DIST_DATA = get_dist_data() # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 50 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 DEPOT = (0, -1, "Depot")
@@ -353,10 +353,10 @@ def genetic_algorithm(population):
     SCRAMBLE_MUTATION_PROB = (0.66, 1)
 
     # assigned probabilities for each selection & replacement option
-    SELECTION_PROB = (0, 0.4)
-    REPLACEMENT_PROB = (0.4, 0.6)
-    RANDOM_SELECTION_PROB = (0.6, 0.8)
-    NO_SELECTION_REPLACEMENT_PROB = (0.8, 1)
+    SELECTION_PROB = (0, 0.25)
+    REPLACEMENT_PROB = (0.25, 0.5)
+    RANDOM_SELECTION_PROB = (0.5, 0.75)
+    NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
 
     # generate random probabilities
     rand_phase_1 = random.uniform(0,1)

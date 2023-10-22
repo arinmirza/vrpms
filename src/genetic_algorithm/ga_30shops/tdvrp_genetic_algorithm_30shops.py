@@ -16,12 +16,12 @@ from tqdm import tqdm
 # PARAMETERS AND DATA GENERATION
 K = 3
 Q = 100
-VEHICLE_CAPACITY = 1000
+VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 10000  # Genetic Algorithm initial sample size
 DIST_DATA = get_dist_data() # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 100 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 DEPOT = (0, -1, "Depot")
@@ -368,10 +368,10 @@ def genetic_algorithm(population):
     SCRAMBLE_MUTATION_PROB = (0.66, 1)
 
     # assigned probabilities for each selection & replacement option
-    SELECTION_PROB = (0, 0.35)
-    REPLACEMENT_PROB = (0.35, 0.7)
-    RANDOM_SELECTION_PROB = (0.7, 1)
-    #NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
+    SELECTION_PROB = (0, 0.25)
+    REPLACEMENT_PROB = (0.25, 0.5)
+    RANDOM_SELECTION_PROB = (0.5, 0.75)
+    NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
 
     # generate random probabilities
     rand_phase_1 = random.uniform(0,1)
@@ -527,6 +527,7 @@ def clean_permutations(permutations):
             del perm[4]
 
     return permutations
+
 def run(permutations = None):
     """
                 Main method that controls the mode of the genetic algorithm
@@ -603,7 +604,7 @@ if __name__ == '__main__':
 
     # get the number of available cores
     num_cores = int(multiprocessing.cpu_count())
-    print(num_cores)
+
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
     inputs = tqdm(num_cores*[1])

@@ -3,7 +3,7 @@
 import math
 
 depot_coordinates = (48.137529134126616, 11.575577233934517)
-per_km_time = 5 # minutes 
+per_km_time = 5 # minutes
 
 coordinate_list = [
     (48.1374, 11.5754), # depot
