@@ -1,7 +1,6 @@
 import itertools
 from collections import defaultdict
 from datetime import datetime
-from queue import PriorityQueue
 from typing import List, Literal, Optional, Tuple
 from src.vrp.vehicles_pq import VehiclesPQ
 
@@ -74,7 +73,6 @@ def calculate_duration(
     route_max_time, route_sum_time, vehicle_times = vehicles_pq.get_route_and_vehicle_times()
 
     # Check if it exceeds the number of time zones (based on ignore_long_trip)
-    # Actually, it is not that necessary since all cycles checked
     if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
 

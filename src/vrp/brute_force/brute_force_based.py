@@ -5,7 +5,6 @@ from src.vrp.brute_force.brute_force import solve
 from src.utilities.vrp_helper import get_based_and_load_data
 
 
-# input_file_load: "../../../data/loads/data_load.txt"
 def run(
     n: int = 8,
     m: int = 2,
@@ -28,7 +27,7 @@ def run(
     :param ignore_long_trip: Flag to ignore long trips
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
-        load is not unique
+        load is not unique. Example: "../../../data/loads/data_load.txt"
     :param ignored_customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
         as zero.

@@ -28,14 +28,16 @@ def list_files(supabase: Client, bucket_name: str = "image-bucket"):
 def download_file(supabase: Client):
     with open("icardi.jpeg", "wb+") as f:
         response = supabase.storage.from_("image-bucket").download("icardi.jpeg")
-        print(response)
         f.write(response)
+        # print(response)
 
 
 def upload_file(supabase: Client):
-    with open(DATA_LOAD_FILE_PATH, 'rb') as f:
-        response = supabase.storage.from_("image-bucket").upload(file=f, path="data_load.txt", file_options={"content-type": "text/html"})
-        print(response)
+    with open(DATA_LOAD_FILE_PATH, "rb") as f:
+        response = supabase.storage.from_("image-bucket").upload(
+            file=f, path="data_load.txt", file_options={"content-type": "text/html"}
+        )
+        # print(response)
 
 
 def run():
@@ -43,15 +45,17 @@ def run():
     email, password = get_content("supabase_user.txt")
     supabase = create_client(url, key)
     # user = supabase.auth.sign_up({"email": email, "password": password})
+    """
     session = supabase.auth.sign_in_with_password({"email": email, "password": password})
     print(session)
     print(session.session.access_token)
     supabase.postgrest.auth(session.session.access_token)
+    supabase.auth.sign_out()
+    """
     table_query(supabase)
     download_file(supabase)
     upload_file(supabase)
     list_files(supabase)
-    supabase.auth.sign_out()
 
 
 if __name__ == "__main__":
