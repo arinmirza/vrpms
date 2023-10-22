@@ -14,8 +14,8 @@ from tqdm import tqdm
 #######################################################################################################################
 #######################################################################################################################
 # PARAMETERS AND DATA GENERATION
-K = 3
-Q = 100
+K = 7
+Q = 5
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 10000  # Genetic Algorithm initial sample size

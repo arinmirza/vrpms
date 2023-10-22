@@ -20,9 +20,10 @@ from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
 
 # PARAMETERS AND DATA GENERATION
-N = 10 # number of shops to be considered
-K = 3
-Q = 100
+N = 30 # number of shops to be considered
+K = 7
+Q = 11
+M = 3
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 10000  # Genetic Algorithm initial sample size
@@ -32,14 +33,14 @@ MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & r
 ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
-DEPOT_TUPLE = (0, -1, "Depot")
+#DEPOT_TUPLE = (0, -1, "Depot")
 
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 60  # hour = 60 minutes
 DEPOT = 0
 
-NODES = get_nodes()
-NODES = NODES[:N]
+#NODES = get_nodes()
+#NODES = NODES[:N]
 
 #######################################################################################################################
 #######################################################################################################################
@@ -86,14 +87,26 @@ def reverse_insert_probability_list(permutations, probability_list, inf_start_at
     current_fitness_level = 0
     for index in range(0, len(probability_list_non_inf_values)):
 
-        permutations[index].append([current_fitness_level, current_fitness_level + probability_list_non_inf_values[index]])
-        current_fitness_level = current_fitness_level + probability_list_non_inf_values[index]
+        if not len(permutations[index])>=7:
+
+            permutations[index].append([current_fitness_level, current_fitness_level + probability_list_non_inf_values[index]])
+            current_fitness_level = current_fitness_level + probability_list_non_inf_values[index]
+
+        else:
+            permutations[index][6] = ([current_fitness_level, current_fitness_level + probability_list_non_inf_values[index]])
+            current_fitness_level = current_fitness_level + probability_list_non_inf_values[index]
 
     # fills in the rest of the probability range values for the remaining permutations in the list
     count = 0
     for index in range(len(probability_list_non_inf_values), len(permutations)):
-        permutations[index].append([current_fitness_level, current_fitness_level + probability_list_inf_values[count]])
-        current_fitness_level = current_fitness_level + probability_list_inf_values[count]
+
+        if not len(permutations[index])>=7:
+            permutations[index].append([current_fitness_level, current_fitness_level + probability_list_inf_values[count]])
+            current_fitness_level = current_fitness_level + probability_list_inf_values[count]
+
+        else:
+            permutations[index][6] = ([current_fitness_level, current_fitness_level + probability_list_inf_values[count]])
+            current_fitness_level = current_fitness_level + probability_list_inf_values[count]
 
         count = count + 1
 
@@ -175,7 +188,7 @@ def select_based_on_fitness_proportional(permutations):
             # find the permutation which has this value in its own fitness range
             for index in range(0, len(permutations)):
                 elem = permutations[index]
-                if elem[4][0] <= rand <= elem[4][1] and elem[1]:
+                if elem[6][0] <= rand <= elem[6][1] and elem[1]:
                     selected.append(elem)
                     break
 
@@ -227,18 +240,23 @@ def swap_mutation(permutations):
             pos2 = random.randint(1, len(single_perm[0])-2)
 
             # if two positions are not equal and none of the positions equal to DEPOT
-            if pos1 != pos2 and single_perm[0][pos1] != DEPOT_TUPLE and single_perm[0][pos2] != DEPOT_TUPLE:
+            if pos1 != pos2 and single_perm[0][pos1] != DEPOT and single_perm[0][pos2] != DEPOT:
 
                 # swap the indices
                 temp = single_perm[0][pos1]
                 single_perm[0][pos1] = single_perm[0][pos2]
                 single_perm[0][pos2] = temp
                 # calculate the new duration
-                a,b = calculate_duration(single_perm[0])
+                a,b, route_sum_time, vehicle_routes, vehicle_times  = calculate_duration(single_perm[0])
+                #a, b = calculate_duration(single_perm[0])
 
                 # if the new duration is shorter than the previous one keep it
                 if a < single_perm[2]:
                     single_perm[2], single_perm[1] = a, b
+                    single_perm[3], single_perm[4], single_perm[5] = route_sum_time, vehicle_routes, vehicle_times
+                    #single_perm.append(route_sum_time)
+                    #single_perm.append(vehicle_routes)
+                    #single_perm.append(vehicle_times)
 
                 # if the new duration is longer than the previous one revert the changes
                 else:
@@ -284,8 +302,13 @@ def scramble_mutation(permutations):
                 single_perm[0] = lower_part + subpart + upper_part
 
                 # calculate new duration and save
-                a, b = calculate_duration(single_perm[0])
+                a, b, route_sum_time, vehicle_routes, vehicle_times= calculate_duration(single_perm[0])
+                #a, b = calculate_duration(single_perm[0])
                 single_perm[2], single_perm[1] = a, b
+                single_perm[3], single_perm[4], single_perm[5] = route_sum_time, vehicle_routes, vehicle_times
+                #single_perm.append(route_sum_time)
+                #single_perm.append(vehicle_routes)
+                #single_perm.append(vehicle_times)
 
             count = count + 1
     return permutations
@@ -326,9 +349,13 @@ def inversion_mutation(permutations):
                 single_perm[0] = lower_part + subpart + upper_part
 
                 # calculate new duration and save
-                a, b = calculate_duration(single_perm[0])
+                a, b, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(single_perm[0])
+                #a, b = calculate_duration(single_perm[0])
                 single_perm[2], single_perm[1] = a, b
-
+                single_perm[3], single_perm[4], single_perm[5] = route_sum_time, vehicle_routes, vehicle_times
+                #single_perm.append(route_sum_time)
+                #single_perm.append(vehicle_routes)
+                #single_perm.append(vehicle_times)
             count = count + 1
 
     return permutations
@@ -380,10 +407,11 @@ def genetic_algorithm(population):
             # then select permutations based on fitness value
             new_population = select_based_on_fitness_proportional(population_with_fitness)
 
+            pass
             # post process the permutations
-            for elem in new_population:
-                if len(elem) > 4:
-                    del elem[4]
+            #for elem in new_population:
+            #    if len(elem) > 4:
+            #        del elem[4]
 
         elif REPLACEMENT_PROB[0] <= rand_phase_2 <= REPLACEMENT_PROB[1]:
             #print("SELECTION & REPLACEMENT: applying replacement...")
@@ -421,11 +449,11 @@ def get_tours(permutations):
         current_tour = []
         for shop_index in range(0, len(elem[0])):
 
-            if elem[0][shop_index] == DEPOT_TUPLE and state == "BEGINNING":
+            if elem[0][shop_index] == DEPOT and state == "BEGINNING":
                 state = "NEW_TOUR_STARTED"
                 current_tour.append(elem[0][shop_index])
 
-            elif elem[0][shop_index] == DEPOT_TUPLE and state == "NEW_TOUR_STARTED" and shop_index == len(elem[0]) - 1:
+            elif elem[0][shop_index] == DEPOT and state == "NEW_TOUR_STARTED" and shop_index == len(elem[0]) - 1:
                 # last element of the permutation is reached
                 # the tour is stopped and saved
                 state = "BEGINNING"
@@ -434,7 +462,7 @@ def get_tours(permutations):
                 all_tours.append(current_tour)
                 current_tour = []
 
-            elif elem[0][shop_index] == DEPOT_TUPLE and state == "NEW_TOUR_STARTED" and shop_index != len(elem[0]) - 1:
+            elif elem[0][shop_index] == DEPOT and state == "NEW_TOUR_STARTED" and shop_index != len(elem[0]) - 1:
                 # last element of the permutation is NOT reached
                 # the tour is stopped and saved
                 # new tour has started
@@ -443,9 +471,9 @@ def get_tours(permutations):
 
                 all_tours.append(current_tour)
                 current_tour = []
-                current_tour.append(DEPOT_TUPLE)
+                current_tour.append(DEPOT)
 
-            elif elem[0][shop_index] != DEPOT_TUPLE and state == "NEW_TOUR_STARTED":
+            elif elem[0][shop_index] != DEPOT and state == "NEW_TOUR_STARTED":
                 # last element of the permutation is NOT reached
                 # the tour is NOT stopped
                 # current shop is added and tour continues
@@ -536,9 +564,9 @@ def helper(
 def calculate_duration_perm(
     perm: List[int],
     duration: List[List[List[float]]],
-    vehicles_start_times: List[float],
+    vehicles_start_times: Optional[List[float]],
     q: int = N,
-    m: int = 1,
+    m: int = M,
     ignore_long_trip: bool = False,
     load: List[int] = LOAD
 
@@ -578,15 +606,22 @@ def calculate_duration_perm(
 
 def calculate_duration(permutation, dist_data=DIST_DATA):
 
+    vehicles_start_times = None
+
     #route = [0]
     route=[]
     for elem in permutation:
-        node = elem[0]
+        node = elem
         route.append(node)
 
-    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=N,m=1,perm=route,duration=dist_data,vehicles_start_times=[0])
+    if vehicles_start_times is None:
+        vehicles_start_times = [0 for _ in range(M)]
+    else:
+        assert len(vehicles_start_times) == M, f"Size of the vehicles_start_times should be {M}"
 
-    return route_max_time, route
+    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=Q,m= M,perm=route,duration=dist_data, vehicles_start_times=vehicles_start_times)
+
+    return route_max_time, route, route_sum_time, vehicle_routes, vehicle_times
 
 
 def clean_permutations(permutations):
@@ -597,11 +632,12 @@ def clean_permutations(permutations):
     """
 
     # simply removes the additional data appended in the earlier iterations of the genetic algorithm
-    for perm in permutations:
-        if len(perm) == 5:
-            del perm[4]
+    #for perm in permutations:
+    #    if len(perm) == 9:
+    #        del perm[8]
 
     return permutations
+
 
 def ga(permutations = None):
     """
@@ -623,10 +659,14 @@ def ga(permutations = None):
         # the upper limit is K
         # any permutation between 1 tour and up to K tours are generated
         # the mutation operations work against infeasible solutions
+
+        NODES = []
+        NODES.extend(range(1, N+1))
+
         for k in range(0,K):
             current_NODES = copy.deepcopy(NODES)
             for _ in range(k):
-                current_NODES.append(DEPOT_TUPLE)
+                current_NODES.append(DEPOT)
             NODES_LIST.append(current_NODES)
 
         random_generated_perm = []
@@ -641,13 +681,15 @@ def ga(permutations = None):
                 # converted to list
                 random_perm = list(random_perm)
                 # DEPOT is added to the beginning and to the end
-                random_perm.insert(0, DEPOT_TUPLE)
-                random_perm.append(DEPOT_TUPLE)
+                random_perm.insert(0, DEPOT)
+                random_perm.append(DEPOT)
 
                 # duration and shop indices are calculated
-                total_dist, route = calculate_duration(permutation=random_perm, dist_data=DIST_DATA)
+                total_dist, route, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(permutation=random_perm, dist_data=DIST_DATA)
+                #total_dist, route = calculate_duration(permutation=random_perm, dist_data=DIST_DATA)
                 # constructed a tuple of three elements 1) permutation 2) shop indices 3) total duration
-                random_perm_tuple = [random_perm, route, total_dist]
+                random_perm_tuple = [random_perm, route, total_dist, route_sum_time, vehicle_routes, vehicle_times]
+                #random_perm_tuple = [random_perm, route, total_dist, route_sum_time, vehicle_routes, vehicle_times]
                 random_generated_perm.append(random_perm_tuple)
 
         # generated permutation list is sorted based on total duration (i.e. x[2])
@@ -733,17 +775,45 @@ def run(multithreaded=True):
         for pl in elem:
             sorted(pl, key=lambda x: x[2], reverse=False)
             for entry in pl:
-                best_result_list.append([entry[2], entry[1]])
+                #best_result_list.append([entry[2], entry[1]])
+                if entry[2] != INF:
+                    best_result_list.append(entry)
+
 
     # sort the best results and get the first element as the solution
     best_result_list = sorted(best_result_list, key=lambda x: x[0], reverse=False)
 
     print("BEST RESULT BELOW:")
-    print(best_result_list[0])
+    #print(best_result_list[0])
+
+    best_route_max_time = best_result_list[0][2]
+    best_route_sum_time = best_result_list[0][3]
+    best_vehicle_routes = best_result_list[0][4]
+    best_vehicle_times = best_result_list[0][5]
+
+
+    if best_vehicle_times is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time}")
+        print(f"Best route sum time: {best_route_sum_time}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     print(f"Time: {end_time - start_time}")
 
+    print("END")
+
+    return (
+        best_route_max_time,
+        best_route_sum_time,
+        best_vehicle_routes,
+        best_vehicle_times,
+    )
+
 
 if __name__ == '__main__':
-    run(multithreaded=False)
+    run(multithreaded=True)
