@@ -1,11 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
 
-import src.solver
-import src.utilities.helper
-
 # Absolute import modules inside src folder
-from src.vrp.brute_force.brute_force_based import run
+from src.vrp.ant_colony.aco_hybrid import run
 
 
 class handler(BaseHTTPRequestHandler):
@@ -16,10 +13,7 @@ class handler(BaseHTTPRequestHandler):
 
         # Construct an example response
         body = {
-            "vrp_solution": src.solver.solve_vrp_problem(),
-            "travel_duration": src.solver.calculate_duration("Unity Beta", "Marienplatz"),
-            "current_date": src.utilities.helper.get_current_date(),
-            "metes_solution": run(),
+            "aco": run(n=16),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
