@@ -238,7 +238,7 @@ def solve(
 
     print(f"\nTime elapsed = {time_end-time_start}")
 
-    return results
+    return results[:n_best_results]
 
 
 def run(
