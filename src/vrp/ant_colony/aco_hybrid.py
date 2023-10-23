@@ -257,7 +257,7 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    return solve(n=n, m=2, k=5, q=5, duration=duration, load=load)
+    return solve(n=n, m=2, k=10, q=3, duration=duration, load=load, n_hyperparams=10, n_best_results=1)
 
 
 if __name__ == "__main__":

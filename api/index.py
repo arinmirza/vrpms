@@ -13,7 +13,7 @@ class handler(BaseHTTPRequestHandler):
 
         # Construct an example response
         body = {
-            "aco": run(n=16),
+            "aco": run(n=7),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
