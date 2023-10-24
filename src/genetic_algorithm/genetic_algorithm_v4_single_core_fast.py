@@ -810,7 +810,8 @@ def run(multithreaded=False):
             print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
-    print(f"Time: {end_time - start_time}")
+    exec_time = end_time - start_time
+    print(f"Time: {exec_time}")
 
     print("END")
 
@@ -819,6 +820,7 @@ def run(multithreaded=False):
         best_route_sum_time,
         best_vehicle_routes,
         best_vehicle_times,
+        exec_time
     )
 
 
