@@ -123,7 +123,8 @@ class ACO_VRP_1(ACO_VRP):
                     self.vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
                     pheromone_paths.append(pheromone_path)
                     pheromone_paths_costs.append(pheromone_path_cost)
-                    vehicle_routes[vehicle_id].append(pheromone_path)
+                    if len(pheromone_path) > 2:
+                        vehicle_routes[vehicle_id].append(pheromone_path)
             # Check if exceeds the time limit
             if self.check_unvisited_node_exists(visited):
                 fail = True

@@ -1,3 +1,4 @@
+import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 
@@ -11,10 +12,13 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/json")
         self.end_headers()
 
+        time_start = datetime.datetime.now()
+        aco_result = run()
+        time_end = datetime.datetime.now()
+        time_diff = time_end - time_start
+
         # Construct an example response
-        body = {
-            "aco": run(n=7),
-        }
+        body = {"aco": aco_result, "time_diff": time_diff}
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode("utf-8")

@@ -122,7 +122,8 @@ class ACO_VRP_2(ACO_VRP):
                         break
                     else:
                         self.vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
-                        vehicle_routes[vehicle_id].append(vehicle_route)
+                        if len(vehicle_route) > 2:
+                            vehicle_routes[vehicle_id].append(vehicle_route)
                 if self.check_unvisited_node_exists(visited):
                     fail = True
                 if not fail:

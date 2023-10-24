@@ -242,12 +242,21 @@ def solve(
 
 
 def run(
-    n: int = 26, per_km_time: int = 1, input_file_load: Optional[str] = None, use_google_data: bool = False
-) -> List[Tuple]:
+    n: int = 10,
+    m: int = 2,
+    k: int = 10,
+    q: int = 3,
+    per_km_time: int = 1,
+    input_file_load: Optional[str] = None,
+    use_google_data: bool = False,
+) -> List[Dict]:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
     :param n: Number of locations
+    :param m: Max number of vehicles
+    :param k: Max number of cycles
+    :param q: Capacity of vehicle
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param input_file_load: Path to the input file including loads (required capacities) of locations
     :param use_google_data: Flag to use Google Maps data or not
@@ -257,7 +266,33 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    return solve(n=n, m=2, k=10, q=3, duration=duration, load=load, n_hyperparams=10, n_best_results=1)
+    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=10, n_best_results=1)
+    results_dict = []
+    for result in results:
+        (
+            route_max_time,
+            route_sum_time,
+            vehicle_routes,
+            vehicle_times,
+            best_iter,
+            hyperparams,
+            consider_depot,
+            pheromone_use_first_hour,
+            aco_method,
+        ) = result
+        result_dict = {
+            "route_max_time": route_max_time,
+            "route_sum_time": route_sum_time,
+            "vehicle_routes": vehicle_routes,
+            "vehicle_times": vehicle_times,
+            "best_iter": best_iter,
+            "hyperparams": hyperparams,
+            "consider_depot": consider_depot,
+            "pheromone_use_first_hour": pheromone_use_first_hour,
+            "aco_method": aco_method,
+        }
+        results_dict.append(result_dict)
+    return results_dict
 
 
 if __name__ == "__main__":
