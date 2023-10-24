@@ -236,7 +236,8 @@ def solve(
             aco_method=aco_method,
         )
 
-    print(f"\nTime elapsed = {time_end-time_start}")
+    time_diff = time_end-time_start
+    print(f"\nTime elapsed = {time_diff.total_seconds()}")
 
     return results[:n_best_results]
 
@@ -266,7 +267,7 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=10, n_best_results=1)
+    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=100, n_best_results=1)
     results_dict = []
     for result in results:
         (
@@ -292,6 +293,7 @@ def run(
             "aco_method": aco_method,
         }
         results_dict.append(result_dict)
+    print(results_dict)
     return results_dict
 
 

@@ -16,6 +16,7 @@ class handler(BaseHTTPRequestHandler):
         aco_result = run()
         time_end = datetime.datetime.now()
         time_diff = time_end - time_start
+        time_diff = time_diff.total_seconds()
 
         # Construct an example response
         body = {"aco": aco_result, "time_diff": time_diff}
