@@ -824,7 +824,7 @@ def run(multithreaded=False):
         best_route_sum_time,
         best_vehicle_routes,
         best_vehicle_times,
-        exec_time
+        str(exec_time)
     )
 
 
