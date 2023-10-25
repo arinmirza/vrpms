@@ -22,10 +22,10 @@ from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
 
 # PARAMETERS AND DATA GENERATION
-N = 30 # number of shops to be considered
-K = 7
+N = 10 # number of shops to be considered
+K = 0
 Q = 11
-M = 3
+M = 1
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
@@ -665,12 +665,13 @@ def ga(permutations = None):
         NODES = []
         NODES.extend(range(1, N+1))
 
-        for k in range(0,K):
+        for k in range(1,K+1):
             current_NODES = copy.deepcopy(NODES)
             for _ in range(k):
                 current_NODES.append(DEPOT)
             NODES_LIST.append(current_NODES)
 
+        NODES_LIST.append(NODES)
         random_generated_perm = []
 
         print("Generating random population with size: ", RANDOM_PERM_COUNT)
