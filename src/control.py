@@ -37,6 +37,8 @@ from src.genetic_algorithm.genetic_algorithm import run as run_genetic_algorithm
 from src.genetic_algorithm.genetic_algorithm_v4_single_core_fast import run as genetic_algorithm_sc_fast
 from src.genetic_algorithm.genetic_algorithm_v5_single_core_fastest import run as genetic_algorithm_sc_fastest
 from src.genetic_algorithm.genetic_algorithm_v6_multi_core_fast import run as genetic_algorithm_mc_fast
+from data.get_duration_matrix_mapbox import get_data
+from data.travel_time_matrix import main as generate_mapbox_duration_matrix
 
 def read_json(json_input):
     data = open(json_input)
@@ -51,13 +53,11 @@ def read_SAP_data(sap_data):
     pass
     # TODO
 
-def read_db_duration_matrix():
-    pass
-    # TODO
+def read_saved_duration_matrix():
+    return get_data()
 
-def generate_db_duration_matrix():
-    pass
-    # TODO
+def generate_and_save_duration_matrix():
+    return generate_mapbox_duration_matrix()
 
 def run_optimization(data_dict):
 
@@ -89,7 +89,7 @@ def run_optimization(data_dict):
         #Q = vehicle_capacity
 
         if selected_algorithm == "AC":
-
+            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -99,11 +99,11 @@ def run_optimization(data_dict):
                 #TODO: prepare multi driver output and save in the output dictionary
                 return output
             else:
-                output.update({"reason": "AC optimization did not return any value!"})
+                output.update({"reason": "AC TDVRP optimization did not return any value!"})
                 return output
 
         elif selected_algorithm == "GA":
-
+            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -113,11 +113,11 @@ def run_optimization(data_dict):
                 # TODO: prepare multi driver output and save in the output dictionary
                 return output
             else:
-                output.update({"reason": "GA optimization did not return any value!"})
+                output.update({"reason": "GA TDVRP optimization did not return any value!"})
                 return output
 
         elif selected_algorithm == "SA":
-
+            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -127,7 +127,7 @@ def run_optimization(data_dict):
                 # TODO: prepare multi driver output and save in the output dictionary
                 return output
             else:
-                output.update({"reason": "SA optimization did not return any value!"})
+                output.update({"reason": "SA TDVRP optimization did not return any value!"})
                 return output
         else:
             # return run not successful message
@@ -136,11 +136,96 @@ def run_optimization(data_dict):
 
     elif program_mode == "TSP":
 
-        pass
+        # the SAP data must be read in the below method
+        # the parameters of the heuristic functions will be determined accordingly
+        # TODO: sap data reading
+        # customer_coordinates, driver_count, vehicle_capacity = read_SAP_data()
+
+        selected_algorithm = data_dict["algorithm"]
+
+        # algorithm input should be a nested dictionary in the json dictionary.
+        # because the input taken by the algorithms differ
+        # TODO: prepare algo input format for each heuristic and tsp
+        # algorithm_input = data_dict["algorithm_input"]
+
+        # TODO: parameters
+        # N = len(customer_coordinates)
+
+        # M = driver_count
+
+        # Q = vehicle_capacity
+
+        if selected_algorithm == "AC":
+            DIST_DATA = read_saved_duration_matrix()
+            result = None
+
+            # TODO: run algo with the correct params
+
+            if result != None:
+                output.update({"run_successful": True})
+                # TODO: prepare multi driver output and save in the output dictionary
+                return output
+            else:
+                output.update({"reason": "AC TSP optimization did not return any value!"})
+                return output
+
+        elif selected_algorithm == "GA":
+            DIST_DATA = read_saved_duration_matrix()
+            result = None
+
+            # TODO: run algo with the correct params
+
+            if result != None:
+                output.update({"run_successful": True})
+                # TODO: prepare multi driver output and save in the output dictionary
+                return output
+            else:
+                output.update({"reason": "GA TSP optimization did not return any value!"})
+                return output
+
+        elif selected_algorithm == "SA":
+            DIST_DATA = read_saved_duration_matrix()
+            result = None
+
+            # TODO: run algo with the correct params
+
+            if result != None:
+                output.update({"run_successful": True})
+                # TODO: prepare multi driver output and save in the output dictionary
+                return output
+            else:
+                output.update({"reason": "SA TSP optimization did not return any value!"})
+                return output
+
+        elif selected_algorithm == "BF":
+            DIST_DATA = read_saved_duration_matrix()
+            result = None
+
+            # TODO: run algo with the correct params
+
+            if result != None:
+                output.update({"run_successful": True})
+                # TODO: prepare multi driver output and save in the output dictionary
+                return output
+            else:
+                output.update({"reason": "BF TSP optimization did not return any value!"})
+                return output
+
+        else:
+            # return run not successful message
+            output.update({"reason": "NO TSP heuristic or Brute Force was chosen!"})
+            return output
 
     elif program_mode == "UPDATE_DB_CACHE":
+        try:
+            generate_and_save_duration_matrix()
+            output.update({"run_successful": True})
+            return output
+        except Exception as e:
+            output.update({"run_successful": False})
+            output.update({"reason": {str(e)}})
+            return output
 
-        generate_db_duration_matrix()
 
         pass
 
