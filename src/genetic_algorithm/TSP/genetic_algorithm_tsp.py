@@ -20,6 +20,7 @@ from tqdm import tqdm
 from src.utilities.vrp_helper import get_based_and_load_data
 from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
+from data.get_duration_matrix_mapbox import get_data
 
 # PARAMETERS AND DATA GENERATION
 N = 10 # number of shops to be considered
@@ -31,6 +32,7 @@ IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
+DIST_DATA = get_data()
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
 ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
