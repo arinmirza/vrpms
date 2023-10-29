@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 from src.tsp.brute_force.brute_force import solve
-from src.utilities.vrp_helper import get_google_and_load_data
+from src.utilities.helper.data_helper import get_google_and_load_data
 
 DEPOT = 0
 N_TIME_ZONES = 12

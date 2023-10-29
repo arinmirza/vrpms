@@ -5,7 +5,7 @@ import random
 from collections import defaultdict
 from src.vrp.ant_colony.aco_1 import ACO_VRP_1
 from src.vrp.ant_colony.aco_2 import ACO_VRP_2
-from src.utilities.vrp_helper import get_based_and_load_data, get_google_and_load_data
+from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
 
 from typing import Dict, List, Literal, Optional, Tuple, Union
 

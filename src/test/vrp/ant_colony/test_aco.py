@@ -2,7 +2,7 @@ from typing import List
 
 from collections import defaultdict
 from src.vrp.ant_colony.aco_hybrid import solve
-from src.utilities.vrp_helper import get_based_and_load_data
+from src.utilities.helper.data_helper import get_based_and_load_data
 
 EPS = 1e-6
 TIME_UNITS = 60  # hour = 60 minutes

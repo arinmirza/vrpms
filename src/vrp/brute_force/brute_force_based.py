@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import List, Literal, Optional, Tuple
 
 from src.vrp.brute_force.brute_force import solve
-from src.utilities.vrp_helper import get_based_and_load_data
+from src.utilities.helper.data_helper import get_based_and_load_data
 
 
 def run(
