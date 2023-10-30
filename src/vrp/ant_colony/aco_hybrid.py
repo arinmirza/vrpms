@@ -10,9 +10,7 @@ from src.utilities.helper.data_helper import get_based_and_load_data, get_google
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 DEPOT = 0
-EPS = 1e-6
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
 
 INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
@@ -118,6 +116,7 @@ def solve(
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
+    is_print_allowed: bool = True,
 ) -> List[Tuple]:
     """
     Try different hyperparamater settings and solve VRP with ACO
@@ -139,6 +138,7 @@ def solve(
     :param aco_sols: ACO methods to run
     :param consider_depots: Flags to consider depot as a candidate place to visit next
     :param pheromone_uses_first_hour: Flags to consider first hour of duration data for pheromone calculations
+    :param is_print_allowed: Flag if print is allowed or not
     :return: Best results
     """
     objective_func_type = objective_func_type.lower()
@@ -223,21 +223,23 @@ def solve(
             pheromone_use_first_hour,
             aco_method,
         ) = result
-        print_sol(
-            result_idx=result_idx,
-            best_iter=best_iter,
-            route_max_time=route_max_time,
-            route_sum_time=route_sum_time,
-            vehicle_routes=vehicle_routes,
-            vehicle_times=vehicle_times,
-            hyperparams=hyperparams,
-            consider_depot=consider_depot,
-            pheromone_use_first_hour=pheromone_use_first_hour,
-            aco_method=aco_method,
-        )
+        if is_print_allowed:
+            print_sol(
+                result_idx=result_idx,
+                best_iter=best_iter,
+                route_max_time=route_max_time,
+                route_sum_time=route_sum_time,
+                vehicle_routes=vehicle_routes,
+                vehicle_times=vehicle_times,
+                hyperparams=hyperparams,
+                consider_depot=consider_depot,
+                pheromone_use_first_hour=pheromone_use_first_hour,
+                aco_method=aco_method,
+            )
 
-    time_diff = time_end-time_start
-    print(f"\nTime elapsed = {time_diff.total_seconds()}")
+    time_diff = time_end - time_start
+    if is_print_allowed:
+        print(f"\nTime elapsed = {time_diff.total_seconds()}")
 
     return results[:n_best_results]
 

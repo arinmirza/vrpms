@@ -1,6 +1,5 @@
 from src.utilities.helper.vrp_helper import solution_to_arrivals
 
-DEPOT = 0
 N_TIME_ZONES = 12  # hours = time slices
 N = 9
 
