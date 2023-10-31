@@ -23,7 +23,7 @@ from src.vrp.vehicles_pq import VehiclesPQ
 
 
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 10000 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
