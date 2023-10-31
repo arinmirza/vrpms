@@ -7,10 +7,10 @@ import src.utilities.helper
 # Absolute import modules inside src folder
 #from src.vrp.brute_force.brute_force_based import run
 #from src.genetic_algorithm.genetic_algorithm import run as run_genetic_algorithm
-from src.genetic_algorithm.genetic_algorithm_v4_single_core_fast import run as genetic_algorithm_sc_fast
-from src.genetic_algorithm.genetic_algorithm_v5_single_core_fastest import run as genetic_algorithm_sc_fastest
-from src.genetic_algorithm.genetic_algorithm_v6_multi_core_fast import run as genetic_algorithm_mc_fast
-from src.genetic_algorithm.TSP.genetic_algorithm_tsp import run as genetic_algorithm_tsp
+from src.genetic_algorithm.old.genetic_algorithm_v4_single_core_fast import run as genetic_algorithm_sc_fast
+from src.genetic_algorithm.old.genetic_algorithm_v5_single_core_fastest import run as genetic_algorithm_sc_fastest
+from src.genetic_algorithm.old.genetic_algorithm_v6_multi_core_fast import run as genetic_algorithm_mc_fast
+from genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp
 
 
 class handler(BaseHTTPRequestHandler):

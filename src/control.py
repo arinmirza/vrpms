@@ -9,12 +9,12 @@ The user has to provide the following information:
 3. Warehouse Coordinates or Address --> It is assumed that the warehouse is able to supply any demand
 4. The name of the optimization algorithm to be used --> Available options are: Ant Colony Optimization (AC), Genetic Algorithm (GA), Simulated Annealing (SA)
 5. Optimization Algorithm Specific Inputs are required --> Genetic Algorithm requires {
-                                                                                        :param multithreaded: (True/False) single core or multi core execution
+                                                                                        :param multithreaded: (False/True) single core or multi core execution (default is Single Core)
                                                                                         :param N: number of customers
                                                                                         :param M: number of drivers
                                                                                         :param k: number of cycles
                                                                                         :param q: capacity of vehicle
-                                                                                        :param distance_data: time dependent duration data between nodes
+                                                                                        :param duration: time dependent duration data between nodes
                                                                                         :param load: demand of locations
                                                                                         :param ignored_customers: List of customers to be ignored by the algorithm
                                                                                         }
@@ -32,13 +32,10 @@ The user has to provide the following information:
 """
 
 import json
-
-from src.genetic_algorithm.genetic_algorithm import run as run_genetic_algorithm
-from src.genetic_algorithm.genetic_algorithm_v4_single_core_fast import run as genetic_algorithm_sc_fast
-from src.genetic_algorithm.genetic_algorithm_v5_single_core_fastest import run as genetic_algorithm_sc_fastest
-from src.genetic_algorithm.genetic_algorithm_v6_multi_core_fast import run as genetic_algorithm_mc_fast
+from src.genetic_algorithm.genetic_algorithm import run_GA
 from data.get_duration_matrix_mapbox import get_data
 from data.travel_time_matrix import main as generate_mapbox_duration_matrix
+from src.utilities.control_helper import solution_to_arrivals
 
 def read_json(json_input):
     data = open(json_input)
