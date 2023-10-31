@@ -1,3 +1,4 @@
 iteration_utilities
 joblib
 tqdm
+numpy
