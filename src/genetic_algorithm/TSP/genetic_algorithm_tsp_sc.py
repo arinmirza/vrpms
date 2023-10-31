@@ -8,7 +8,7 @@ from datetime import datetime
 from iteration_utilities import random_permutation
 import math
 import random
-from typing import List, Literal, Optional, Tuple
+from typing import List, Optional, Tuple
 from collections import defaultdict
 
 # Libraries for Parallel Processing
@@ -18,21 +18,20 @@ from tqdm import tqdm
 
 # Project Files to be Imported
 from src.utilities.vrp_helper import get_based_and_load_data
-from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
-from data.get_duration_matrix_mapbox import get_data
+#from src.supabase.get_duration_matrix_mapbox import get_data
 
 # PARAMETERS AND DATA GENERATION
 N = 10 # number of shops to be considered
 K = 0
 Q = 11
 M = 1
-VEHICLE_CAPACITY = 100
+DIST_DATA = None
+vehicles_start_times = None
 IGNORE_LONG_TRIP = True # used in the duration calculation method
 RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
-PER_KM_TIME = 0.25
-DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
-DIST_DATA = get_data()
+DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=0.25) # generate the distance data matrix
+#DIST_DATA = get_data()#DIST_DATA = get_data()
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
 ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
@@ -608,9 +607,7 @@ def calculate_duration_perm(
 
     return helper(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times)
 
-def calculate_duration(permutation, dist_data=DIST_DATA):
-
-    vehicles_start_times = None
+def calculate_duration(permutation, VST = vehicles_start_times, dist_data=DIST_DATA):
 
     #route = [0]
     route=[]
@@ -618,12 +615,12 @@ def calculate_duration(permutation, dist_data=DIST_DATA):
         node = elem
         route.append(node)
 
-    if vehicles_start_times is None:
-        vehicles_start_times = [0 for _ in range(M)]
+    if VST is None:
+        VST = [0 for _ in range(M)]
     else:
-        assert len(vehicles_start_times) == M, f"Size of the vehicles_start_times should be {M}"
+        assert len(VST) == M, f"Size of the vehicles_start_times should be {M}"
 
-    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=Q,m= M,perm=route,duration=dist_data, vehicles_start_times=vehicles_start_times)
+    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST)
 
     return route_max_time, route, route_sum_time, vehicle_routes, vehicle_times
 
@@ -718,7 +715,7 @@ def ga(permutations = None):
 
     return res
 
-def run(multithreaded=True):
+def run(N, M, k, q, W, duration, demand, multithreaded=False):
 
     start_time = datetime.now()  # used for runtime calculation
     entries = []

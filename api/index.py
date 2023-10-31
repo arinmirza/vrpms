@@ -10,8 +10,8 @@ import src.utilities.helper
 from src.genetic_algorithm.old.genetic_algorithm_v4_single_core_fast import run as genetic_algorithm_sc_fast
 from src.genetic_algorithm.old.genetic_algorithm_v5_single_core_fastest import run as genetic_algorithm_sc_fastest
 from src.genetic_algorithm.old.genetic_algorithm_v6_multi_core_fast import run as genetic_algorithm_mc_fast
-from genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp
-
+#from genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp
+from src.control import run
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -28,8 +28,9 @@ class handler(BaseHTTPRequestHandler):
             #"yusuf_solution_genetic_algorithm_all_cores": genetic_algorithm_mc_fast(multithreaded=True),
             #"yusuf_solution_genetic_algorithm_single_core_fast": genetic_algorithm_sc_fast(multithreaded=False),
             #"yusuf_solution_genetic_algorithm_single_core_fastest": genetic_algorithm_sc_fastest(multithreaded=False)
-            "yusuf_solution_genetic_algorithm_single_core": genetic_algorithm_tsp(multithreaded=False),
-            "yusuf_solution_genetic_algorithm_multi_core": genetic_algorithm_tsp(multithreaded=True)
+            #"yusuf_solution_genetic_algorithm_single_core": genetic_algorithm_tsp(multithreaded=False),
+            #"yusuf_solution_genetic_algorithm_multi_core": genetic_algorithm_tsp(multithreaded=True)
+            "control script new data on supabase": run()
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8

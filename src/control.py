@@ -32,10 +32,9 @@ The user has to provide the following information:
 """
 
 import json
-from src.genetic_algorithm.genetic_algorithm import run_GA
-from data.get_duration_matrix_mapbox import get_data
+from src.supabase.get_supabase_matrix import get_data
 from data.travel_time_matrix import main as generate_mapbox_duration_matrix
-from src.utilities.control_helper import solution_to_arrivals
+from src.genetic_algorithm.genetic_algorithm import run_GA
 
 def read_json(json_input):
     data = open(json_input)
@@ -66,6 +65,7 @@ def run_optimization(data_dict):
 
     if program_mode == "TDVRP":
 
+        duration = get_data()
         # the SAP data must be read in the below method
         # the parameters of the heuristic functions will be determined accordingly
         #TODO: sap data reading
@@ -86,7 +86,6 @@ def run_optimization(data_dict):
         #Q = vehicle_capacity
 
         if selected_algorithm == "AC":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -100,10 +99,15 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "GA":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
+
+            algo_inputs = data_dict["algorithm_inputs"]
+
+            algo_inputs["duration"] = duration
+
+            run_GA(inputs=data_dict)
 
             if result != None:
                 output.update({"run_successful": True})
@@ -114,7 +118,6 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "SA":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -153,7 +156,6 @@ def run_optimization(data_dict):
         # Q = vehicle_capacity
 
         if selected_algorithm == "AC":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -167,10 +169,7 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "GA":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
-
-            # TODO: run algo with the correct params
 
             if result != None:
                 output.update({"run_successful": True})
@@ -181,7 +180,6 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "SA":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -195,7 +193,6 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "BF":
-            DIST_DATA = read_saved_duration_matrix()
             result = None
 
             # TODO: run algo with the correct params
@@ -234,7 +231,28 @@ def run_optimization(data_dict):
 
 def run():
     # read json data, do other pre-processing and then call run_optimization
-    pass
+
+    # Example dict format
+
+    data_dict = {
+        "program_mode": "TDVRP",
+        "algorithm": "GA"
+    }
+
+    algo_inputs = {
+        "N": 20,
+        "M": 3,
+        "q": 6,
+        "k": 4,
+        "multithreaded": True,
+    }
+
+    data_dict["algorithm_inputs"] = algo_inputs
+
+    # TODO: algorithm_input key will be added
+
+    return run_optimization(data_dict)
+
 
 if __name__ == "__main__":
 
@@ -244,6 +262,17 @@ if __name__ == "__main__":
         "program_mode": "TDVRP",
         "algorithm": "GA"
     }
+
+    algo_inputs = {
+        "N": 20,
+        "M": 3,
+        "q": 6,
+        "k": 4,
+        "multithreaded": True,
+    }
+
+    data_dict["algorithm_inputs"] = algo_inputs
+
     # TODO: algorithm_input key will be added
 
     res = run_optimization(data_dict)

@@ -19,19 +19,22 @@ from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_al
 from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
 from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
 from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp_mc
+from src.utilities.vrp_helper import get_load_data
 
 def run_GA(inputs):
     print("Genetic Algorithm")
-    
-    N = inputs["N"]
-    M = inputs["M"]
-    k = inputs["k"]
-    q = inputs["q"]
-    W = inputs["W"]
-    duration = inputs["duration"]
-    multithreaded = inputs["multithreaded"]
-    load = inputs["load"]
-    ist = inputs["inital_start_times"]
+
+    algo_inputs = inputs["algorithm_inputs"]
+
+    N = algo_inputs["N"]
+    M = algo_inputs["M"]
+    q = algo_inputs["q"]
+    k = algo_inputs["k"] if ("k" in algo_inputs) else N/4
+    W = algo_inputs["W"] if ("W" in algo_inputs) else 0
+    duration = algo_inputs["duration"]
+    multithreaded = algo_inputs["multithreaded"]
+    load = algo_inputs["load"] if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1)
+    ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None
     pm = inputs["program_mode"]
     
     output = None
@@ -41,7 +44,7 @@ def run_GA(inputs):
         if not multithreaded:
             output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
         else:
-            output = genetic_algorithm_vrp_mc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist)
     
     elif pm == "TSP":
         

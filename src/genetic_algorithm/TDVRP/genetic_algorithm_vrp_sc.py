@@ -21,7 +21,7 @@ from src.vrp.vehicles_pq import VehiclesPQ
 
 # PARAMETERS AND DATA GENERATION
 N = 30 # number of shops to be considered
-K = 7
+K = 0
 Q = 11
 M = 3
 VEHICLE_CAPACITY = 100
@@ -669,6 +669,7 @@ def ga(permutations = None):
                 current_NODES.append(DEPOT)
             NODES_LIST.append(current_NODES)
 
+        #NODES_LIST.append(NODES)
         random_generated_perm = []
 
         print("Generating random population with size: ", RANDOM_PERM_COUNT)

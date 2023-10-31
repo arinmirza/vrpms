@@ -15,20 +15,24 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 
 # Project Files to be Imported
-from src.utilities.vrp_helper import get_based_and_load_data
+from src.utilities.vrp_helper import get_load_data
 from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
+from src.supabase.get_supabase_matrix import get_data
 
 # PARAMETERS AND DATA GENERATION
-N = 30 # number of shops to be considered
-K = 0
-Q = 11
+N = 20 # number of shops to be considered
+K = 4
+Q = 6
 M = 3
 VEHICLE_CAPACITY = 100
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 10000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
-DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
+#DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
+
+DIST_DATA = get_data()
+LOAD = [0 if i == 0 else 1 for i in range(N+1)]
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
 ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
@@ -669,7 +673,6 @@ def ga(permutations = None):
                 current_NODES.append(DEPOT)
             NODES_LIST.append(current_NODES)
 
-        #NODES_LIST.append(NODES)
         random_generated_perm = []
 
         print("Generating random population with size: ", RANDOM_PERM_COUNT)
@@ -714,26 +717,24 @@ def ga(permutations = None):
 
     return res
 
-def run(multithreaded=False):
+def run(multithreaded=True):
 
     start_time = datetime.now()  # used for runtime calculation
     entries = []
 
-    #if multithreaded:
+    if multithreaded:
         # get the number of available cores
-    #    num_cores = int(multiprocessing.cpu_count())
-    #else:
-    #    num_cores = 1
+        num_cores = int(multiprocessing.cpu_count())
+    else:
+        num_cores = 1
 
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
-    #inputs = tqdm(num_cores * [1])
-    #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)() for i in inputs)
+    inputs = tqdm(num_cores * [1])
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)() for i in inputs)
 
     # save the output of the current iteration
     #entries.append(copy.deepcopy(processed_list))
-
-    processed_list = ga()
 
     iteration_count = 0
 
@@ -741,15 +742,13 @@ def run(multithreaded=False):
 
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
-        #inputs = tqdm(processed_list)
-        #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(permutations) for permutations in inputs)
+        inputs = tqdm(processed_list)
+        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(permutations) for permutations in inputs)
 
-        processed_list = ga(processed_list)
-
-
+        #
         current_best_entries = []
-        #thread_index = 1
-        #for elem in processed_list:
+        thread_index = 1
+        for elem in processed_list:
 
             # calculate total element count and total sum
             #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
@@ -758,15 +757,15 @@ def run(multithreaded=False):
             #if total_elem_count == 0:
                 # prevents division by zero error in some cases
                 #total_elem_count = 1
-        processed_list = sorted(processed_list, key=lambda x: x[2], reverse=False)
-        #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
-        print("Thread: " + str(1) + " and Current Best: " + str(processed_list[0][2]))
-        best.append(copy.deepcopy(processed_list[0]))
-        print("-----------------------------------------")
-            #total_sum = 0
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            best.append(copy.deepcopy(elem[0]))
+            print("-----------------------------------------")
+            total_sum = 0
             # save the best entry of this current thread for the current iteration
             #current_best_entries.append(elem[0])
-            #thread_index = thread_index + 1
+            thread_index = thread_index + 1
         # save the last results of each thread
         #entries.append(copy.deepcopy(processed_list))
         print("**********************************************")
@@ -830,4 +829,4 @@ def run(multithreaded=False):
 
 
 if __name__ == '__main__':
-    run(multithreaded=False)
+    run(multithreaded=True)
