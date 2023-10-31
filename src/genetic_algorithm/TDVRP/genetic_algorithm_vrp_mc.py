@@ -392,8 +392,8 @@ def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, dem
     SCRAMBLE_MUTATION_PROB = (0.66, 1)
 
     # assigned probabilities for each selection & replacement option
-    SELECTION_PROB = (0, 0.25)
-    REPLACEMENT_PROB = (0.25, 0.5)
+    SELECTION_PROB = (0, 0)
+    REPLACEMENT_PROB = (0, 0.5)
     RANDOM_SELECTION_PROB = (0.5, 0.75)
     NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
 
