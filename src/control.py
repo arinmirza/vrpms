@@ -234,7 +234,26 @@ def run():
     # read json data, do other pre-processing and then call run_optimization
 
     # Example dict format
+    # Example dict format
 
+    data_dict = {
+        "program_mode": "TDVRP",
+        "algorithm": "GA"
+    }
+
+    algo_inputs = {
+        "N": 20,
+        "M": 3,
+        "q": 6,
+        "k": 4,
+        "multithreaded": True,
+    }
+
+    # k*q >= n-1
+
+    data_dict["algorithm_inputs"] = algo_inputs
+
+    # TODO: algorithm_input key will be added
 
     # TODO: algorithm_input key will be added
 
