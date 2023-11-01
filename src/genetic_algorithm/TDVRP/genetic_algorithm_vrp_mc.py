@@ -909,8 +909,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
         if all_equal(current_best_entries):
             all_equal_count = all_equal_count + 1
-            if all_equal_count > 3:
-                break
+            #if all_equal_count > 3:
+            #    break
             processed_list = [best[i:i + int(len(best) / num_cores)] for i in
                               range(0, len(best), int(len(best) / num_cores))]
             together = False
@@ -944,7 +944,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
 
     # sort the best results and get the first element as the solution
-    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=True)
+    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
