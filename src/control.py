@@ -107,10 +107,11 @@ def run_optimization(data_dict):
 
             algo_inputs["duration"] = duration
 
-            run_GA(inputs=data_dict)
+            result = run_GA(inputs=data_dict)
 
             if result != None:
                 output.update({"run_successful": True})
+                output["output"] = result
                 # TODO: prepare multi driver output and save in the output dictionary
                 return output
             else:
