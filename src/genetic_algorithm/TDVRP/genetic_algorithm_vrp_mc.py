@@ -896,7 +896,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
             #if total_elem_count == 0:
                 # prevents division by zero error in some cases
                 #total_elem_count = 1
-            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            elem = sorted(elem, key=lambda x: x[2], reverse=True)
             #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
             print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             current_best_entries.append(elem[0][2])
@@ -917,7 +917,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
             print("NOT TOGETHER")
 
         if len(best)*8 >= ITERATION_COUNT:
-            best = sorted(best, key=lambda x: x[2], reverse=False)
+            best = sorted(best, key=lambda x: x[2], reverse=True)
             ultimate.append(copy.deepcopy(best[0]))
             random.shuffle(best)
             best = best[0:int(len(best) / 2) + 1]
@@ -944,7 +944,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
 
     # sort the best results and get the first element as the solution
-    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
+    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=True)
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
