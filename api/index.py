@@ -30,7 +30,15 @@ class handler(BaseHTTPRequestHandler):
             #"yusuf_solution_genetic_algorithm_single_core_fastest": genetic_algorithm_sc_fastest(multithreaded=False)
             #"yusuf_solution_genetic_algorithm_single_core": genetic_algorithm_tsp(multithreaded=False),
             #"yusuf_solution_genetic_algorithm_multi_core": genetic_algorithm_tsp(multithreaded=True)
-            "control script new data on supabase": run()
+            "control script new data on supabase": run(),
+            "   \n ": "empty",
+            "control script new data on supabase2": run(),
+            "   \n ": "empty",
+            "control script new data on supabase3": run(),
+            "   \n ": "empty",
+            "control script new data on supabase4": run(),
+            "   \n ": "empty",
+            "control script new data on supabase5": run(),
         }
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
