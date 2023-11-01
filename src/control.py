@@ -268,7 +268,7 @@ if __name__ == "__main__":
         "N": 20,
         "M": 3,
         "q": 6,
-        "k": 4,
+        "k": 10,
         "multithreaded": True,
     }
 
