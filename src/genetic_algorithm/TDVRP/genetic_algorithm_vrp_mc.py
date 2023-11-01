@@ -862,7 +862,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     seperate_counter = 0
     all_equal_count = 0
     ultimate = []
-    while iteration_count < ITERATION_COUNT*4:
+    while iteration_count < ITERATION_COUNT*8:
 
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
