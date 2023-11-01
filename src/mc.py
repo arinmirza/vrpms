@@ -178,7 +178,7 @@ def select_based_on_fitness_proportional(permutations):
 
         end = datetime.now()
 
-        if (end - start).seconds >= 1:
+        if (end - start).seconds >= 0.6:
             # current implementation of the fitness proportional method might take some time
             # current time limit is 10 seconds
             # if the threshold is exceeded than selection mode is switched to RANDOM selection
@@ -380,8 +380,8 @@ def genetic_algorithm(population):
     SCRAMBLE_MUTATION_PROB = (0.66, 1)
 
     # assigned probabilities for each selection & replacement option
-    SELECTION_PROB = (0, 0.25)
-    REPLACEMENT_PROB = (0.25, 0.5)
+    SELECTION_PROB = (0, 0)
+    REPLACEMENT_PROB = (0, 0.5)
     RANDOM_SELECTION_PROB = (0.5, 0.75)
     NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
 

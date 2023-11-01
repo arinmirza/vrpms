@@ -23,7 +23,7 @@ from src.vrp.vehicles_pq import VehiclesPQ
 
 
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 15000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
@@ -171,7 +171,7 @@ def select_based_on_fitness_proportional(permutations):
 
         end = datetime.now()
 
-        if (end - start).seconds >= 1:
+        if (end - start).seconds >= 0.6:
             # current implementation of the fitness proportional method might take some time
             # current time limit is 10 seconds
             # if the threshold is exceeded than selection mode is switched to RANDOM selection
