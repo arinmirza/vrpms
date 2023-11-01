@@ -235,20 +235,6 @@ def run():
 
     # Example dict format
 
-    data_dict = {
-        "program_mode": "TDVRP",
-        "algorithm": "GA"
-    }
-
-    algo_inputs = {
-        "N": 20,
-        "M": 3,
-        "q": 6,
-        "k": 4,
-        "multithreaded": True,
-    }
-
-    data_dict["algorithm_inputs"] = algo_inputs
 
     # TODO: algorithm_input key will be added
 
@@ -268,9 +254,11 @@ if __name__ == "__main__":
         "N": 20,
         "M": 3,
         "q": 6,
-        "k": 10,
+        "k": 4,
         "multithreaded": True,
     }
+
+    # k*q >= n-1
 
     data_dict["algorithm_inputs"] = algo_inputs
 
