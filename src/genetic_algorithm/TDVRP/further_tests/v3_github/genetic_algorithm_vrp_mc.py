@@ -27,7 +27,7 @@ RANDOM_PERM_COUNT = 125 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 128 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 96 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
@@ -687,11 +687,13 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         NODES = []
         NODES.extend(range(1, N+1))
 
-        for k in range(0,K):
-            current_NODES = copy.deepcopy(NODES)
-            for _ in range(k):
-                current_NODES.append(DEPOT)
-            NODES_LIST.append(current_NODES)
+        #for k in range(0,K):
+        #    current_NODES = copy.deepcopy(NODES)
+
+        for _ in range(K+1):
+            NODES.append(DEPOT)
+
+        NODES_LIST.append(NODES)
 
         #NODES_LIST.append(NODES)
         random_generated_perm = []
@@ -842,7 +844,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
     print("wowowowowowowoowowowow")
 
-    best = sorted(best, key=lambda x: x[2], reverse=False)
+    #best = sorted(best, key=lambda x: x[2], reverse=False)
 
     #best = best[0:int(len(best)/2)+1]
 
@@ -856,21 +858,35 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         g = groupby(iterable)
         return next(g, True) and not next(g, False)
 
+    together = True
+    seperate_counter = 0
     all_equal_count = 0
-
-    while iteration_count < ITERATION_COUNT/4:
+    ultimate = []
+    while iteration_count < ITERATION_COUNT*6:
 
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
         #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
 
-        processed_list = Parallel(n_jobs=num_cores)(
-            delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
-                        ist_in=vehicles_start_times, permutations=best) for i in inputs)
 
-        #
+        if together:
+            processed_list = Parallel(n_jobs=num_cores)(
+                delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                            ist_in=vehicles_start_times, permutations=best) for i in inputs)
+        else:
+            processed_list = Parallel(n_jobs=num_cores)(
+                delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                            ist_in=vehicles_start_times, permutations=i) for i in inputs)
+
+            seperate_counter = seperate_counter + 1
+
+            if seperate_counter >= 8:
+                seperate_counter = 0
+                together = True
+
         current_best_entries = []
         thread_index = 1
+
         for elem in processed_list:
 
             # calculate total element count and total sum
@@ -891,12 +907,27 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
 
+        if all_equal(current_best_entries):
+            all_equal_count = all_equal_count + 1
+            #if all_equal_count > 3:
+            #    break
+            processed_list = [best[i:i + int(len(best) / num_cores)] for i in
+                              range(0, len(best), int(len(best) / num_cores))]
+            together = False
+            print("NOT TOGETHER")
+
+        if len(best)*8 >= ITERATION_COUNT:
+            best = sorted(best, key=lambda x: x[2], reverse=False)
+            ultimate.append(copy.deepcopy(best[0]))
+            random.shuffle(best)
+            best = best[0:int(len(best) / 2) + 1]
+            #processed_list = [plist[0: int(len(plist)/4)] for plist in processed_list]
+        #else:
+            #best = sorted(best, key=lambda x: x[2], reverse=False)
+            #best = best[0:int(len(best) / 3) + 1]
         #processed_list = [best[i:i + int(len(best) / num_cores)] for i in range(0, len(best), int(len(best) / num_cores))]
 
-        #for elem in processed_list:
-        #    elem = sorted(elem, key=lambda x: x[2], reverse=False)
-
-        #processed_list = [plist[0: int(len(plist)/8)] for plist in processed_list]
+        #processed_list = [plist[0: int(len(plist)/4)] for plist in processed_list]
 
         # save the last results of each thread
         #entries.append(copy.deepcopy(processed_list))
@@ -909,15 +940,11 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         print("**********************************************")
         iteration_count = iteration_count + 1
 
-        if all_equal(current_best_entries):
-            if all_equal_count >=5:
-                break
-            else:
-                all_equal_count = all_equal_count +1
+
 
 
     # sort the best results and get the first element as the solution
-    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
