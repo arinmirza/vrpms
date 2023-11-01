@@ -2,3 +2,4 @@ numpy==1.26.1
 iteration_utilities
 joblib
 tqdm
+requests
