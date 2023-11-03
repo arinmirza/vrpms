@@ -27,7 +27,7 @@ RANDOM_PERM_COUNT = 500 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 512 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 64 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
@@ -811,7 +811,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         print("**********************************************")
         iteration_count = iteration_count + 1
 
-        if (iteration_count % 32) == 0 and iteration_count != ITERATION_COUNT:
+        if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
                             ist_in=vehicles_start_times, permutations=None) for i in inputs)
@@ -862,8 +862,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     seperate_counter = 0
     all_equal_count = 0
     ultimate = []
-    ultimate = best
-    while False: #iteration_count < ITERATION_COUNT*6:
+    while iteration_count < ITERATION_COUNT*6:
 
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
@@ -908,16 +907,16 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
 
-        #if all_equal(current_best_entries):
-        #    all_equal_count = all_equal_count + 1
-        #    #if all_equal_count > 3:
-        #    #    break
-        #    processed_list = [best[i:i + int(len(best) / num_cores)] for i in
-        #                      range(0, len(best), int(len(best) / num_cores))]
-        #    together = False
-        #    print("NOT TOGETHER")
+        if all_equal(current_best_entries):
+            all_equal_count = all_equal_count + 1
+            #if all_equal_count > 3:
+            #    break
+            processed_list = [best[i:i + int(len(best) / num_cores)] for i in
+                              range(0, len(best), int(len(best) / num_cores))]
+            together = False
+            print("NOT TOGETHER")
 
-        if len(best)*16 >= ITERATION_COUNT:
+        if len(best)*8 >= ITERATION_COUNT:
             best = sorted(best, key=lambda x: x[2], reverse=False)
             ultimate.append(copy.deepcopy(best[0]))
             random.shuffle(best)

@@ -19,11 +19,14 @@ from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_al
 from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
 from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
 from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp_mc
+from src.utilities.vrp_helper import get_load_data
 
 #TODO TEST
 from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
+from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run as test_sc_new
 
-from src.utilities.vrp_helper import get_load_data
+
+
 
 def run_GA(inputs):
     print("Genetic Algorithm")
