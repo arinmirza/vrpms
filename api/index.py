@@ -40,10 +40,10 @@ class handler(BaseHTTPRequestHandler):
         }
 
         algorithm_inputs = {
-            "N": query_params["N"][0],
-            "M": query_params["M"][0],
-            "q": query_params["q"][0],
-            "k": query_params["k"][0],
+            "N": int(query_params["N"][0]),
+            "M": int(query_params["M"][0]),
+            "q": int(query_params["q"][0]),
+            "k": int(query_params["k"][0]),
             #"multithreaded": query_params["multithreaded"]
             "multithreaded": True
         }
