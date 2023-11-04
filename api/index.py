@@ -80,12 +80,12 @@ class handler(BaseHTTPRequestHandler):
 
         print("--------")
 
-        print(data_dict["program_mode"])
-        print(data_dict["algorithm"])
-        print(data_dict["N"])
-        print(data_dict["M"])
-        print(data_dict["q"])
-        print(data_dict["k"])
+        #print(data_dict["program_mode"])
+        #print(data_dict["algorithm"])
+        #print(data_dict["N"])
+        #print(data_dict["M"])
+        #print(data_dict["q"])
+        #print(data_dict["k"])
         #print(data_dict["multithreaded"])
 
 
