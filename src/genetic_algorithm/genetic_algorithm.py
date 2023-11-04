@@ -22,7 +22,7 @@ from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc impor
 from src.utilities.vrp_helper import get_load_data
 
 #TODO TEST
-from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
+#from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
 from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run as test_sc_new
 
 
