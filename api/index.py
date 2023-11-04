@@ -30,9 +30,10 @@ class handler(BaseHTTPRequestHandler):
             user_in = query_params["data_dict"]
             print(user_in)
 
-        print(parsed_url.query)
+        #print(parsed_url.query)
         print(query_params)
         print(parsed_url)
+
 
         # Construct an example response
         body = {
@@ -54,10 +55,10 @@ class handler(BaseHTTPRequestHandler):
 
         }
 
-        print(parsed_url.query)
+        #print(parsed_url.query)
         print(query_params)
         print(parsed_url)
-
+        print("get")
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode("utf-8")
 
@@ -81,7 +82,7 @@ class handler(BaseHTTPRequestHandler):
         # Read post body length
         content_len = int(self.headers.get('Content-Length', 0))
 
-        print(parsed_url.query)
+        #print(parsed_url.query)
         print(query_params)
         print(parsed_url)
 
@@ -89,9 +90,10 @@ class handler(BaseHTTPRequestHandler):
         body = {"control script new data on supabase": run(),
                 "input": query_params}
 
-        print(parsed_url.query)
+        #print(parsed_url.query)
         print(query_params)
         print(parsed_url)
+        print("post")
 
         # Try to load json from body
         try:

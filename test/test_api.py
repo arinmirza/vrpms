@@ -11,4 +11,6 @@ data = '{"data_dict":"yus78"}'
 
 response = requests.get(url=url, headers=header, json=data)
 
+print(response)
+
 pass
