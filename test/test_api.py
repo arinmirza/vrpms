@@ -4,7 +4,7 @@ import requests
 
 
 #url = " https://vrpms-m7cxc698k-idp-yusufserdar170-deneme.vercel.app/api"
-url = "https://vrpms-qm6miyxes-idp-yusufserdar170-deneme.vercel.app/api"
+url = "https://vrpms-76051jwcm-idp-yusufserdar170-deneme.vercel.app/api/index.py"
 header = {"Content-Type": "application/json"}
 
 data = '{"data_dict":"yus78"}'

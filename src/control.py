@@ -230,7 +230,7 @@ def run_optimization(data_dict):
         return output
 
 
-def run():
+def run(user_in):
     # read json data, do other pre-processing and then call run_optimization
 
     # Example dict format
@@ -239,29 +239,30 @@ def run():
     #data_dict =
 
 
-    data_dict = {
-        "program_mode": "TDVRP",
-        "algorithm": "GA"
-    }
 
-    algo_inputs = {
-        "N": 20,
-        "M": 3,
-        "q": 6,
-        "k": 4,
-        "multithreaded": True,
-    }
+    #data_dict = {
+    #    "program_mode": "TDVRP",
+    #    "algorithm": "GA"
+    #}
+
+    #algo_inputs = {
+    #    "N": 20,
+    #    "M": 3,
+    #    "q": 6,
+    #    "k": 4,
+    #    "multithreaded": True,
+    #}
 
     # k*q >= n-1
 
-    data_dict["algorithm_inputs"] = algo_inputs
+    #data_dict["algorithm_inputs"] = algo_inputs
 
     # TODO: algorithm_input key will be added
 
     # TODO: algorithm_input key will be added
     #print(user_in)
     #run_optimization(user_in)
-    return run_optimization(data_dict)
+    return run_optimization(user_in)
     #pass
 
 

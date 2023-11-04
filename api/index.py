@@ -34,6 +34,20 @@ class handler(BaseHTTPRequestHandler):
         print(query_params)
         print(parsed_url)
 
+        data_dict = {
+            "program_mode": user_in["program_mode"],
+            "algorithm": user_in["algorithm"]
+        }
+
+        algorithm_inputs = {
+            "N": user_in["N"],
+            "M": user_in["M"],
+            "q": user_in["q"],
+            "k": user_in["k"],
+            "multithreaded": user_in["multithreaded"]
+        }
+
+        data_dict["algorithm_inputs"] = algorithm_inputs
 
         # Construct an example response
         body = {
@@ -48,12 +62,33 @@ class handler(BaseHTTPRequestHandler):
             #"yusuf_solution_genetic_algorithm_multi_core": genetic_algorithm_tsp(multithreaded=True)
             #"self path": self.path,
             #"self": self,
-            "control script new data on supabase": run(),
+            "control script new data on supabase": run(data_dict),
             "control script user input": query_params
             #"self path": self.path,
             #"self": self
 
         }
+
+        print(user_in["program_mode"])
+        print(user_in["algorithm"])
+        print(user_in["N"])
+        print(user_in["M"])
+        print(user_in["q"])
+        print(user_in["k"])
+        print(user_in["multithreaded"])
+
+        print("--------")
+
+        print(data_dict["program_mode"])
+        print(data_dict["algorithm"])
+        print(data_dict["N"])
+        print(data_dict["M"])
+        print(data_dict["q"])
+        print(data_dict["k"])
+        print(data_dict["multithreaded"])
+
+
+
 
         #print(parsed_url.query)
         print(query_params)
