@@ -236,6 +236,9 @@ def run():
     # Example dict format
     # Example dict format
 
+    #data_dict =
+
+
     data_dict = {
         "program_mode": "TDVRP",
         "algorithm": "GA"
@@ -256,8 +259,10 @@ def run():
     # TODO: algorithm_input key will be added
 
     # TODO: algorithm_input key will be added
-
+    #print(user_in)
+    #run_optimization(user_in)
     return run_optimization(data_dict)
+    #pass
 
 
 if __name__ == "__main__":
