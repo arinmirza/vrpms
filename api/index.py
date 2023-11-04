@@ -35,15 +35,15 @@ class handler(BaseHTTPRequestHandler):
         print(parsed_url)
 
         data_dict = {
-            "program_mode": query_params["program_mode"],
-            "algorithm": query_params["algorithm"]
+            "program_mode": query_params["program_mode"][0],
+            "algorithm": query_params["algorithm"][0]
         }
 
         algorithm_inputs = {
-            "N": query_params["N"],
-            "M": query_params["M"],
-            "q": query_params["q"],
-            "k": query_params["k"],
+            "N": query_params["N"][0],
+            "M": query_params["M"][0],
+            "q": query_params["q"][0],
+            "k": query_params["k"][0],
             #"multithreaded": query_params["multithreaded"]
             "multithreaded": True
         }
@@ -70,12 +70,12 @@ class handler(BaseHTTPRequestHandler):
 
         }
 
-        print(query_params["program_mode"])
-        print(query_params["algorithm"])
-        print(query_params["N"])
-        print(query_params["M"])
-        print(query_params["q"])
-        print(query_params["k"])
+        print(query_params["program_mode"][0])
+        print(query_params["algorithm"][0])
+        print(query_params["N"][0])
+        print(query_params["M"][0])
+        print(query_params["q"][0])
+        print(query_params["k"][0])
         #print(query_params["multithreaded"])
 
         print("--------")
