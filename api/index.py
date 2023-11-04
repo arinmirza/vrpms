@@ -26,25 +26,26 @@ class handler(BaseHTTPRequestHandler):
         query_params = parse_qs(parsed_url.query)
 
 
-        if "data_dict" in query_params:
-            user_in = query_params["data_dict"]
-            print(user_in)
+        #if "data_dict" in query_params:
+        #   user_in = query_params["data_dict"]
+        #    print(user_in)
 
         #print(parsed_url.query)
         print(query_params)
         print(parsed_url)
 
         data_dict = {
-            "program_mode": user_in["program_mode"],
-            "algorithm": user_in["algorithm"]
+            "program_mode": query_params["program_mode"],
+            "algorithm": query_params["algorithm"]
         }
 
         algorithm_inputs = {
-            "N": user_in["N"],
-            "M": user_in["M"],
-            "q": user_in["q"],
-            "k": user_in["k"],
-            "multithreaded": user_in["multithreaded"]
+            "N": query_params["N"],
+            "M": query_params["M"],
+            "q": query_params["q"],
+            "k": query_params["k"],
+            #"multithreaded": query_params["multithreaded"]
+            "multithreaded": True
         }
 
         data_dict["algorithm_inputs"] = algorithm_inputs
@@ -69,13 +70,13 @@ class handler(BaseHTTPRequestHandler):
 
         }
 
-        print(user_in["program_mode"])
-        print(user_in["algorithm"])
-        print(user_in["N"])
-        print(user_in["M"])
-        print(user_in["q"])
-        print(user_in["k"])
-        print(user_in["multithreaded"])
+        print(query_params["program_mode"])
+        print(query_params["algorithm"])
+        print(query_params["N"])
+        print(query_params["M"])
+        print(query_params["q"])
+        print(query_params["k"])
+        print(query_params["multithreaded"])
 
         print("--------")
 
