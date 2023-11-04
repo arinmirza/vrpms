@@ -76,7 +76,7 @@ class handler(BaseHTTPRequestHandler):
         print(query_params["M"])
         print(query_params["q"])
         print(query_params["k"])
-        print(query_params["multithreaded"])
+        #print(query_params["multithreaded"])
 
         print("--------")
 
@@ -86,7 +86,7 @@ class handler(BaseHTTPRequestHandler):
         print(data_dict["M"])
         print(data_dict["q"])
         print(data_dict["k"])
-        print(data_dict["multithreaded"])
+        #print(data_dict["multithreaded"])
 
 
 
