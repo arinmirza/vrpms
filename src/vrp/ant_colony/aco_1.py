@@ -4,7 +4,7 @@ from src.vrp.ant_colony.aco import ACO_VRP
 
 DEPOT = 0  # id of the depot
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60*60 seconds
 TOTAL_TIME = N_TIME_ZONES * TIME_UNITS
 
 INF = float("inf")

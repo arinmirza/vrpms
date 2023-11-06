@@ -5,7 +5,7 @@ from src.vrp.ant_colony.aco_hybrid import solve
 from src.utilities.helper.data_helper import get_based_and_load_data
 
 EPS = 1e-6
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60*60 seconds
 
 
 def check_times(

@@ -5,7 +5,11 @@ import random
 from collections import defaultdict
 from src.vrp.ant_colony.aco_1 import ACO_VRP_1
 from src.vrp.ant_colony.aco_2 import ACO_VRP_2
-from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
+from src.utilities.helper.data_helper import (
+    get_based_and_load_data,
+    get_google_and_load_data,
+    get_mapbox_and_local_data,
+)
 
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
@@ -249,9 +253,12 @@ def run(
     m: int = 2,
     k: int = 10,
     q: int = 3,
+    supabase_url: str = None,
+    supabase_key: str = None,
+    supabase_url_key_file: str = "../../../data/supabase/supabase_url_key.txt",
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
-    use_google_data: bool = False,
+    duration_data_type: str = "mapbox",
 ) -> List[Dict]:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
@@ -260,12 +267,20 @@ def run(
     :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
+    :param supabase_url: Project URL
+    :param supabase_key: Project key
+    :param supabase_url_key_file: Path of the file including supabase_url and supabase_key
     :param per_km_time: Multiplier to calculate duration from distance in km
     :param input_file_load: Path to the input file including loads (required capacities) of locations
-    :param use_google_data: Flag to use Google Maps data or not
+    :param duration_data_type: Type of the duration data to be used
     :return: Best results
     """
-    if use_google_data:
+    assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
+    if duration_data_type == "mapbox":
+        duration, load = get_mapbox_and_local_data(
+            supabase_url, supabase_key, supabase_url_key_file, input_file_load, n
+        )
+    elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)

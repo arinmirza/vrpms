@@ -6,7 +6,7 @@ from src.vrp.vehicles_pq import VehiclesPQ
 
 INF = float("inf")
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60*60 seconds
 DEPOT = 0
 
 

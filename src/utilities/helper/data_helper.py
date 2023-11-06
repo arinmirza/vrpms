@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 from src.utilities.data_gen.based.data_gen import get_time_data
+from src.db.supabase.db_supabase_mapbox import run as get_mapbox_data
 
 
 def get_load_data(input_file_load: Optional[str], n: int) -> List[int]:
@@ -104,6 +105,19 @@ def get_based_and_load_data(
     :return: Max number of cycles and capacity of the vehicle, dynamic duration data, and loads of locations
     """
     duration_old = get_time_data(per_km_time=per_km_time)
+    duration = get_subset_time_data(duration_old, n, False)
+    load = get_load_data(input_file_load, n)
+    return duration, load
+
+
+def get_mapbox_and_local_data(
+    supabase_url: str,
+    supabase_key: str,
+    supabase_url_key_file: str,
+    input_file_load: Optional[str],
+    n: int = 25,
+):
+    duration_old = get_mapbox_data(supabase_url, supabase_key, supabase_url_key_file)
     duration = get_subset_time_data(duration_old, n, False)
     load = get_load_data(input_file_load, n)
     return duration, load

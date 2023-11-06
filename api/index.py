@@ -20,8 +20,10 @@ class handler(BaseHTTPRequestHandler):
         algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "default"
         data_dict = {"program_mode": program_mode, "algorithm": algorithm}
 
+        supabase_url_key_file = "../data/supabase/supabase_url_key.txt"
+
         time_start = datetime.datetime.now()
-        aco_result = run()
+        aco_result = run(supabase_url_key_file=supabase_url_key_file)
         time_end = datetime.datetime.now()
         time_diff = time_end - time_start
         time_diff = time_diff.total_seconds()

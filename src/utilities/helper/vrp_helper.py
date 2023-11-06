@@ -1,7 +1,7 @@
 from typing import List
 
 DEPOT = 0
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60*60 seconds
 
 
 def solution_to_arrivals(

@@ -2,7 +2,11 @@ from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
 from src.utilities.helper.vrp_helper import solution_to_arrivals
-from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
+from src.utilities.helper.data_helper import (
+    get_based_and_load_data,
+    get_google_and_load_data,
+    get_mapbox_and_local_data,
+)
 from src.vrp.ant_colony.aco_hybrid import solve as solve_aco
 
 DEPOT = 0
@@ -71,11 +75,19 @@ def run(
     m: int = 2,
     k: int = 10,
     q: int = 3,
+    supabase_url: str = None,
+    supabase_key: str = None,
+    supabase_url_key_file: str = "../../data/supabase/supabase_url_key.txt",
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
-    use_google_data: bool = False,
+    duration_data_type: str = "mapbox",
 ) -> defaultdict:
-    if use_google_data:
+    assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
+    if duration_data_type == "mapbox":
+        duration, load = get_mapbox_and_local_data(
+            supabase_url, supabase_key, supabase_url_key_file, input_file_load, n
+        )
+    elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
