@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler
 
 # Absolute import modules inside src folder
 from src.vrp.ant_colony.aco_hybrid import run
+from urllib.parse import urlparse, parse_qs
 
 
 class handler(BaseHTTPRequestHandler):
@@ -12,6 +13,11 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/json")
         self.end_headers()
 
+        parsed_url = urlparse(self.path)
+        query_params = parse_qs(parsed_url.query)
+
+        data_dict = {"program_mode": query_params["program_mode"][0], "algorithm": query_params["algorithm"][0]}
+
         time_start = datetime.datetime.now()
         aco_result = run()
         time_end = datetime.datetime.now()
@@ -19,7 +25,7 @@ class handler(BaseHTTPRequestHandler):
         time_diff = time_diff.total_seconds()
 
         # Construct an example response
-        body = {"aco": aco_result, "time_diff": time_diff}
+        body = {"aco": aco_result, "time_diff": time_diff, "data_dict": data_dict}
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode("utf-8")
