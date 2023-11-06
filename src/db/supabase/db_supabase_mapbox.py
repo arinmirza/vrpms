@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from supabase import create_client, Client
 
 
@@ -17,7 +17,11 @@ def table_query(supabase: Client, table_name: str = "durations") -> List[List[Li
     return mapbox_data
 
 
-def run(url: str = None, key: str = None, supabase_url_key_file: str = "../../../data/supabase/supabase_url_key.txt"):
+def run(
+    url: Optional[str] = None,
+    key: Optional[str] = None,
+    supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
+):
     if supabase_url_key_file:
         url, key = get_content(supabase_url_key_file)
     supabase = create_client(url, key)

@@ -111,9 +111,9 @@ def get_based_and_load_data(
 
 
 def get_mapbox_and_local_data(
-    supabase_url: str,
-    supabase_key: str,
-    supabase_url_key_file: str,
+    supabase_url: Optional[str],
+    supabase_key: Optional[str],
+    supabase_url_key_file: Optional[str],
     input_file_load: Optional[str],
     n: int = 25,
 ):
