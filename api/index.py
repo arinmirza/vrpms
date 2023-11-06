@@ -16,7 +16,9 @@ class handler(BaseHTTPRequestHandler):
         parsed_url = urlparse(self.path)
         query_params = parse_qs(parsed_url.query)
 
-        data_dict = {"program_mode": query_params["program_mode"][0], "algorithm": query_params["algorithm"][0]}
+        program_mode = query_params["program_mode"][0] if "program_mode" in query_params else "default"
+        algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "default"
+        data_dict = {"program_mode": program_mode, "algorithm": algorithm}
 
         time_start = datetime.datetime.now()
         aco_result = run()
