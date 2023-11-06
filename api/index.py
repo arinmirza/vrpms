@@ -6,6 +6,10 @@ from http.server import BaseHTTPRequestHandler
 from src.vrp.ant_colony.aco_hybrid import run
 from urllib.parse import urlparse, parse_qs
 
+SUPABASE_URL = "https://pkeygmzuwfucblldmkjn.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s"
+SUPABASE_URL_KEY_FILE = "../data/supabase/supabase_url_key.txt"
+
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -20,11 +24,8 @@ class handler(BaseHTTPRequestHandler):
         algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "default"
         data_dict = {"program_mode": program_mode, "algorithm": algorithm}
 
-        supabase_url = "https://pkeygmzuwfucblldmkjn.supabase.co"
-        supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s"
-
         time_start = datetime.datetime.now()
-        aco_result = run(supabase_url=supabase_url, supabase_key=supabase_key, supabase_url_key_file=None)
+        aco_result = run(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
         time_end = datetime.datetime.now()
         time_diff = time_end - time_start
         time_diff = time_diff.total_seconds()
