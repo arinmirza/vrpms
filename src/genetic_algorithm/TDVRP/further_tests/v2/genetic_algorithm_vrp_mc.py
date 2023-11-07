@@ -27,13 +27,13 @@ RANDOM_PERM_COUNT = 125 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 128 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 48  # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
 
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60 minutes
 DEPOT = 0
 
 #NODES = get_nodes()
@@ -289,21 +289,51 @@ def scramble_mutation(permutations, VST, dist_data, M, Q, load):
             pos1 = random.randint(1, len(single_perm[0]) - 2)
             pos2 = random.randint(1, len(single_perm[0]) - 2)
 
+            while pos1 == pos2:
+                pos1 = random.randint(1, len(single_perm[0]) - 2)
+                pos2 = random.randint(1, len(single_perm[0]) - 2)
+
             # save the lower and upper bounds as a pair
             bound = (pos1, pos2) if pos1 < pos2 else (pos2, pos1)
 
             if pos1 != pos2:
-                # get the part before the selected portion
-                lower_part = single_perm[0][0:bound[0]]
-                # get the part after the selected portion
-                upper_part = single_perm[0][bound[1] + 1:]
-                # get the portion to be reversed
-                subpart = single_perm[0][bound[0]:bound[1] + 1]
-                # scramble the related portion
-                random.shuffle(subpart)
+                max_try = 3
+                while True:
 
-                # construct the permutation with the reversed portion
-                single_perm[0] = lower_part + subpart + upper_part
+                    # get the part before the selected portion
+                    lower_part = single_perm[0][0:bound[0]]
+                    # get the part after the selected portion
+                    upper_part = single_perm[0][bound[1] + 1:]
+                    # get the portion to be reversed
+                    subpart = single_perm[0][bound[0]:bound[1] + 1]
+                    # scramble the related portion
+                    random.shuffle(subpart)
+
+                    old_perm = single_perm[0]
+                    # construct the permutation with the reversed portion
+                    new_perm = lower_part + subpart + upper_part
+
+                    single_perm[0] = new_perm
+
+                    if check_neighbor(single_perm[0], src = "scr"):
+                        break
+
+                    else:
+
+
+                        while pos1 == pos2:
+                            pos1 = random.randint(1, len(single_perm[0]) - 2)
+                            pos2 = random.randint(1, len(single_perm[0]) - 2)
+
+                        # save the lower and upper bounds as a pair
+                        bound = (pos1, pos2) if pos1 < pos2 else (pos2, pos1)
+                        single_perm[0] = old_perm
+                        max_try = max_try - 1
+
+                        if max_try == 0:
+                            break
+
+
 
                 # calculate new duration and save
                 a, b, route_sum_time, vehicle_routes, vehicle_times= calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load)
@@ -653,6 +683,33 @@ def clean_permutations(permutations):
 
     return permutations
 
+def correct_neighbor_order(perm, index):
+
+    # get the DEPOT element in the index position
+    # shift to the right until hitting a non DEPOT node
+    perm_old = perm
+    for i in range(1, len(perm)-1):
+        if perm[i] != DEPOT and perm[i+1] != DEPOT:
+            del perm[index]
+            perm.insert(i, DEPOT)
+
+    return perm
+
+def check_neighbor(perm, src = "def"):
+
+    # randomly generated permutations can not have two DEPOT nodes side by side. In that case shift places.
+
+    for i in range(1, len(perm)):
+        if perm[i] == perm[i-1] == DEPOT:
+            #perm = correct_neighbor_order(perm = perm, index = i)
+            return False
+
+    if src == "def":
+        if perm[0] == DEPOT or perm[-1] == DEPOT:
+            return False
+
+    return True
+
 
 def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None):
     """
@@ -693,7 +750,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         #        current_NODES.append(DEPOT)
         #    NODES_LIST.append(current_NODES)
 
-        for _ in range(K):
+        for _ in range(K-1):
             NODES.append(DEPOT)
 
         NODES_LIST.append(NODES)
@@ -708,8 +765,14 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
                 # random permutation is generated
                 random_perm = random_permutation(elem)
-                # converted to list
                 random_perm = list(random_perm)
+
+                while not check_neighbor(random_perm):
+                    random_perm = random_permutation(elem)
+                    random_perm = list(random_perm)
+
+                # converted to list
+
                 # DEPOT is added to the beginning and to the end
                 random_perm.insert(0, DEPOT)
                 random_perm.append(DEPOT)
@@ -923,6 +986,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
     # sort the best results and get the first element as the solution
     best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+
+    #res = calculate_duration(permutation=)
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])

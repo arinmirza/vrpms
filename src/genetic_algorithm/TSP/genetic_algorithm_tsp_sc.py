@@ -39,7 +39,7 @@ N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
 
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60 minutes
 DEPOT = 0
 
 #NODES = get_nodes()
@@ -659,6 +659,19 @@ def clean_permutations(permutations):
 
     return permutations
 
+def check_neighbor(perm):
+
+    # randomly generated permutations can not have two DEPOT nodes side by side. In that case shift places.
+
+    for i in range(1, len(perm)):
+        if perm[i] == perm[i-1] == DEPOT:
+            #perm = correct_neighbor_order(perm = perm, index = i)
+            return False
+
+    if perm[0] == DEPOT or perm[-1] == DEPOT:
+        return False
+
+    return True
 
 def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None):
     """
@@ -696,8 +709,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         #for k in range(0,K):
         #    current_NODES = copy.deepcopy(NODES)
 
-        for _ in range(K+1):
-            NODES.append(DEPOT)
+
 
         NODES_LIST.append(NODES)
 

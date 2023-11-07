@@ -33,7 +33,7 @@ N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
 
 N_TIME_ZONES = 12  # hours = time slices
-TIME_UNITS = 60  # hour = 60 minutes
+TIME_UNITS = 3600  # hour = 60 minutes
 DEPOT = 0
 
 #NODES = get_nodes()
@@ -289,21 +289,51 @@ def scramble_mutation(permutations, VST, dist_data, M, Q, load):
             pos1 = random.randint(1, len(single_perm[0]) - 2)
             pos2 = random.randint(1, len(single_perm[0]) - 2)
 
+            while pos1 == pos2:
+                pos1 = random.randint(1, len(single_perm[0]) - 2)
+                pos2 = random.randint(1, len(single_perm[0]) - 2)
+
             # save the lower and upper bounds as a pair
             bound = (pos1, pos2) if pos1 < pos2 else (pos2, pos1)
 
             if pos1 != pos2:
-                # get the part before the selected portion
-                lower_part = single_perm[0][0:bound[0]]
-                # get the part after the selected portion
-                upper_part = single_perm[0][bound[1] + 1:]
-                # get the portion to be reversed
-                subpart = single_perm[0][bound[0]:bound[1] + 1]
-                # scramble the related portion
-                random.shuffle(subpart)
+                max_try = 3
+                while True:
 
-                # construct the permutation with the reversed portion
-                single_perm[0] = lower_part + subpart + upper_part
+                    # get the part before the selected portion
+                    lower_part = single_perm[0][0:bound[0]]
+                    # get the part after the selected portion
+                    upper_part = single_perm[0][bound[1] + 1:]
+                    # get the portion to be reversed
+                    subpart = single_perm[0][bound[0]:bound[1] + 1]
+                    # scramble the related portion
+                    random.shuffle(subpart)
+
+                    old_perm = single_perm[0]
+                    # construct the permutation with the reversed portion
+                    new_perm = lower_part + subpart + upper_part
+
+                    single_perm[0] = new_perm
+
+                    if check_neighbor(single_perm[0], src = "scr"):
+                        break
+
+                    else:
+
+
+                        while pos1 == pos2:
+                            pos1 = random.randint(1, len(single_perm[0]) - 2)
+                            pos2 = random.randint(1, len(single_perm[0]) - 2)
+
+                        # save the lower and upper bounds as a pair
+                        bound = (pos1, pos2) if pos1 < pos2 else (pos2, pos1)
+                        single_perm[0] = old_perm
+                        max_try = max_try - 1
+
+                        if max_try == 0:
+                            break
+
+
 
                 # calculate new duration and save
                 a, b, route_sum_time, vehicle_routes, vehicle_times= calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load)
@@ -653,6 +683,20 @@ def clean_permutations(permutations):
 
     return permutations
 
+def check_neighbor(perm, src = "def"):
+
+    # randomly generated permutations can not have two DEPOT nodes side by side. In that case shift places.
+
+    for i in range(1, len(perm)):
+        if perm[i] == perm[i-1] == DEPOT:
+            #perm = correct_neighbor_order(perm = perm, index = i)
+            return False
+
+    if src == "def":
+        if perm[0] == DEPOT or perm[-1] == DEPOT:
+            return False
+
+    return True
 
 def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None):
     """
@@ -690,7 +734,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         #for k in range(0,K):
         #    current_NODES = copy.deepcopy(NODES)
 
-        for _ in range(K+1):
+        for _ in range(K-1):
             NODES.append(DEPOT)
 
         NODES_LIST.append(NODES)
@@ -705,8 +749,14 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
                 # random permutation is generated
                 random_perm = random_permutation(elem)
-                # converted to list
                 random_perm = list(random_perm)
+
+                while not check_neighbor(random_perm):
+                    random_perm = random_permutation(elem)
+                    random_perm = list(random_perm)
+
+                # converted to list
+
                 # DEPOT is added to the beginning and to the end
                 random_perm.insert(0, DEPOT)
                 random_perm.append(DEPOT)
@@ -795,6 +845,9 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
             #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
             #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             best.append(copy.deepcopy(elem[0]))
+            best.append(copy.deepcopy(elem[1]))
+            best.append(copy.deepcopy(elem[2]))
+            best.append(copy.deepcopy(elem[3]))
             #print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
@@ -822,10 +875,46 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         #                    ist_in=vehicles_start_times, permutations=best) for i in inputs)
         #    ITERATION_COUNT = ITERATION_COUNT + 1
 
-    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+    #best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+    #best_v2 = []
+    #best_old = copy.deepcopy(best)
+    iteration_count = 0
+    while False: #iteration_count < ITERATION_COUNT:
 
+        # tqdm library prepares the previously generated permutations for the next iteration
+        inputs = tqdm(processed_list)
+        #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
+
+        processed_list = Parallel(n_jobs=num_cores)(
+            delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                        ist_in=vehicles_start_times, permutations=best) for i in inputs)
+
+        #
+        #current_best_entries = []
+        thread_index = 1
+        for elem in processed_list:
+
+            # calculate total element count and total sum
+            #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
+            #total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
+
+            #if total_elem_count == 0:
+                # prevents division by zero error in some cases
+                #total_elem_count = 1
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            #current_best_entries.append(elem[0][2])
+            best.append(copy.deepcopy(elem[0]))
+            print("-----------------------------------------")
+            total_sum = 0
+            # save the best entry of this current thread for the current iteration
+            #current_best_entries.append(elem[0])
+            thread_index = thread_index + 1
+        iteration_count = iteration_count + 1
     print("BEST RESULT BELOW:")
     # print(best_result_list[0])
+    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
     best_route_max_time = best_result_list[0][2]
     best_route_sum_time = best_result_list[0][3]
@@ -939,13 +1028,16 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         #print("**********************************************")
         #print("**********************************************")
         iteration_count = iteration_count + 1
-        print(iteration_count)
+        #print(iteration_count)
 
 
 
 
     # sort the best results and get the first element as the solution
     best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
+
+
+
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
@@ -954,6 +1046,9 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     best_route_sum_time = best_result_list[0][3]
     best_vehicle_routes = best_result_list[0][4]
     best_vehicle_times = best_result_list[0][5]
+
+
+
 
 
     if best_vehicle_times is None:
