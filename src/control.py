@@ -251,22 +251,22 @@ def run(user_in):
 
 
 
-    data_dict = {
-        "program_mode": "TDVRP",
-        "algorithm": "GA"
-    }
+    #data_dict = {
+    #    "program_mode": "TDVRP",
+    #    "algorithm": "GA"
+    #}
 
-    algo_inputs = {
-        "N": 20,
-        "M": 3,
-        "q": 6,
-        "k": 4,
-        "multithreaded": False,
-    }
+    #algo_inputs = {
+    #    "N": 20,
+    #    "M": 3,
+    #    "q": 6,
+    #    "k": 4,
+    #    "multithreaded": False,
+    #}
 
     # k*q >= n-1
 
-    data_dict["algorithm_inputs"] = algo_inputs
+    #data_dict["algorithm_inputs"] = algo_inputs
 
     # TODO: algorithm_input key will be added
 
@@ -274,7 +274,7 @@ def run(user_in):
     #print(user_in)
     #run_optimization(user_in)
 
-    return run_optimization(data_dict)
+    #return run_optimization(data_dict)
 
     return run_optimization(user_in)
     #pass
@@ -290,10 +290,10 @@ if __name__ == "__main__":
     }
 
     algo_inputs = {
-        "N": 20,
-        "M": 3,
-        "q": 6,
-        "k": 4,
+        "N": 12,
+        "M": 1,
+        "q": 12,
+        "k": 1,
         "multithreaded": False,
     }
 
