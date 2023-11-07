@@ -137,6 +137,7 @@ def run_optimization(data_dict):
 
     elif program_mode == "TSP":
 
+        duration = get_data()
         # the SAP data must be read in the below method
         # the parameters of the heuristic functions will be determined accordingly
         # TODO: sap data reading
@@ -170,10 +171,20 @@ def run_optimization(data_dict):
                 return output
 
         elif selected_algorithm == "GA":
+
             result = None
+
+            # TODO: run algo with the correct params
+
+            algo_inputs = data_dict["algorithm_inputs"]
+
+            algo_inputs["duration"] = duration
+
+            result = run_GA(inputs=data_dict)
 
             if result != None:
                 output.update({"run_successful": True})
+                output["output"] = result
                 # TODO: prepare multi driver output and save in the output dictionary
                 return output
             else:
@@ -240,36 +251,6 @@ def run(user_in):
 
 
 
-    #data_dict = {
-    #    "program_mode": "TDVRP",
-    #    "algorithm": "GA"
-    #}
-
-    #algo_inputs = {
-    #    "N": 20,
-    #    "M": 3,
-    #    "q": 6,
-    #    "k": 4,
-    #    "multithreaded": True,
-    #}
-
-    # k*q >= n-1
-
-    #data_dict["algorithm_inputs"] = algo_inputs
-
-    # TODO: algorithm_input key will be added
-
-    # TODO: algorithm_input key will be added
-    #print(user_in)
-    #run_optimization(user_in)
-    return run_optimization(user_in)
-    #pass
-
-
-if __name__ == "__main__":
-
-    # Example dict format
-
     data_dict = {
         "program_mode": "TDVRP",
         "algorithm": "GA"
@@ -280,7 +261,40 @@ if __name__ == "__main__":
         "M": 3,
         "q": 6,
         "k": 4,
-        "multithreaded": True,
+        "multithreaded": False,
+    }
+
+    # k*q >= n-1
+
+    data_dict["algorithm_inputs"] = algo_inputs
+
+    # TODO: algorithm_input key will be added
+
+    # TODO: algorithm_input key will be added
+    #print(user_in)
+    #run_optimization(user_in)
+
+    return run_optimization(data_dict)
+
+    return run_optimization(user_in)
+    #pass
+
+
+if __name__ == "__main__":
+
+    # Example dict format
+
+    data_dict = {
+        "program_mode": "TSP",
+        "algorithm": "GA"
+    }
+
+    algo_inputs = {
+        "N": 20,
+        "M": 3,
+        "q": 6,
+        "k": 4,
+        "multithreaded": False,
     }
 
     # k*q >= n-1

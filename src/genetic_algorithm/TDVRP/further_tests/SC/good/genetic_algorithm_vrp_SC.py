@@ -939,6 +939,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         #print("**********************************************")
         #print("**********************************************")
         iteration_count = iteration_count + 1
+        print(iteration_count)
 
 
 

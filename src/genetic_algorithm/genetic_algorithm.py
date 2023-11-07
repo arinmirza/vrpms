@@ -49,19 +49,25 @@ def run_GA(inputs):
     if pm == "TDVRP":
         
         if not multithreaded:
-            output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
-        else:
-            output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist)
+            #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
+            output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,
+                                 ist_in=ist)
 
-            #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist)
+        else:
+            # good example
+            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
+
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist)
     
     elif pm == "TSP":
         
         if not multithreaded:
-            output = genetic_algorithm_tsp_mc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load)
+           #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
+            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load,  ist_in=ist, multithreaded=False)
         else:
-            output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load)
+            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                              demand_in=load, ist_in=ist, multithreaded=True)
+            #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
     
     
     return output

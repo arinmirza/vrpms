@@ -687,11 +687,16 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         NODES = []
         NODES.extend(range(1, N+1))
 
-        for k in range(0,K):
-            current_NODES = copy.deepcopy(NODES)
-            for _ in range(k):
-                current_NODES.append(DEPOT)
-            NODES_LIST.append(current_NODES)
+        #for k in range(0,K):
+        #    current_NODES = copy.deepcopy(NODES)
+        #    for _ in range(k):
+        #        current_NODES.append(DEPOT)
+        #    NODES_LIST.append(current_NODES)
+
+        for _ in range(K):
+            NODES.append(DEPOT)
+
+        NODES_LIST.append(NODES)
 
         #NODES_LIST.append(NODES)
         random_generated_perm = []
