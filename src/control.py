@@ -251,22 +251,23 @@ def run(user_in):
 
 
 
-    data_dict = {
-        "program_mode": "TSP",
-        "algorithm": "GA"
-    }
+    #data_dict = {
+    #    "program_mode": "TSP",
+    #    "algorithm": "GA"
+    #}
 
-    algo_inputs = {
-        "N": 15,
-        "M": 2,
-        "q": 7,
-        "k": 3,
-        "multithreaded": False,
-    }
+    #algo_inputs = {
+    #    "N": 15,
+    #    "M": 2,
+    #    "q": 7,
+    #    "k": 3,
+    #    "multithreaded": False,
+    #}
 
     # k*q >= n-1
 
-    data_dict["algorithm_inputs"] = algo_inputs
+
+    #data_dict["algorithm_inputs"] = algo_inputs
 
     # TODO: algorithm_input key will be added
 
@@ -274,9 +275,9 @@ def run(user_in):
     #print(user_in)
     #run_optimization(user_in)
 
-    return run_optimization(data_dict)
+    #return run_optimization(data_dict)
 
-    #return run_optimization(user_in)
+    return run_optimization(user_in)
     #pass
 
 
@@ -306,3 +307,4 @@ if __name__ == "__main__":
     res = run_optimization(data_dict)
 
     pass
+
