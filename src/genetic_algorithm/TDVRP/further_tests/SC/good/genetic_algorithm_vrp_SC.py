@@ -904,7 +904,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
     #if multithreaded:
         # get the number of available cores
-    num_cores = int(multiprocessing.cpu_count())
+    num_cores = 1#int(multiprocessing.cpu_count())
     #else:
     #    num_cores = 1
 
@@ -1156,7 +1156,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     #if multithreaded:
         # get the number of available cores
-    num_cores = int(multiprocessing.cpu_count())
+    num_cores = 1#int(multiprocessing.cpu_count())
     #else:
     #    num_cores = 1
 
