@@ -292,7 +292,7 @@ if __name__ == "__main__":
     algo_inputs = {
         "N": 20,
         "M": 3,
-        "q": 6,
+        "q": 7,
         "k": 5,
         "multithreaded": False,
     }

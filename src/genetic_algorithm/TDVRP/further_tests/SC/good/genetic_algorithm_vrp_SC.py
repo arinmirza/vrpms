@@ -2,6 +2,7 @@
 
 # IMPORTS
 import copy
+import itertools
 from datetime import datetime
 from iteration_utilities import random_permutation
 import math
@@ -536,6 +537,9 @@ def get_tours(permutations):
 #######################################################################################################################
 #######################################################################################################################
 # DURATION CALCULATION AND RUN
+
+
+
 def helper(
     q: int,
     m: int,
@@ -651,6 +655,59 @@ def calculate_duration_perm(
 
     return helper(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times)
 
+def calculate_duration_perm_V2(
+    perm: List[int],
+    duration: List[List[List[float]]],
+    vehicles_start_times: Optional[List[float]],
+    q: int,
+    m: int,
+    load: List[int],
+    ignore_long_trip: bool = False
+
+
+) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
+    """
+    Calculates total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
+        the routes for each driver, given permutation of nodes
+
+    :param q: Capacity of vehicle
+    :param m: Max number of vehicles
+    :param ignore_long_trip: Flag to ignore long trips
+    :param perm: The locations to visit in order
+    :param duration: Dynamic duration data of NxNx12
+    :param load: Loads of locations
+    :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
+        as zero.
+    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
+        routes for each driver and the travel duration for each driver
+    """
+    perm = list(perm)
+    perm.append(DEPOT)
+
+    cycles = []
+    last_cycle = []
+    for node in perm:
+        if node == DEPOT:
+            if len(last_cycle) > 0:
+                cycle = [DEPOT]
+                cycle.extend(last_cycle)
+                cycle.append(DEPOT)
+                cycles.append(cycle)
+                last_cycle = []
+        else:
+            last_cycle.append(node)
+
+    all_cycle_perm = list(itertools.permutations(cycles))
+
+    results = []
+
+    for elem in all_cycle_perm:
+        results.append([elem, helper(q, m, ignore_long_trip, elem, duration, load, vehicles_start_times)])
+
+
+    return results
+
+
 def calculate_duration(permutation, VST, dist_data, M, Q, load):
 
     #route = [0]
@@ -668,6 +725,22 @@ def calculate_duration(permutation, VST, dist_data, M, Q, load):
 
     return route_max_time, route, route_sum_time, vehicle_routes, vehicle_times
 
+def calculate_duration_V2(permutation, VST, dist_data, M, Q, load):
+
+    #route = [0]
+    route=[]
+    for elem in permutation:
+        node = elem
+        route.append(node)
+
+    if VST is None:
+        VST = [0 for _ in range(M)]
+    else:
+        assert len(VST) == M, f"Size of the vehicles_start_times should be {M}"
+
+    X = calculate_duration_perm_V2(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST, load = load)
+
+    return X
 
 def clean_permutations(permutations):
     """
@@ -698,7 +771,24 @@ def check_neighbor(perm, src = "def"):
 
     return True
 
-def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None):
+def get_cycle_dur(perm_obj,  VST, dist_data, M, Q, load):
+    per_driver = list(perm_obj[3].values())
+    tours = []
+    for elem in per_driver:
+        for tour in elem:
+            tours.append(tour)
+
+    return get_tour_cost(tours,  dist_data=dist_data, VST=VST, M=M, Q=Q, load=load)
+
+def get_tour_cost(tours, VST, dist_data, M, Q, load):
+    tours_w_cost = []
+    for tour in tours:
+
+        tours_w_cost.append([tour,calculate_duration(permutation=tour, dist_data=dist_data, VST=VST, M=1, Q=len(tour), load=load)])
+
+    return tours_w_cost
+
+def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None, hc_nodes = []):
     """
                 Main method that controls the mode of the genetic algorithm
                 If no input is given than it starts with population generation and runs genetic algorithm
@@ -729,7 +819,12 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         # the mutation operations work against infeasible solutions
 
         NODES = []
-        NODES.extend(range(1, N+1))
+        #NODES.extend(range(1, N+1))
+
+        for i in range(1,N+1):
+            if i not in hc_nodes:
+                NODES.append(i)
+
 
         #for k in range(0,K):
         #    current_NODES = copy.deepcopy(NODES)
@@ -792,7 +887,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
 
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
+def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     N = N_in  # number of shops to be considered
     K = k_in
@@ -802,6 +897,9 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     DIST_DATA = duration_in
     LOAD = demand_in
     vehicles_start_times = ist_in
+
+    K = K - len(hc_nodes)
+    N = N - len(hc_nodes)
 
     start_time = datetime.now()  # used for runtime calculation
     entries = []
@@ -815,7 +913,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
     inputs = tqdm(num_cores * [1])
-    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None) for i in inputs)
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None, hc_nodes = hc_nodes) for i in inputs)
 
     # save the output of the current iteration
     #entries.append(copy.deepcopy(processed_list))
@@ -1037,18 +1135,47 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
 
 
+    best_res = best_result_list[0]
+
+    #best_route = best_res[0][0]
+
+    for hc_i in hc_nodes:
+        best_res[0].append(hc_i)
+        best_res[0].append(DEPOT)
+
+    best_res = calculate_duration_V2(permutation=best_res[0], dist_data=DIST_DATA, VST=vehicles_start_times, M=M, Q=Q, load=LOAD)
+    s_best_res = sorted(best_res, key=lambda x: x[1][0], reverse=False)
+
+
+    #tours_w_cost = get_cycle_dur(perm_obj=best_res,dist_data=DIST_DATA, VST=vehicles_start_times, M=M, Q=Q, load=LOAD)
+
+    #available_drivers = M
+    #s_tours_w_cost = sorted(tours_w_cost,  key=lambda x: x[1][1], reverse=True)
+    #tour_cnt = len(s_tours_w_cost)
+    #dict_final_big_tours = {}
+    #tour_index = 0
+    #while available_drivers > 0:
+    #    dict_final_big_tours[available_drivers-1] = [copy.deepcopy(s_tours_w_cost[tour_index])]
+    #    tour_index = tour_index + 1
+    #    available_drivers = available_drivers - 1
+    #    del s_tours_w_cost[tour_index]
+
+    #while len(s_tours_w_cost) != 0:
+
+    #    pass
+
 
 
     print("BEST RESULT BELOW:")
     #print(best_result_list[0])
 
-    best_route_max_time = best_result_list[0][2]
-    best_route_sum_time = best_result_list[0][3]
-    best_vehicle_routes = best_result_list[0][4]
-    best_vehicle_times = best_result_list[0][5]
+    best_route_max_time = s_best_res[0][1][0]
+    best_route_sum_time = s_best_res[0][1][1]
+    best_vehicle_routes = s_best_res[0][1][2]
+    best_vehicle_times = s_best_res[0][1][3]
 
 
-
+    #for elem in hc_nodes:
 
 
     if best_vehicle_times is None:
