@@ -885,7 +885,254 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
     return res
 
+def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
 
+    N = N_in  # number of shops to be considered
+    K = k_in
+    Q = q_in
+    M = M_in
+    DEPOT = W_in
+    DIST_DATA = duration_in
+    LOAD = demand_in
+    vehicles_start_times = ist_in
+
+    #K = K - len(hc_nodes)
+    #N = N - len(hc_nodes)
+
+    start_time = datetime.now()  # used for runtime calculation
+    entries = []
+
+    #if multithreaded:
+        # get the number of available cores
+    num_cores = int(multiprocessing.cpu_count())
+    #else:
+    #    num_cores = 1
+
+    # run num_cores many threads in parallel
+    # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
+    inputs = tqdm(num_cores * [1])
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None) for i in inputs)
+
+    # save the output of the current iteration
+    #entries.append(copy.deepcopy(processed_list))
+
+    iteration_count = 0
+
+    best = []
+
+    while iteration_count < ITERATION_COUNT:
+        # tqdm library prepares the previously generated permutations for the next iteration
+        inputs = tqdm(processed_list)
+        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
+
+        #
+        current_best_entries = []
+        thread_index = 1
+        for elem in processed_list:
+
+            # calculate total element count and total sum
+            #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
+            #total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
+
+            #if total_elem_count == 0:
+                # prevents division by zero error in some cases
+                #total_elem_count = 1
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            best.append(copy.deepcopy(elem[0]))
+            best.append(copy.deepcopy(elem[1]))
+            best.append(copy.deepcopy(elem[2]))
+            best.append(copy.deepcopy(elem[3]))
+            #print("-----------------------------------------")
+            total_sum = 0
+            # save the best entry of this current thread for the current iteration
+            #current_best_entries.append(elem[0])
+            thread_index = thread_index + 1
+        # save the last results of each thread
+        #entries.append(copy.deepcopy(processed_list))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("Number of Iterations Done: ", (iteration_count + 1))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        iteration_count = iteration_count + 1
+
+        if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
+            processed_list = Parallel(n_jobs=num_cores)(
+                delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                            ist_in=vehicles_start_times, permutations=None) for i in inputs)
+
+        #if iteration_count == ITERATION_COUNT:
+        #    processed_list = Parallel(n_jobs=num_cores)(
+        #        delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+        #                    ist_in=vehicles_start_times, permutations=best) for i in inputs)
+        #    ITERATION_COUNT = ITERATION_COUNT + 1
+
+    #best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+    #best_v2 = []
+    #best_old = copy.deepcopy(best)
+    iteration_count = 0
+    while False: #iteration_count < ITERATION_COUNT:
+
+        # tqdm library prepares the previously generated permutations for the next iteration
+        inputs = tqdm(processed_list)
+        #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
+
+        processed_list = Parallel(n_jobs=num_cores)(
+            delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                        ist_in=vehicles_start_times, permutations=best) for i in inputs)
+
+        #
+        #current_best_entries = []
+        thread_index = 1
+        for elem in processed_list:
+
+            # calculate total element count and total sum
+            #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
+            #total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
+
+            #if total_elem_count == 0:
+                # prevents division by zero error in some cases
+                #total_elem_count = 1
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            #current_best_entries.append(elem[0][2])
+            best.append(copy.deepcopy(elem[0]))
+            print("-----------------------------------------")
+            total_sum = 0
+            # save the best entry of this current thread for the current iteration
+            #current_best_entries.append(elem[0])
+            thread_index = thread_index + 1
+        iteration_count = iteration_count + 1
+    print("BEST RESULT BELOW:")
+    # print(best_result_list[0])
+    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+
+    best_route_max_time = best_result_list[0][2]
+    best_route_sum_time = best_result_list[0][3]
+    best_vehicle_routes = best_result_list[0][4]
+    best_vehicle_times = best_result_list[0][5]
+
+    if best_vehicle_times is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time}")
+        print(f"Best route sum time: {best_route_sum_time}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+    #print("wowowowowowowoowowowow")
+
+    #best = sorted(best, key=lambda x: x[2], reverse=False)
+
+    #best = best[0:int(len(best)/2)+1]
+
+    #processed_list = [best[i:i + int(len(best)/num_cores)] for i in range(0, len(best), int(len(best)/num_cores))]
+
+    iteration_count = 0
+
+    from itertools import groupby
+
+    def all_equal(iterable):
+        g = groupby(iterable)
+        return next(g, True) and not next(g, False)
+
+    together = True
+    seperate_counter = 0
+    all_equal_count = 0
+    ultimate = []
+    while iteration_count < ITERATION_COUNT*6:
+
+        # tqdm library prepares the previously generated permutations for the next iteration
+        inputs = tqdm(processed_list)
+        #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
+
+
+        if together:
+            processed_list = Parallel(n_jobs=num_cores)(
+                delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                            ist_in=vehicles_start_times, permutations=best) for i in inputs)
+        else:
+            processed_list = Parallel(n_jobs=num_cores)(
+                delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
+                            ist_in=vehicles_start_times, permutations=i) for i in inputs)
+
+            seperate_counter = seperate_counter + 1
+
+            if seperate_counter >= 8:
+                seperate_counter = 0
+                together = True
+
+        current_best_entries = []
+        thread_index = 1
+
+        for elem in processed_list:
+
+            # calculate total element count and total sum
+            #total_elem_count = sum(1 if i[2] != math.inf else 0 for i in elem)
+            #total_sum = sum(i[2] if i[2] != math.inf else 0 for i in elem)
+
+            #if total_elem_count == 0:
+                # prevents division by zero error in some cases
+                #total_elem_count = 1
+            elem = sorted(elem, key=lambda x: x[2], reverse=False)
+            #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
+            #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            current_best_entries.append(elem[0][2])
+            best.append(copy.deepcopy(elem[0]))
+            #print("-----------------------------------------")
+            total_sum = 0
+            # save the best entry of this current thread for the current iteration
+            #current_best_entries.append(elem[0])
+            thread_index = thread_index + 1
+
+        if all_equal(current_best_entries):
+            all_equal_count = all_equal_count + 1
+            #if all_equal_count > 3:
+            #    break
+            processed_list = [best[i:i + int(len(best) / num_cores)] for i in
+                              range(0, len(best), int(len(best) / num_cores))]
+            together = False
+            #print("NOT TOGETHER")
+
+        if len(best)*8 >= ITERATION_COUNT:
+            best = sorted(best, key=lambda x: x[2], reverse=False)
+            ultimate.append(copy.deepcopy(best[0]))
+            random.shuffle(best)
+            best = best[0:int(len(best) / 2) + 1]
+            #processed_list = [plist[0: int(len(plist)/4)] for plist in processed_list]
+        #else:
+            #best = sorted(best, key=lambda x: x[2], reverse=False)
+            #best = best[0:int(len(best) / 3) + 1]
+        #processed_list = [best[i:i + int(len(best) / num_cores)] for i in range(0, len(best), int(len(best) / num_cores))]
+
+        #processed_list = [plist[0: int(len(plist)/4)] for plist in processed_list]
+
+        # save the last results of each thread
+        #entries.append(copy.deepcopy(processed_list))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("Number of Iterations Done: ", (iteration_count + 1))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        iteration_count = iteration_count + 1
+        #print(iteration_count)
+
+
+
+
+    # sort the best results and get the first element as the solution
+    best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
+
+    return best_result_list
 
 def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
@@ -898,6 +1145,9 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     LOAD = demand_in
     vehicles_start_times = ist_in
 
+    best_res_list_normal = run_normal(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=W_in, duration_in=duration_in, demand_in=LOAD,
+                                 ist_in=ist_in)
+
     K = K - len(hc_nodes)
     N = N - len(hc_nodes)
 
@@ -906,7 +1156,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     #if multithreaded:
         # get the number of available cores
-    num_cores = 1 #int(multiprocessing.cpu_count())
+    num_cores = int(multiprocessing.cpu_count())
     #else:
     #    num_cores = 1
 
@@ -1137,6 +1387,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     best_res = best_result_list[0]
 
+
+
     #best_route = best_res[0][0]
 
     for hc_i in hc_nodes:
@@ -1164,15 +1416,26 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     #    pass
 
+    #best_normal = best_res_list_normal[0]
+
+    best_route_max_time_normal = best_res_list_normal[0][2]
+
+    best_route_max_time_preproc = s_best_res[0][1][0]
 
 
-    print("BEST RESULT BELOW:")
+    #if best_route_max_time_normal < best_route_max_time_preproc:
+    best_route_sum_time_normal = best_res_list_normal[0][3]
+    best_vehicle_routes_normal = best_res_list_normal[0][4]
+    best_vehicle_times_normal = best_res_list_normal[0][5]
+    #else:
+    best_route_sum_time_preproc = s_best_res[0][1][1]
+    best_vehicle_routes_preproc = s_best_res[0][1][2]
+    best_vehicle_times_preproc = s_best_res[0][1][3]
+
+
+    print("BEST RESULT BELOW normal:")
     #print(best_result_list[0])
 
-    best_route_max_time = s_best_res[0][1][0]
-    best_route_sum_time = s_best_res[0][1][1]
-    best_vehicle_routes = s_best_res[0][1][2]
-    best_vehicle_times = s_best_res[0][1][3]
 
 
     #for elem in hc_nodes:
@@ -1181,11 +1444,27 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     if best_vehicle_times is None:
         print("No feasible solution")
     else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+        print(f"Best route max time: {best_route_max_time_normal}")
+        print(f"Best route sum time: {best_route_sum_time_normal}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes_normal.items():
             print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
+        for vehicle_id, vehicle_time in best_vehicle_times_normal.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+
+    print("BEST RESULT BELOW preproc:")
+    # print(best_result_list[0])
+
+    # for elem in hc_nodes:
+
+    if best_vehicle_times is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time_preproc}")
+        print(f"Best route sum time: {best_route_sum_time_preproc}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes_preproc.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times_preproc.items():
             print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
