@@ -24,7 +24,7 @@ from src.utilities.vrp_helper import get_load_data
 
 #TODO TEST
 #from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
-from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run as test_sc_new
+from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run_normal as test_sc_new
 import numpy as np
 import math
 def get_stats(matrix, k, q):
@@ -69,13 +69,25 @@ def get_stats(matrix, k, q):
     alone_nodes = []
     #n_gaps = np.asarray(gaps)
 
+    # set a threshold for having ALONE NODES
     while k * q >= N:#max_num_elem_per_cycle > min_num_elem_per_cycle:
         current_max_selection_index = np.argmax(perc)
-        alone_nodes.append(current_max_selection_index)
-        perc[current_max_selection_index] = -1
-        #max_num_elem_per_cycle = max_num_elem_per_cycle - 1
-        k = k -1
-        N = N -1
+
+        addYN = True
+        for i in range(0,len(perc)):
+            if i != current_max_selection_index:
+                ratio = (perc[current_max_selection_index] / perc[i])
+                if not (ratio >= 1.5):
+                    addYN = False
+
+        if addYN:
+            alone_nodes.append(current_max_selection_index)
+            perc[current_max_selection_index] = -1
+            #max_num_elem_per_cycle = max_num_elem_per_cycle - 1
+            k = k -1
+            N = N -1
+        else:
+            break
     return alone_nodes
 
 
@@ -104,8 +116,9 @@ def run_GA(inputs):
         
         if not multithreaded:
             #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
+            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
             output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,
-                                 ist_in=ist, hc_nodes = hc_nodes)
+                                 ist_in=ist)
 
         else:
             # good example

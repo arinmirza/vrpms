@@ -24,11 +24,11 @@ from src.vrp.vehicles_pq import VehiclesPQ
 
 
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 500 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
 PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
-ITERATION_COUNT = 64 # limits the number of iterations for the genetic algorithm
+ITERATION_COUNT = 10 # limits the number of iterations for the genetic algorithm
 INF = float("inf")
 N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
@@ -738,9 +738,15 @@ def calculate_duration_V2(permutation, VST, dist_data, M, Q, load):
     else:
         assert len(VST) == M, f"Size of the vehicles_start_times should be {M}"
 
-    X = calculate_duration_perm_V2(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST, load = load)
+    perm = calculate_duration_perm_V2(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST, load = load)
 
-    return X
+    s_perm = sorted(perm, key = lambda x: x[1][0], reverse=False)
+
+    route_max_time = s_perm[0]
+    route  = s_perm[1]
+    route_sum_time  = s_perm[2]
+    vehicle_routes, vehicle_times  = s_perm[3]
+    return route_max_time, route, route_sum_time, vehicle_routes, vehicle_times
 
 def clean_permutations(permutations):
     """
@@ -1132,6 +1138,62 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     # sort the best results and get the first element as the solution
     best_result_list = sorted(ultimate, key=lambda x: x[2], reverse=False)
 
+    #best_route_max_time_preproc = best_result_list[0][1][0]
+
+    # if best_route_max_time_normal < best_route_max_time_preproc:
+    best_route_max_time = best_result_list[0][2]
+    best_route_sum_time = best_result_list[0][3]
+    best_vehicle_routes = best_result_list[0][4]
+    best_vehicle_times = best_result_list[0][5]
+    # else:
+    #best_route_sum_time_preproc = s_best_res[0][1][1]
+    #best_vehicle_routes_preproc = s_best_res[0][1][2]
+    #best_vehicle_times_preproc = s_best_res[0][1][3]
+
+    # print("BEST RESULT BELOW normal:")
+    # print(best_result_list[0])
+
+    # for elem in hc_nodes:
+
+    # if best_vehicle_times is None:
+    #    print("No feasible solution")
+    # else:
+    #    print(f"Best route max time: {best_route_max_time_normal}")
+    #    print(f"Best route sum time: {best_route_sum_time_normal}")
+    #    for vehicle_id, vehicle_cycles in best_vehicle_routes_normal.items():
+    #        print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+    #    for vehicle_id, vehicle_time in best_vehicle_times_normal.items():
+    #       print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+    print("BEST RESULT BELOW preproc:")
+    # print(best_result_list[0])
+
+    # for elem in hc_nodes:
+
+    if best_vehicle_times is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time}")
+        print(f"Best route sum time: {best_route_sum_time}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+    end_time = datetime.now()
+    exec_time = end_time - start_time
+    print(f"Time: {exec_time}")
+
+    print("END")
+
+    return (
+        best_route_max_time,
+        best_route_sum_time,
+        best_vehicle_routes,
+        best_vehicle_times,
+        str(exec_time)
+    )
+
     return best_result_list
 
 def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
@@ -1145,8 +1207,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     LOAD = demand_in
     vehicles_start_times = ist_in
 
-    best_res_list_normal = run_normal(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=W_in, duration_in=duration_in, demand_in=LOAD,
-                                 ist_in=ist_in)
+    #best_res_list_normal = run_normal(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=W_in, duration_in=duration_in, demand_in=LOAD,ist_in=ist_in)
 
     K = K - len(hc_nodes)
     N = N - len(hc_nodes)
@@ -1299,7 +1360,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     seperate_counter = 0
     all_equal_count = 0
     ultimate = []
-    while iteration_count < ITERATION_COUNT*6:
+    while False:#iteration_count < ITERATION_COUNT*6:
 
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
@@ -1418,22 +1479,22 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
     #best_normal = best_res_list_normal[0]
 
-    best_route_max_time_normal = best_res_list_normal[0][2]
+    #best_route_max_time_normal = best_res_list_normal[0][2]
 
     best_route_max_time_preproc = s_best_res[0][1][0]
 
 
     #if best_route_max_time_normal < best_route_max_time_preproc:
-    best_route_sum_time_normal = best_res_list_normal[0][3]
-    best_vehicle_routes_normal = best_res_list_normal[0][4]
-    best_vehicle_times_normal = best_res_list_normal[0][5]
+    #best_route_sum_time_normal = best_res_list_normal[0][3]
+    #best_vehicle_routes_normal = best_res_list_normal[0][4]
+    #best_vehicle_times_normal = best_res_list_normal[0][5]
     #else:
     best_route_sum_time_preproc = s_best_res[0][1][1]
     best_vehicle_routes_preproc = s_best_res[0][1][2]
     best_vehicle_times_preproc = s_best_res[0][1][3]
 
 
-    print("BEST RESULT BELOW normal:")
+    #print("BEST RESULT BELOW normal:")
     #print(best_result_list[0])
 
 
@@ -1441,15 +1502,15 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     #for elem in hc_nodes:
 
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time_normal}")
-        print(f"Best route sum time: {best_route_sum_time_normal}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes_normal.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times_normal.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+    #    print("No feasible solution")
+    #else:
+    #    print(f"Best route max time: {best_route_max_time_normal}")
+    #    print(f"Best route sum time: {best_route_sum_time_normal}")
+    #    for vehicle_id, vehicle_cycles in best_vehicle_routes_normal.items():
+    #        print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+    #    for vehicle_id, vehicle_time in best_vehicle_times_normal.items():
+    #       print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
 
     print("BEST RESULT BELOW preproc:")
