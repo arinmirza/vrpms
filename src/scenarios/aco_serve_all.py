@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 from src.utilities.helper.vrp_helper import solution_to_arrivals
 from src.utilities.helper.data_helper import (
@@ -80,7 +80,7 @@ def run(
     supabase_url_key_file: Optional[str] = "../../data/supabase/supabase_url_key.txt",
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
-    duration_data_type: str = "mapbox",
+    duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
 ) -> defaultdict:
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
