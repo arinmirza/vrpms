@@ -2,7 +2,7 @@ from typing import List
 
 from collections import defaultdict
 from src.vrp.ant_colony.aco_hybrid import solve
-from src.utilities.helper.data_helper import get_based_and_load_data
+from src.utilities.helper.data_helper import get_based_and_load_data, get_mapbox_and_local_data
 
 EPS = 1e-6
 TIME_UNITS = 3600  # hour = 60*60 seconds
@@ -29,6 +29,7 @@ def check_times(
                 u, v = path[idx - 1], path[idx]
                 real_vehicle_t += duration[u][v][hour]
         vehicle_t = vehicle_times[vehicle_id]
+        print(real_vehicle_t, vehicle_t)
         assert abs(real_vehicle_t - vehicle_t) < EPS, f"Vehicle time should be {real_vehicle_t} instead of {vehicle_t}"
         real_route_max_time = max(real_route_max_time, real_vehicle_t)
         real_route_sum_time += real_vehicle_t
@@ -38,6 +39,37 @@ def check_times(
     assert (
         abs(real_route_sum_time - route_sum_time) < EPS
     ), f"Route sum time should be {real_route_sum_time} instead of {route_sum_time}"
+
+
+def test_mapbox():
+    n = 21
+    m = 3
+    route_max_time = 11320.919999999998
+    route_sum_time = 31255.9
+    vehicle_routes = {}
+    vehicle_routes[0] = [[0, 2, 18, 19, 20, 3, 1, 0], [0, 10, 0]]
+    vehicle_routes[1] = [[0, 17, 15, 14, 12, 11, 13, 0], [0, 5, 4, 7, 6, 8, 9, 0]]
+    vehicle_routes[2] = [[0, 16, 0]]
+    vehicle_times = {}
+    vehicle_times[0] = 9081.67
+    vehicle_times[1] = 10853.310000000001
+    vehicle_times[2] = 11320.919999999998
+    """
+    route_max_time = 6679.639999999999
+    route_sum_time = 19933.379999999997
+    vehicle_routes = {}
+    vehicle_routes[0] = [[0, 17, 16, 0]]
+    vehicle_routes[1] = [[0, 8, 4, 7, 5, 6, 0], [0, 14, 11, 12, 13, 15, 0]]
+    vehicle_routes[2] = [[0, 18, 3, 20, 10, 9, 1, 0], [0, 2, 19, 0]]
+    vehicle_times = {}
+    vehicle_times[0] = 6679.639999999999
+    vehicle_times[1] = 6649.44
+    vehicle_times[2] = 6604.299999999999
+    """
+    vehicles_start_times = [0 for _ in range(m)]
+    supabase_url_key_file = "../../../../data/supabase/supabase_url_key.txt"
+    duration, _ = get_mapbox_and_local_data(None, None, supabase_url_key_file, None, n)
+    check_times(m, route_max_time, route_sum_time, vehicle_routes, vehicle_times, vehicles_start_times, duration)
 
 
 def test_aco(n=26, m=3, k=5, q=5, per_km_time=2):

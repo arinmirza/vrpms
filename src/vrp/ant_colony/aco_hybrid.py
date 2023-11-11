@@ -116,7 +116,7 @@ def solve(
     ignore_long_trip: bool = False,
     ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
-    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
@@ -249,10 +249,10 @@ def solve(
 
 
 def run(
-    n: int = 10,
+    n: int = 12,
     m: int = 2,
-    k: int = 10,
-    q: int = 3,
+    k: int = 3,
+    q: int = 5,
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
@@ -284,7 +284,7 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=10, n_best_results=1)
+    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=80, n_best_results=1)
     results_dict = []
     for result in results:
         (

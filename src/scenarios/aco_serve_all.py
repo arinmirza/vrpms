@@ -65,16 +65,16 @@ def solve_scenario(
                     if node != DEPOT:
                         ignored_customers.append(node)
     print(f"vehicle_routes: {vehicle_routes}")
-    print(f"vehicles_start_times: {vehicles_start_times}")
+    print(f"vehicles_finish_times: {vehicles_start_times}")
     print(f"ignored_customers: {ignored_customers}")
     return vehicle_routes
 
 
 def run(
-    n: int = 10,
+    n: int = 13,
     m: int = 2,
-    k: int = 10,
-    q: int = 3,
+    k: int = 3,
+    q: int = 5,
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../data/supabase/supabase_url_key.txt",
