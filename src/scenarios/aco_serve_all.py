@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple
 
-from src.utilities.helper.vrp_helper import solution_to_arrivals
+from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
@@ -19,6 +19,14 @@ INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
 
+def remove_customers_to_be_delayed(vehicle_id: int, cycle: List[int], delay_customers: List[int]) -> None:
+    customers_to_be_delayed = list(set(cycle) & set(delay_customers))
+    for customer in customers_to_be_delayed:
+        print(f"Costumer {customer} is delayed for the driver {vehicle_id}")
+        cycle.remove(customer)
+        delay_customers.remove(customer)
+
+
 def solve_scenario(
     n: int,
     m: int,
@@ -26,6 +34,7 @@ def solve_scenario(
     q: int,
     duration: List[List[List[float]]],
     load: Optional[List[int]],
+    delay_customers: List[int] = [],
 ) -> defaultdict:
     vehicles_start_times = [0 for _ in range(m)]
     ignored_customers = []
@@ -55,12 +64,14 @@ def solve_scenario(
         print(f"ignored_customers: {ignored_customers}")
         print(f"vrp_sol: {vrp_sol}")
         print("")
-        arrivals = solution_to_arrivals(vehicles_start_times, solution_routes, duration)
         for vehicle_id in available_vehicles:
-            if len(arrivals[vehicle_id]) > 0:
+            if len(vrp_sol[vehicle_id]) > 0:
                 cycle = vrp_sol[vehicle_id][0]
+                vehicle_start_time = vehicles_start_times[vehicle_id]
                 vehicle_routes[vehicle_id].append(cycle)
-                vehicles_start_times[vehicle_id] = arrivals[vehicle_id][0][-1]
+                remove_customers_to_be_delayed(vehicle_id, cycle, delay_customers)
+                vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
+                vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
                 for node in cycle:
                     if node != DEPOT:
                         ignored_customers.append(node)
@@ -75,6 +86,7 @@ def run(
     m: int = 2,
     k: int = 3,
     q: int = 5,
+    delay_customers: List[int] = [1, 3],
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../data/supabase/supabase_url_key.txt",
@@ -82,6 +94,7 @@ def run(
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
 ) -> defaultdict:
+    duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
         duration, load = get_mapbox_and_local_data(
@@ -91,7 +104,7 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    result = solve_scenario(n=n, m=m, k=k, q=q, duration=duration, load=load)
+    result = solve_scenario(n=n, m=m, k=k, q=q, duration=duration, load=load, delay_customers=delay_customers)
     return result
 
 
