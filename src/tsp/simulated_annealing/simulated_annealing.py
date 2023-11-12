@@ -24,14 +24,14 @@ INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" f
 
 
 def simulated_annealing_iterations(
-    distance: List[List[List[float]]],
+    duration: List[List[List[float]]],
     tour: List[int],
     n_iterations: int,
     neighborhood: Literal["2-opt", "exchange"],
     temperature: float,
-    length: float,
+    tour_duration: float,
     best_tour: List[int],
-    best_length: float,
+    best_tour_duration: float,
     start_time: float,
 ) -> Tuple[float, List[int], float, List[int]]:
     neighborhood = neighborhood.lower()
@@ -41,28 +41,30 @@ def simulated_annealing_iterations(
         if neighborhood == "2-opt":
             i = random.randrange(n_tour_nodes - 3)
             j = random.randrange(i + 2, n_tour_nodes - 1)
-            new_length, new_tour = update_tour_with_2opt(tour=tour, i=i, j=j, distance=distance, start_time=start_time)
+            new_tour_duration, new_tour = update_tour_with_2opt(
+                tour=tour, i=i, j=j, duration=duration, start_time=start_time
+            )
         elif neighborhood == "exchange":
             i = random.randrange(1, n_tour_nodes - 2)
             j = random.randrange(i + 1, n_tour_nodes - 1)
-            new_length, new_tour = update_tour_with_exchange(
-                tour=tour, i=i, j=j, distance=distance, start_time=start_time
+            new_tour_duration, new_tour = update_tour_with_exchange(
+                tour=tour, i=i, j=j, duration=duration, start_time=start_time
             )
         else:
             raise ValueError(f"Method {neighborhood} is not allowed. Options: '2-opt', 'exchange'")
-        delta = length - new_length
+        delta = tour_duration - new_tour_duration
         if delta > 0 or (random.random() < math.exp(delta / temperature)):
-            tour, length = new_tour, new_length
-        if length < best_length:
-            best_length = length
+            tour, tour_duration = new_tour, new_tour_duration
+        if tour_duration < best_tour_duration:
+            best_tour_duration = tour_duration
             best_tour = tour
-    return length, tour, best_length, best_tour
+    return tour_duration, tour, best_tour_duration, best_tour
 
 
 def simulated_annealing(
-    distance: List[List[List[float]]],
+    duration: List[List[List[float]]],
     tour: List[int],
-    length: float,
+    tour_duration: float,
     init_temperature: float,
     threshold: Union[int, float],
     n_iterations: int,
@@ -73,19 +75,19 @@ def simulated_annealing(
 ) -> Tuple[float, List[int]]:
     termination = termination.lower()
     assert termination in ["max_steps", "min_temp"], "Termination method is not valid"
-    best_tour, best_length = tour, length
+    best_tour, best_tour_duration = tour, tour_duration
     temperature = init_temperature
     step = 0
     while True:
-        length, tour, best_length, best_tour = simulated_annealing_iterations(
-            distance=distance,
+        tour_duration, tour, best_tour_duration, best_tour = simulated_annealing_iterations(
+            duration=duration,
             tour=tour,
             n_iterations=n_iterations,
             neighborhood=neighborhood,
             temperature=temperature,
-            length=length,
+            tour_duration=tour_duration,
             best_tour=best_tour,
-            best_length=best_length,
+            best_tour_duration=best_tour_duration,
             start_time=start_time,
         )
         if termination == "max_steps":
@@ -98,11 +100,11 @@ def simulated_annealing(
                 break
         else:
             raise ValueError(f"Method {termination} is not allowed. Options: 'max_steps', 'min_temp'")
-    return best_length, best_tour
+    return best_tour_duration, best_tour
 
 
 def solve(
-    distance: List[List[List[float]]],
+    duration: List[List[List[float]]],
     threshold: Union[int, float],
     n_iterations: int,
     alpha: float,
@@ -117,24 +119,24 @@ def solve(
     init = init.lower()
     assert init in ["nearest_neighbor", "successive_insertion", "random"], "Init method is not valid"
     if init == "nearest_neighbor":
-        length, tour = compute_nearest_neighbor_tour(
-            customers=customers, start_node=start_node, distance=distance, start_time=start_time
+        tour_duration, tour = compute_nearest_neighbor_tour(
+            customers=customers, start_node=start_node, duration=duration, start_time=start_time
         )
     elif init == "successive_insertion":
-        length, tour = compute_successive_insertion_tour(
-            customers=customers, start_node=start_node, distance=distance, start_time=start_time
+        tour_duration, tour = compute_successive_insertion_tour(
+            customers=customers, start_node=start_node, duration=duration, start_time=start_time
         )
     elif init == "random":
-        length, tour = compute_random_tour(
-            customers=customers, start_node=start_node, distance=distance, start_time=start_time
+        tour_duration, tour = compute_random_tour(
+            customers=customers, start_node=start_node, duration=duration, start_time=start_time
         )
     else:
         raise ValueError(f"Method {init} is not allowed. Options: 'nearest_neighbor', 'nearest_neighbor', 'random'")
-    init_temperature = length * alpha
-    best_length, best_tour = simulated_annealing(
-        distance=distance,
+    init_temperature = tour_duration * alpha
+    best_tour_duration, best_tour = simulated_annealing(
+        duration=duration,
         tour=tour,
-        length=length,
+        tour_duration=tour_duration,
         init_temperature=init_temperature,
         threshold=threshold,
         n_iterations=n_iterations,
@@ -143,7 +145,7 @@ def solve(
         neighborhood=neighborhood,
         start_time=start_time,
     )
-    return best_length, best_tour
+    return best_tour_duration, best_tour
 
 
 def run(
@@ -176,8 +178,8 @@ def run(
     else:
         raise ValueError(f"Method {duration_data_type} is not allowed. Options: 'mapbox', 'google', 'based'")
     customers = [i for i in range(1, n) if i != current_location]
-    best_length, best_tour = solve(
-        distance=duration,
+    best_tour_duration, best_tour = solve(
+        duration=duration,
         threshold=threshold,
         n_iterations=n_iterations,
         alpha=alpha,
@@ -191,9 +193,9 @@ def run(
     )
     end_time = datetime.now()
     print(f"Time: {end_time-start_time}")
-    print(f"Best route time: {best_length}")
+    print(f"Best route time: {best_tour_duration}")
     print(f"Best route: {best_tour}")
-    return best_length, best_tour
+    return best_tour_duration, best_tour
 
 
 if __name__ == "__main__":
