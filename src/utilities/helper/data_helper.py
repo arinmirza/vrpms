@@ -4,6 +4,15 @@ from src.utilities.data_gen.based.data_gen import get_time_data
 from src.db.supabase.db_supabase_mapbox import run as get_mapbox_data
 
 
+def multiply_duration(duration: List[List[List[float]]], mult: int = 60):
+    n1, n2, n3 = len(duration), len(duration[0]), len(duration[0][0])
+    for i1 in range(n1):
+        for i2 in range(n2):
+            for i3 in range(n3):
+                duration[i1][i2][i3] *= mult
+    return duration
+
+
 def get_load_data(input_file_load: Optional[str], n: int) -> List[int]:
     """
     Reads required capacities of locations for a problem where the loads are unique
@@ -86,6 +95,7 @@ def get_google_and_load_data(
         duration_hour = read_time_data(input_file_time)
         duration_old.append(duration_hour)
     duration = get_subset_time_data(duration_old, n, True)
+    multiply_duration(duration, mult=60)
     load = get_load_data(input_file_load, n)
     return duration, load
 
@@ -106,6 +116,7 @@ def get_based_and_load_data(
     """
     duration_old = get_time_data(per_km_time=per_km_time)
     duration = get_subset_time_data(duration_old, n, False)
+    multiply_duration(duration, mult=60)
     load = get_load_data(input_file_load, n)
     return duration, load
 
