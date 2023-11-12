@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import random
 
 DEPOT = 0
@@ -6,7 +6,7 @@ TIME_UNITS = 3600  # hour = 60*60 seconds
 INF = float("inf")
 
 
-def calculate_tour_length(tour: List[int], distance: List[List[List[float]]], start_time: float):
+def calculate_tour_length(tour: List[int], distance: List[List[List[float]]], start_time: float) -> float:
     t = start_time
     last_node = tour[0]
     for node in tour[1:]:
@@ -16,20 +16,26 @@ def calculate_tour_length(tour: List[int], distance: List[List[List[float]]], st
     return t
 
 
-def update_tour_with_2opt(tour: List[int], i: int, j: int, distance: List[List[List[float]]], start_time: float):
-    tour_new = tour[:i+1] + tour[j:i:-1] + tour[j+1:]
-    t_new = calculate_tour_length(tour_new, distance, start_time)
-    return tour_new, t_new
+def update_tour_with_2opt(
+    tour: List[int], i: int, j: int, distance: List[List[List[float]]], start_time: float
+) -> Tuple[float, List[int]]:
+    tour_new = tour[: i + 1] + tour[j:i:-1] + tour[j + 1 :]
+    t_new = calculate_tour_length(tour=tour_new, distance=distance, start_time=start_time)
+    return t_new, tour_new
 
 
-def update_tour_with_exchange(tour: List[int], i: int, j: int, distance: List[List[List[float]]], start_time: float):
+def update_tour_with_exchange(
+    tour: List[int], i: int, j: int, distance: List[List[List[float]]], start_time: float
+) -> Tuple[float, List[int]]:
     tour_new = tour.copy()
     tour_new[i], tour_new[j] = tour[j], tour[i]
-    t_new = calculate_tour_length(tour_new, distance, start_time)
-    return tour_new, t_new
+    t_new = calculate_tour_length(tour=tour_new, distance=distance, start_time=start_time)
+    return t_new, tour_new
 
 
-def compute_nearest_neighbor_tour(customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float):
+def compute_nearest_neighbor_tour(
+    customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float
+) -> Tuple[float, List[int]]:
     t = start_time
     tour = [start_node]
     last_node = start_node
@@ -47,29 +53,33 @@ def compute_nearest_neighbor_tour(customers: List[int], start_node: int, distanc
     h = int(t / TIME_UNITS)
     t += distance[last_node][DEPOT][h]
     tour.append(DEPOT)
-    return tour, t
+    return t, tour
 
 
-def compute_successive_insertion_tour(customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float):
+def compute_successive_insertion_tour(
+    customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float
+) -> Tuple[float, List[int]]:
     tour = [start_node, DEPOT]
     for node in customers:
         best_index = None
         min_distance = INF
         for i in range(1, len(tour)):
             tour_new = tour[:i] + [node] + tour[i:]
-            t_new = calculate_tour_length(tour_new, distance, start_time)
+            t_new = calculate_tour_length(tour=tour_new, distance=distance, start_time=start_time)
             if t_new < min_distance:
                 best_index = i
                 min_distance = t_new
         tour = tour[:best_index] + [node] + tour[best_index:]
-    t = calculate_tour_length(tour, distance, start_time)
-    return tour, t
+    t = calculate_tour_length(tour=tour, distance=distance, start_time=start_time)
+    return t, tour
 
 
-def compute_random_tour(customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float):
+def compute_random_tour(
+    customers: List[int], start_node: int, distance: List[List[List[float]]], start_time: float
+) -> Tuple[float, List[int]]:
     tour = customers.copy()
     random.shuffle(tour)
     tour.insert(0, start_node)
     tour.append(DEPOT)
-    t = calculate_tour_length(tour, distance, start_time)
-    return tour, t
+    t = calculate_tour_length(tour=tour, distance=distance, start_time=start_time)
+    return t, tour
