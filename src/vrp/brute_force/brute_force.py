@@ -3,11 +3,20 @@ from collections import defaultdict
 from datetime import datetime
 from typing import List, Literal, Optional, Tuple
 from src.vrp.vehicles_pq import VehiclesPQ
+from src.utilities.helper.data_helper import (
+    get_based_and_load_data,
+    get_google_and_load_data,
+    get_mapbox_and_local_data,
+)
 
 INF = float("inf")
 N_TIME_ZONES = 12  # hours = time slices
 TIME_UNITS = 3600  # hour = 60*60 seconds
 DEPOT = 0
+
+INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
+INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
+INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
 
 def calculate_duration(
@@ -218,3 +227,70 @@ def solve(
         best_vehicle_routes,
         best_vehicle_times,
     )
+
+
+def run(
+    n: int = 8,
+    m: int = 2,
+    k: int = 3,
+    q: int = 5,
+    supabase_url: Optional[str] = None,
+    supabase_key: Optional[str] = None,
+    supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
+    per_km_time: float = 5,
+    ignore_long_trip: bool = False,
+    input_file_load: Optional[str] = None,
+    ignored_customers: Optional[List[int]] = None,
+    vehicles_start_times: Optional[List[float]] = None,
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
+    duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
+) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
+    """
+    Gets dynamic time data of the common dataset and solves VRP using brute force
+
+    :param n: Number of locations
+    :param m: Max number of vehicles
+    :param k: Max number of cycles
+    :param q: Capacity of vehicle
+    :param supabase_url: Project URL
+    :param supabase_key: Project key
+    :param supabase_url_key_file: Path of the file including supabase_url and supabase_key
+    :param per_km_time: Multiplier to calculate duration from distance in km
+    :param ignore_long_trip: Flag to ignore long trips
+    :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
+        load is not unique. Example: "../../../data/loads/data_load.txt"
+    :param ignored_customers: List of customers to be ignored by the algorithm
+    :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
+        as zero.
+    :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
+        for the latest driver or sum of the durations of each driver
+    :param duration_data_type: Type of the duration data to be used
+    :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
+        routes for each driver and the travel duration for each driver
+    """
+    duration_data_type = duration_data_type.lower()
+    assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
+    if duration_data_type == "mapbox":
+        duration, load = get_mapbox_and_local_data(
+            supabase_url, supabase_key, supabase_url_key_file, input_file_load, n
+        )
+    elif duration_data_type == "google":
+        duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
+    else:
+        duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
+    return solve(
+        n=n,
+        m=m,
+        k=k,
+        q=q,
+        ignore_long_trip=ignore_long_trip,
+        duration=duration,
+        load=load,
+        ignored_customers=ignored_customers,
+        vehicles_start_times=vehicles_start_times,
+        objective_func_type=objective_func_type,
+    )
+
+
+if __name__ == "__main__":
+    run()
