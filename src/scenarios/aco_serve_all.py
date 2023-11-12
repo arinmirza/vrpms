@@ -75,6 +75,7 @@ def solve_scenario(
                 for node in cycle:
                     if node != DEPOT:
                         ignored_customers.append(node)
+    print("FINAL")
     print(f"vehicle_routes: {vehicle_routes}")
     print(f"vehicles_finish_times: {vehicles_start_times}")
     print(f"ignored_customers: {ignored_customers}")
