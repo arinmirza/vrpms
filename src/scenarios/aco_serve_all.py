@@ -7,7 +7,8 @@ from src.utilities.helper.data_helper import (
     get_google_and_load_data,
     get_mapbox_and_local_data,
 )
-from src.vrp.ant_colony.aco_hybrid import solve as solve_aco
+from src.vrp.ant_colony.aco_hybrid import solve as solve_aco_vrp
+from src.tsp.ant_colony.aco_hybrid import solve as solve_aco_tsp
 
 DEPOT = 0
 N_TIME_ZONES = 12  # hours = time slices
@@ -27,14 +28,57 @@ def remove_customers_to_be_delayed(vehicle_id: int, cycle: List[int], delay_cust
         delay_customers.remove(customer)
 
 
+def tsp_optimize(
+    n: int,
+    tsp_freq: int,
+    vehicle_id: int,
+    vehicle_start_time: float,
+    cycle: List[int],
+    duration: List[List[List[float]]],
+) -> List[int]:
+    if tsp_freq <= 0:
+        return cycle
+    old_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
+    old_vehicle_finish_time = old_vehicle_finish_times[0][-1]
+    print(f"Vehicle {vehicle_id} before TSP optimization")
+    print(f"Route time: {old_vehicle_finish_time}")
+    print(f"Route: {cycle}")
+    print()
+    n_cycle_nodes = len(cycle)
+    new_cycle = cycle.copy()
+    for i in range(0, n_cycle_nodes - 3, tsp_freq):
+        customers = new_cycle[i + 1 : -1]
+        new_vehicle_start_times = vehicle_solution_to_arrivals(vehicle_start_time, [new_cycle[: i + 1]], duration)
+        new_vehicle_start_time = new_vehicle_start_times[0][-1]
+        tsp_sol = solve_aco_tsp(
+            n=n,
+            duration=duration,
+            customers=customers,
+            current_time=new_vehicle_start_time,
+            current_location=new_cycle[i],
+            is_print_allowed=False,
+        )
+        tsp_sol_cycle = tsp_sol[0][1]
+        new_cycle[i:] = tsp_sol_cycle
+    new_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [new_cycle], duration)
+    new_vehicle_finish_time = new_vehicle_finish_times[0][-1]
+    print(f"Vehicle {vehicle_id} after TSP optimization")
+    print(f"Route time: {new_vehicle_finish_time}")
+    print(f"Route: {new_cycle}")
+    print("Improved" if new_vehicle_finish_time < old_vehicle_finish_time else "No improvement")
+    print()
+    return new_cycle if new_vehicle_finish_time < old_vehicle_finish_time else cycle
+
+
 def solve_scenario(
     n: int,
     m: int,
     k: int,
     q: int,
+    tsp_freq: int,
+    delay_customers: List[int],
     duration: List[List[List[float]]],
     load: Optional[List[int]],
-    delay_customers: List[int] = [],
 ) -> defaultdict:
     vehicles_start_times = [0 for _ in range(m)]
     ignored_customers = []
@@ -42,7 +86,7 @@ def solve_scenario(
     while len(ignored_customers) < n - 1:
         min_vehicle_start_times = min(vehicles_start_times)
         available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
-        vrp_sol = solve_aco(
+        vrp_sol = solve_aco_vrp(
             n=n,
             m=m,
             k=k,
@@ -67,14 +111,14 @@ def solve_scenario(
         for vehicle_id in available_vehicles:
             if len(vrp_sol[vehicle_id]) > 0:
                 cycle = vrp_sol[vehicle_id][0]
-                vehicle_start_time = vehicles_start_times[vehicle_id]
-                vehicle_routes[vehicle_id].append(cycle)
                 remove_customers_to_be_delayed(vehicle_id, cycle, delay_customers)
+                vehicle_start_time = vehicles_start_times[vehicle_id]
+                cycle = tsp_optimize(n, tsp_freq, vehicle_id, vehicle_start_time, cycle, duration)
+                vehicle_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
-                for node in cycle:
-                    if node != DEPOT:
-                        ignored_customers.append(node)
+                new_ignored_customers = [node for node in cycle if node != DEPOT]
+                ignored_customers.extend(new_ignored_customers)
     print("FINAL")
     print(f"vehicle_routes: {vehicle_routes}")
     print(f"vehicles_finish_times: {vehicles_start_times}")
@@ -83,10 +127,11 @@ def solve_scenario(
 
 
 def run(
-    n: int = 13,
+    n: int = 21,
     m: int = 2,
-    k: int = 3,
+    k: int = 10,
     q: int = 5,
+    tsp_freq: int = 2,
     delay_customers: List[int] = [1, 3],
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
@@ -105,7 +150,9 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    result = solve_scenario(n=n, m=m, k=k, q=q, duration=duration, load=load, delay_customers=delay_customers)
+    result = solve_scenario(
+        n=n, m=m, k=k, q=q, tsp_freq=tsp_freq, delay_customers=delay_customers, duration=duration, load=load
+    )
     return result
 
 
