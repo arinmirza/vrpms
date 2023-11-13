@@ -5,6 +5,8 @@ import random
 from collections import defaultdict
 from src.vrp.ant_colony.aco_1 import ACO_VRP_1
 from src.vrp.ant_colony.aco_2 import ACO_VRP_2
+from src.tsp.ant_colony.aco_hybrid import solve as solve_aco_tsp
+from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
@@ -15,6 +17,7 @@ from typing import Dict, List, Literal, Optional, Tuple, Union
 
 DEPOT = 0
 N_TIME_ZONES = 12  # hours = time slices
+EPS = 1e-6
 
 INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
@@ -113,6 +116,7 @@ def solve(
     load: Optional[List[int]] = None,
     n_hyperparams: int = 100,
     n_best_results: int = 1,
+    optimize_tsp: bool = True,
     ignore_long_trip: bool = False,
     ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
@@ -133,6 +137,7 @@ def solve(
     :param load: Loads of locations
     :param n_hyperparams: Number of hyperparamater settings to try
     :param n_best_results: Number of best results (hyperparamater settings) to print
+    :param optimize_tsp: Flag to optimize first tours of the vrp solution with TSP
     :param ignore_long_trip: Flag to ignore long trips
     :param ignored_customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
@@ -227,6 +232,33 @@ def solve(
             pheromone_use_first_hour,
             aco_method,
         ) = result
+        if result_idx == 0 and optimize_tsp:
+            min_vehicle_start_times = min(vehicles_start_times)
+            available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
+            for vehicle_id in available_vehicles:
+                if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
+                    vehicle_route = vehicle_routes[vehicle_id][0]
+                    tsp_sol = solve_aco_tsp(
+                        n=n,
+                        duration=duration,
+                        customers=vehicle_route[1:-1],
+                        current_time=min_vehicle_start_times,
+                        current_location=DEPOT,
+                        is_print_allowed=False,
+                    )
+                    arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, [vehicle_route], duration)
+                    vrp_sol_route_time = arrivals[0][-1]
+                    tsp_sol_route_time, tsp_sol_route = tsp_sol[0][0], tsp_sol[0][1]
+                    if tsp_sol_route_time < vrp_sol_route_time:
+                        results[0][2][vehicle_id][0] = tsp_sol_route
+                        # TODO: Modify route_max_time, route_sum_time, vehicle_times
+                        if is_print_allowed:
+                            print(f"Improved vehicle {vehicle_id}")
+                            print(f"Improved from {vrp_sol_route_time} to {tsp_sol_route_time}")
+                            print(f"Old route: {vehicle_route}")
+                            print(f"New route: {tsp_sol_route}")
+                    elif is_print_allowed:
+                        print(f"No improvement for vehicle {vehicle_id}")
         if is_print_allowed:
             print_sol(
                 result_idx=result_idx,
