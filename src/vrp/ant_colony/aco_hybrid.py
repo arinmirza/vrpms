@@ -68,11 +68,11 @@ def get_hyperparams() -> Dict[str, Union[int, float]]:
 
 def print_sol(
     result_idx: int,
-    best_iter: int,
     route_max_time: float,
     route_sum_time: float,
     vehicle_routes: defaultdict,
     vehicle_times: defaultdict,
+    best_iter: int,
     hyperparams: Dict[str, Union[int, float]],
     consider_depot: bool,
     pheromone_use_first_hour: bool,
@@ -82,11 +82,11 @@ def print_sol(
     Prints one of the best solutions
 
     :param result_idx: Rank of the best result among all hyperparameter settings
-    :param best_iter: Index of the best tour among iterations
     :param route_max_time: Total time it takes to visit the locations for the latest driver
     :param route_sum_time: Sum of the durations of each driver
     :param vehicle_routes: The routes for each driver
     :param vehicle_times: The travel duration for each driver
+    :param best_iter: Index of the best tour among iterations
     :param hyperparams: Hyperparameter settings for the given best tour
     :param consider_depot: Flag to consider depot as a candidate place to visit next
     :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
@@ -105,6 +105,68 @@ def print_sol(
         print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
     for vehicle_id, vehicle_time in vehicle_times.items():
         print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+
+
+def tsp_optimize(
+    n: int,
+    m: int,
+    duration: List[List[List[float]]],
+    vehicles_start_times: List[float],
+    is_print_allowed: bool,
+    result: Tuple,
+) -> Tuple:
+    route_max_time, route_sum_time, vehicle_routes, vehicle_times = result[:4]
+    min_vehicle_start_times = min(vehicles_start_times)
+    available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
+    improved_vehicles = set()
+    for vehicle_id in available_vehicles:
+        if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
+            vehicle_route = vehicle_routes[vehicle_id][0]
+            tsp_sol = solve_aco_tsp(
+                n=n,
+                duration=duration,
+                customers=vehicle_route[1:-1],
+                current_time=min_vehicle_start_times,
+                current_location=DEPOT,
+                is_print_allowed=False,
+            )
+            arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, [vehicle_route], duration)
+            vrp_sol_route_time = arrivals[0][-1]
+            tsp_sol_route_time, tsp_sol_route = tsp_sol[0][0], tsp_sol[0][1]
+            if tsp_sol_route_time < vrp_sol_route_time:
+                improved_vehicles.add(vehicle_id)
+                vehicle_routes[vehicle_id][0] = tsp_sol_route
+                if is_print_allowed:
+                    print(f"Improved vehicle {vehicle_id}")
+                    print(f"TSP Improved from {vrp_sol_route_time} to {tsp_sol_route_time}")
+                    print(f"Old TSP cycle: {vehicle_route}")
+                    print(f"New TSP cycle: {tsp_sol_route}")
+                    print(f"Old finish time for {vehicle_id} = {vehicle_times[vehicle_id]}")
+            elif is_print_allowed:
+                print(f"No improvement for vehicle {vehicle_id}")
+    new_route_max_time, new_route_sum_time, new_vehicle_times = 0, 0, defaultdict(list)
+    for vehicle_id in range(m):
+        if vehicle_id in improved_vehicles:
+            arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, vehicle_routes[vehicle_id], duration)
+            vehicle_time = arrivals[-1][-1]
+            if is_print_allowed:
+                print(f"New finish time for {vehicle_id} = {vehicle_time}")
+        else:
+            vehicle_time = vehicle_times[vehicle_id]
+        new_route_max_time = max(new_route_max_time, vehicle_time)
+        new_route_sum_time += vehicle_time
+        new_vehicle_times[vehicle_id] = vehicle_time
+    return (
+        new_route_max_time,
+        new_route_sum_time,
+        vehicle_routes,
+        new_vehicle_times,
+        result[4],
+        result[5],
+        result[6],
+        result[7],
+        result[8],
+    )
 
 
 def solve(
@@ -220,57 +282,22 @@ def solve(
 
     time_end = datetime.datetime.now()
 
-    for result_idx, result in reversed(list(enumerate(results[:n_best_results]))):
-        (
-            route_max_time,
-            route_sum_time,
-            vehicle_routes,
-            vehicle_times,
-            best_iter,
-            hyperparams,
-            consider_depot,
-            pheromone_use_first_hour,
-            aco_method,
-        ) = result
-        if result_idx == 0 and optimize_tsp:
-            min_vehicle_start_times = min(vehicles_start_times)
-            available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
-            for vehicle_id in available_vehicles:
-                if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
-                    vehicle_route = vehicle_routes[vehicle_id][0]
-                    tsp_sol = solve_aco_tsp(
-                        n=n,
-                        duration=duration,
-                        customers=vehicle_route[1:-1],
-                        current_time=min_vehicle_start_times,
-                        current_location=DEPOT,
-                        is_print_allowed=False,
-                    )
-                    arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, [vehicle_route], duration)
-                    vrp_sol_route_time = arrivals[0][-1]
-                    tsp_sol_route_time, tsp_sol_route = tsp_sol[0][0], tsp_sol[0][1]
-                    if tsp_sol_route_time < vrp_sol_route_time:
-                        results[0][2][vehicle_id][0] = tsp_sol_route
-                        # TODO: Modify route_max_time, route_sum_time, vehicle_times
-                        if is_print_allowed:
-                            print(f"Improved vehicle {vehicle_id}")
-                            print(f"Improved from {vrp_sol_route_time} to {tsp_sol_route_time}")
-                            print(f"Old route: {vehicle_route}")
-                            print(f"New route: {tsp_sol_route}")
-                    elif is_print_allowed:
-                        print(f"No improvement for vehicle {vehicle_id}")
-        if is_print_allowed:
+    if optimize_tsp:
+        results[0] = tsp_optimize(n, m, duration, vehicles_start_times, is_print_allowed, results[0])
+
+    if is_print_allowed:
+        for result_idx in range(n_best_results):
             print_sol(
                 result_idx=result_idx,
-                best_iter=best_iter,
-                route_max_time=route_max_time,
-                route_sum_time=route_sum_time,
-                vehicle_routes=vehicle_routes,
-                vehicle_times=vehicle_times,
-                hyperparams=hyperparams,
-                consider_depot=consider_depot,
-                pheromone_use_first_hour=pheromone_use_first_hour,
-                aco_method=aco_method,
+                route_max_time=results[result_idx][0],
+                route_sum_time=results[result_idx][1],
+                vehicle_routes=results[result_idx][2],
+                vehicle_times=results[result_idx][3],
+                best_iter=results[result_idx][4],
+                hyperparams=results[result_idx][5],
+                consider_depot=results[result_idx][6],
+                pheromone_use_first_hour=results[result_idx][7],
+                aco_method=results[result_idx][8],
             )
 
     time_diff = time_end - time_start
