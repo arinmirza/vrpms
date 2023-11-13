@@ -1,6 +1,6 @@
 import itertools
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
@@ -96,7 +96,7 @@ def run(
     current_location: int = DEPOT,
     ignore_long_trip: bool = False,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> Tuple[float, Optional[List[int]]]:
+) -> Dict:
     """
     Calculates total time it takes to visit the locations and the route for the optimal solution
 
@@ -120,7 +120,9 @@ def run(
     else:
         duration, load = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
-    return solve(current_time, current_location, customers, duration, ignore_long_trip)
+    result = solve(current_time, current_location, customers, duration, ignore_long_trip)
+    result_dict = {"route_time": result[0], "route": result[1]}
+    return result_dict
 
 
 if __name__ == "__main__":

@@ -318,7 +318,7 @@ def run(
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> List[Dict]:
+) -> Dict:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
@@ -345,33 +345,20 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=80, n_best_results=1)
-    results_dict = []
-    for result in results:
-        (
-            route_max_time,
-            route_sum_time,
-            vehicle_routes,
-            vehicle_times,
-            best_iter,
-            hyperparams,
-            consider_depot,
-            pheromone_use_first_hour,
-            aco_method,
-        ) = result
-        result_dict = {
-            "route_max_time": route_max_time,
-            "route_sum_time": route_sum_time,
-            "vehicle_routes": vehicle_routes,
-            "vehicle_times": vehicle_times,
-            "best_iter": best_iter,
-            "hyperparams": hyperparams,
-            "consider_depot": consider_depot,
-            "pheromone_use_first_hour": pheromone_use_first_hour,
-            "aco_method": aco_method,
-        }
-        results_dict.append(result_dict)
-    print(results_dict)
-    return results_dict
+    result = results[0]
+    result_dict = {
+        "route_max_time": result[0],
+        "route_sum_time": result[1],
+        "vehicle_routes": result[2],
+        "vehicle_times": result[3],
+        "best_iter": result[4],
+        "hyperparams": result[5],
+        "consider_depot": result[6],
+        "pheromone_use_first_hour": result[7],
+        "aco_method": result[8],
+    }
+    print(result_dict)
+    return result_dict
 
 
 if __name__ == "__main__":

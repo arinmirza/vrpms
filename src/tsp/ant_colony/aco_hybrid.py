@@ -198,7 +198,7 @@ def run(
     current_time: float = 0,
     current_location: int = DEPOT,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> List[Dict]:
+) -> Dict:
     """
     Gets input data, try different hyperparamater settings and solve TSP with ACO
 
@@ -231,27 +231,16 @@ def run(
         n_hyperparams=80,
         n_best_results=1,
     )
-    results_dict = []
-    for result in results:
-        (
-            route_time,
-            route,
-            best_iter,
-            hyperparams,
-            pheromone_use_first_hour,
-            aco_method,
-        ) = result
-        result_dict = {
-            "route_time": route_time,
-            "route": route,
-            "best_iter": best_iter,
-            "hyperparams": hyperparams,
-            "pheromone_use_first_hour": pheromone_use_first_hour,
-            "aco_method": aco_method,
-        }
-        results_dict.append(result_dict)
-    print(results_dict)
-    return results_dict
+    result = results[0]
+    result_dict = {
+        "route_time": result[0],
+        "route": result[1],
+        "best_iter": result[2],
+        "hyperparams": result[3],
+        "pheromone_use_first_hour": result[4],
+        "aco_method": result[5],
+    }
+    return result_dict
 
 
 if __name__ == "__main__":

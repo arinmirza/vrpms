@@ -1,7 +1,7 @@
 import itertools
 from collections import defaultdict
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 from src.vrp.vehicles_pq import VehiclesPQ
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
@@ -244,7 +244,7 @@ def run(
     vehicles_start_times: Optional[List[float]] = None,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
+) -> Dict:
     """
     Gets dynamic time data of the common dataset and solves VRP using brute force
 
@@ -278,7 +278,7 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    return solve(
+    result = solve(
         n=n,
         m=m,
         k=k,
@@ -290,6 +290,13 @@ def run(
         vehicles_start_times=vehicles_start_times,
         objective_func_type=objective_func_type,
     )
+    result_dict = {
+        "route_max_time": result[0],
+        "route_sum_time": result[1],
+        "vehicle_routes": result[2],
+        "vehicle_times": result[3],
+    }
+    return result_dict
 
 
 if __name__ == "__main__":

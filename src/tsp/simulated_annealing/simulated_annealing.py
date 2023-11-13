@@ -1,7 +1,7 @@
 import math
 import random
 from datetime import datetime
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from src.tsp.simulated_annealing.simulated_annealing_helper import (
     update_tour_with_2opt,
@@ -164,7 +164,7 @@ def run(
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
     per_km_time: int = 1,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> Tuple[float, List[int]]:
+) -> Dict:
     assert current_location < n, "Start node should be in the fetched duration data"
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
@@ -195,7 +195,8 @@ def run(
     print(f"Time: {end_time-start_time}")
     print(f"Best route time: {best_tour_duration}")
     print(f"Best route: {best_tour}")
-    return best_tour_duration, best_tour
+    result_dict = {"route_time": best_tour_duration, "route": best_tour}
+    return result_dict
 
 
 if __name__ == "__main__":

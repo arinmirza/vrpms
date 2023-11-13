@@ -3,7 +3,12 @@ import json
 from http.server import BaseHTTPRequestHandler
 
 # Absolute import modules inside src folder
-from src.vrp.ant_colony.aco_hybrid import run
+from src.vrp.ant_colony.aco_hybrid import run as vrp_aco
+from src.vrp.brute_force.brute_force import run as vrp_bf
+from src.tsp.ant_colony.aco_hybrid import run as tsp_aco
+from src.tsp.brute_force.brute_force import run as tsp_bf
+from src.tsp.simulated_annealing.simulated_annealing import run as tsp_sa
+
 from urllib.parse import urlparse, parse_qs
 
 SUPABASE_URL = "https://pkeygmzuwfucblldmkjn.supabase.co"
@@ -20,18 +25,32 @@ class handler(BaseHTTPRequestHandler):
         parsed_url = urlparse(self.path)
         query_params = parse_qs(parsed_url.query)
 
-        program_mode = query_params["program_mode"][0] if "program_mode" in query_params else "default"
-        algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "default"
-        data_dict = {"program_mode": program_mode, "algorithm": algorithm}
+        program_mode = query_params["program_mode"][0] if "program_mode" in query_params else "no_program_mode"
+        if program_mode not in ["vrp", "tsp"]:
+            program_mode = "no_program_mode"
+        algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "no_algorithm"
+        if algorithm not in ["aco", "bf", "sa"]:
+            algorithm = "no_algorithm"
+        input_dict = {"program_mode": program_mode, "algorithm": algorithm}
 
+        result = "no_result"
         time_start = datetime.datetime.now()
-        aco_result = run(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+        if program_mode != "no_program_mode" and algorithm != "no_algorithm":
+            if program_mode == "vrp" and algorithm == "aco":
+                result = vrp_aco(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            elif program_mode == "vrp" and algorithm == "bf":
+                result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            elif program_mode == "tsp" and algorithm == "aco":
+                result = tsp_aco(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            elif program_mode == "tsp" and algorithm == "bf":
+                result = tsp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            elif program_mode == "tsp" and algorithm == "sa":
+                result = tsp_sa(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
         time_end = datetime.datetime.now()
-        time_diff = time_end - time_start
-        time_diff = time_diff.total_seconds()
+        time_diff = (time_end - time_start).total_seconds()
 
         # Construct an example response
-        body = {"aco": aco_result, "time_diff": time_diff, "data_dict": data_dict}
+        body = {"input_dict": input_dict, "result": result, "time_diff": time_diff}
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8
         encoded_body = json.dumps(body).encode("utf-8")
