@@ -8,7 +8,7 @@ from src.tsp.ant_colony.aco_2 import ACO_TSP_2
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
-    get_mapbox_and_local_data,
+    get_mapbox_and_load_data,
 )
 
 from typing import Dict, List, Literal, Optional, Tuple, Union
@@ -216,7 +216,7 @@ def run(
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_local_data(supabase_url, supabase_key, supabase_url_key_file, None, n)
+        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, None, n)
     elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, None, n)
     else:

@@ -13,7 +13,7 @@ from src.tsp.simulated_annealing.simulated_annealing_helper import (
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
-    get_mapbox_and_local_data,
+    get_mapbox_and_load_data,
 )
 
 DEPOT = 0
@@ -170,7 +170,7 @@ def run(
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     start_time = datetime.now()
     if duration_data_type == "mapbox":
-        duration, _ = get_mapbox_and_local_data(supabase_url, supabase_key, supabase_url_key_file, None, n)
+        duration, _ = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, None, n)
     elif duration_data_type == "google":
         duration, _ = get_google_and_load_data(INPUT_FILES_TIME, None, n)
     elif duration_data_type == "based":

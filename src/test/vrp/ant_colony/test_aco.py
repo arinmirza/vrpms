@@ -2,7 +2,7 @@ from typing import List
 
 from collections import defaultdict
 from src.vrp.ant_colony.aco_hybrid import solve
-from src.utilities.helper.data_helper import get_based_and_load_data, get_mapbox_and_local_data
+from src.utilities.helper.data_helper import get_based_and_load_data, get_mapbox_and_load_data
 
 EPS = 1e-6
 TIME_UNITS = 3600  # hour = 60*60 seconds
@@ -68,7 +68,7 @@ def test_mapbox():
     """
     vehicles_start_times = [0 for _ in range(m)]
     supabase_url_key_file = "../../../../data/supabase/supabase_url_key.txt"
-    duration, _ = get_mapbox_and_local_data(None, None, supabase_url_key_file, None, n)
+    duration, _ = get_mapbox_and_load_data(None, None, supabase_url_key_file, None, n)
     check_times(m, route_max_time, route_sum_time, vehicle_routes, vehicle_times, vehicles_start_times, duration)
 
 

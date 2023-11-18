@@ -121,7 +121,7 @@ def get_based_and_load_data(
     return duration, load
 
 
-def get_mapbox_and_local_data(
+def get_mapbox_and_load_data(
     supabase_url: Optional[str],
     supabase_key: Optional[str],
     supabase_url_key_file: Optional[str],
