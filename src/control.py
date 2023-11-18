@@ -291,12 +291,17 @@ if __name__ == "__main__":
     }
 
     algo_inputs = {
-        "N": 20,
+        "N": 15,
         "M": 3,
-        "q": 7,
+        "q": 6,
         "k": 5,
-        "multithreaded": False,
+        "multithreaded": True,
+        "cl": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+        "sn": 2
     }
+
+
+
 
     # k*q >= n-1
 

@@ -103,9 +103,12 @@ def run_GA(inputs):
     W = algo_inputs["W"] if ("W" in algo_inputs) else 0
     duration = algo_inputs["duration"]
     multithreaded = algo_inputs["multithreaded"]
-    load = algo_inputs["load"] if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1)
+    cl = algo_inputs["cl"]
+    sn = algo_inputs["sn"]
+    load = algo_inputs["load"] if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1 if cl == [] else len(cl)+1)
     ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None
     pm = inputs["program_mode"]
+
     
     output = None
 
@@ -118,22 +121,22 @@ def run_GA(inputs):
             #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
             output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,
-                                 ist_in=ist)
+                                 ist_in=ist, customer_list = cl)
 
         else:
             # good example
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist)
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, customer_list = cl)
     
     elif pm == "TSP":
         
         if not multithreaded:
            #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load,  ist_in=ist, multithreaded=False)
+            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load,  ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl)
         else:
             output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist, multithreaded=True)
+                                              demand_in=load, ist_in=ist, multithreaded=True,  start_node = sn, customer_list=cl)
             #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
     
     
