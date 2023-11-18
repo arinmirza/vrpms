@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import List, Literal, Optional
 
 from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
 from src.utilities.helper.data_helper import (
