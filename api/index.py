@@ -2,7 +2,6 @@ import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 
-# Absolute import modules inside src folder
 from src.vrp.ant_colony.aco_hybrid import run as vrp_aco
 from src.vrp.brute_force.brute_force import run as vrp_bf
 from src.tsp.ant_colony.aco_hybrid import run as tsp_aco
