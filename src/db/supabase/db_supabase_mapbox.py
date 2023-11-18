@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 from supabase import create_client, Client
 
 
-def get_content(file_path: str) -> Tuple[str, str]:
+def get_url_key(file_path: str) -> Tuple[str, str]:
     file = open(file_path, "r")
     lines = file.readlines()
     for i in range(2):
@@ -11,24 +11,32 @@ def get_content(file_path: str) -> Tuple[str, str]:
     return lines[0], lines[1]
 
 
-def table_query(supabase: Client, table_name: str = "durations") -> List[List[List[float]]]:
-    query = supabase.table(table_name).select("*").execute()
-    mapbox_data = query.data[0]["json"]
-    return mapbox_data
-
-
-def run(
+def get_supabase_client(
     url: Optional[str] = None,
     key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
 ):
     if supabase_url_key_file:
-        url, key = get_content(supabase_url_key_file)
-    supabase = create_client(url, key)
-    mapbox_data = table_query(supabase)
+        url, key = get_url_key(supabase_url_key_file)
+    supabase_client = create_client(url, key)
+    return supabase_client
+
+
+def get_mapbox_duration_data(
+    url: Optional[str] = None,
+    key: Optional[str] = None,
+    supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
+    query_row_id: int = 1,
+    table_name: str = "durations",
+    query_column_name: str = "id",
+    data_column_name: str = "json",
+):
+    supabase_client = get_supabase_client(url, key, supabase_url_key_file)
+    query = supabase_client.table(table_name).select("*").eq(column=query_column_name, value=query_row_id).execute()
+    mapbox_data = query.data[0][data_column_name]
     print(mapbox_data)
     return mapbox_data
 
 
 if __name__ == "__main__":
-    run()
+    get_mapbox_duration_data()
