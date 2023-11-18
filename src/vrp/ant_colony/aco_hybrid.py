@@ -337,7 +337,7 @@ def run(
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, input_file_load, n)
+        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:

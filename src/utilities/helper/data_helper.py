@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 from src.utilities.data_gen.based.data_gen import get_time_data
-from src.db.supabase.db_supabase_mapbox import get_mapbox_duration_data
+from src.db.supabase.db_supabase_mapbox import get_mapbox_duration_data, get_mapbox_load_data
 
 
 def multiply_duration(duration: List[List[List[float]]], mult: int = 60):
@@ -125,11 +125,11 @@ def get_mapbox_and_load_data(
     supabase_url: Optional[str],
     supabase_key: Optional[str],
     supabase_url_key_file: Optional[str],
-    input_file_load: Optional[str],
     n: int = 25,
-    query_row_id: int = 1,
+    duration_query_row_id: int = 1,
+    load_query_row_id: int = 1,
 ):
-    duration_old = get_mapbox_duration_data(supabase_url, supabase_key, supabase_url_key_file, query_row_id)
+    duration_old = get_mapbox_duration_data(supabase_url, supabase_key, supabase_url_key_file, duration_query_row_id)
     duration = get_subset_time_data(duration_old, n, False)
-    load = get_load_data(input_file_load, n)
+    load = get_mapbox_load_data(supabase_url, supabase_key, supabase_url_key_file, load_query_row_id, n)
     return duration, load

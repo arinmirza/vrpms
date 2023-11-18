@@ -114,7 +114,7 @@ def run(
     assert current_location < n, "Current location should be in the fetched duration data"
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, None, n)
+        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, None, n)
     else:

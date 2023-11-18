@@ -68,7 +68,7 @@ def test_mapbox():
     """
     vehicles_start_times = [0 for _ in range(m)]
     supabase_url_key_file = "../../../../data/supabase/supabase_url_key.txt"
-    duration, _ = get_mapbox_and_load_data(None, None, supabase_url_key_file, None, n)
+    duration, _ = get_mapbox_and_load_data(None, None, supabase_url_key_file, n)
     check_times(m, route_max_time, route_sum_time, vehicle_routes, vehicle_times, vehicles_start_times, duration)
 
 
