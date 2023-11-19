@@ -8,7 +8,8 @@ TIME_UNITS = 3600  # hour = 60*60 seconds
 def tsp_result_2_output(
     start_time: float, start_node: int, duration: List[List[List[float]]], locations: Dict, tsp_result: Dict
 ) -> Dict:
-    route_time, route = tsp_result["route_time"], tsp_result["route"]
+    # route_time = tsp_result["route_time"]
+    route = tsp_result["route"]
     tour = []
     current_node, current_time = start_node, start_time
     for node in route:
@@ -18,8 +19,9 @@ def tsp_result_2_output(
         current_time += duration[current_node][node][hour]
         current_node = node
         tour.append({"lat": lat, "lng": lng, "arrivalTime": current_time})
-    result = {"duration": route_time, "vehicle": tour}
-    return result
+    # result = {"duration": route_time, "vehicle": tour}
+    output = {"duration": current_time, "vehicle": tour}
+    return output
 
 
 def vrp_result_2_output(
@@ -30,17 +32,18 @@ def vrp_result_2_output(
     capacities: List[int],
 ) -> Dict:
     m = len(vehicles_start_times)
-    route_max_time = vrp_result["route_max_time"]
-    route_sum_time = vrp_result["route_sum_time"]
+    # route_max_time = vrp_result["route_max_time"]
+    # route_sum_time = vrp_result["route_sum_time"]
     vehicles_routes = vrp_result["vehicles_routes"]
-    vehicles_times = vrp_result["vehicles_times"]
+    # vehicles_times = vrp_result["vehicles_times"]
     vehicles = []
+    route_max_time, route_sum_time = 0, 0
     for vehicle_id in range(m):
         vehicle_tours = []
+        current_time = vehicles_start_times[vehicle_id]
         if vehicle_id in vehicles_routes:
             vehicle_route = vehicles_routes[vehicle_id]
             current_node = DEPOT
-            current_time = vehicles_start_times[vehicle_id]
             for cycle in vehicle_route:
                 cycle_output = []
                 for node in cycle:
@@ -54,8 +57,10 @@ def vrp_result_2_output(
         vehicle_dict = {
             "tours": vehicle_tours,
             "capacity": capacities[vehicle_id],
-            "totalDuration": vehicles_times[vehicle_id],
+            "totalDuration": current_time,  # vehicles_times[vehicle_id]
         }
+        route_sum_time += current_time
+        route_max_time = max(route_max_time, current_time)
         vehicles.append(vehicle_dict)
-    result = {"durationMax": route_max_time, "durationSum": route_sum_time, "vehicles": vehicles}
-    return result
+    output = {"durationMax": route_max_time, "durationSum": route_sum_time, "vehicles": vehicles}
+    return output
