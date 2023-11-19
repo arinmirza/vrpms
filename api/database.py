@@ -63,8 +63,8 @@ class DatabaseVRP(Database):
             "name": name,
             "description": description,
             "owner": email,
-            "durationMax": duration_max,
-            "durationSum": duration_sum,
+            "durationMax": int(duration_max),
+            "durationSum": int(duration_sum),
             "locations": locations,
             "vehicles": vehicles,
         }
@@ -97,7 +97,7 @@ class DatabaseTSP(Database):
             "name": name,
             "description": description,
             "owner": email,
-            "duration": duration,
+            "duration": int(duration),
             "locations": locations,
             "vehicle": vehicle,
         }

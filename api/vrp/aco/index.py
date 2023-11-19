@@ -43,13 +43,13 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        locations = convert_locations(locations)
+        new_locations = convert_locations(locations)
         available_customers, all_ignored_customers = get_available_and_all_ignored_customers(
-            locations=locations,
+            locations=new_locations,
             ignored_customers=params["ignored_customers"],
             completed_customers=params["completed_customers"],
         )
-        demands = get_demands_from_locations(durations, locations)
+        demands = get_demands_from_locations(durations, new_locations)
 
         vrp_result = run_request(
             q=params["capacities"][0],
@@ -62,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
         result = vrp_result_2_output(
             vehicles_start_times=params["start_times"],
             duration=durations,
-            locations=locations,
+            locations=new_locations,
             vrp_result=vrp_result,
             capacities=params["capacities"],
         )
