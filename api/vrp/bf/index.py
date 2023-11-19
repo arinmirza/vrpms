@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
-from api.vrp.database_vrp import DatabaseVRP
+from api.database import DatabaseVRP
 from api.helpers import fail, success
-from api.vrp.parameters_vrp import parse_common_parameters
+from api.parameters import parse_common_vrp_parameters
 
 
 class handler(BaseHTTPRequestHandler):
@@ -21,7 +21,7 @@ class handler(BaseHTTPRequestHandler):
 
         # Parse parameters
         errors = []
-        params = parse_common_parameters(content, errors)
+        params = parse_common_vrp_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)

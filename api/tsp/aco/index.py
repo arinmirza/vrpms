@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
-from api.tsp.database_tsp import DatabaseTSP
+from api.database import DatabaseTSP
 from api.helpers import fail, success
-from api.tsp.parameters_tsp import parse_common_parameters, parse_aco_parameters
+from api.parameters import parse_common_tsp_parameters, parse_tsp_aco_parameters
 
 
 class handler(BaseHTTPRequestHandler):
@@ -21,8 +21,8 @@ class handler(BaseHTTPRequestHandler):
 
         # Parse parameters
         errors = []
-        params = parse_common_parameters(content, errors)
-        params_aco = parse_aco_parameters(content, errors)
+        params = parse_common_tsp_parameters(content, errors)
+        params_aco = parse_tsp_aco_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)
