@@ -39,7 +39,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         locations = convert_locations(locations)
-        bf_result = run_request(
+        tsp_result = run_request(
             current_time=params["start_time"],
             current_location=params["start_node"],
             customers=params["customers"],
@@ -50,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             start_node=params["start_node"],
             duration=durations,
             locations=locations,
-            bf_result=bf_result
+            tsp_result=tsp_result
         )
 
         # Save results

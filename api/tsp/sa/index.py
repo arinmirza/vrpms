@@ -3,6 +3,9 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_sa_parameters
+from src.tsp.simulated_annealing.simulated_annealing import run_request
+from src.utilities.helper.data_helper import convert_locations
+from src.utilities.helper.result_2_output import tsp_result_2_output
 
 
 class handler(BaseHTTPRequestHandler):
@@ -36,11 +39,27 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
-        result = {
-            "duration": 0,
-            "vehicle": [],
-        }
+        locations = convert_locations(locations)
+        tsp_result = run_request(
+            current_time=params["start_time"],
+            current_location=params["start_node"],
+            customers=params["customers"],
+            duration=durations,
+            threshold=params_sa["threshold"],
+            n_iterations=params_sa["n_iterations"],
+            alpha=params_sa["alpha"],
+            cooling=params_sa["cooling"],
+            init=params_sa["init"],
+            termination=params_sa["termination"],
+            neighborhood=params_sa["neighborhood"],
+        )
+        result = tsp_result_2_output(
+            start_time=params["start_time"],
+            start_node=params["start_node"],
+            duration=durations,
+            locations=locations,
+            tsp_result=tsp_result
+        )
 
         # Save results
         if params["auth"]:

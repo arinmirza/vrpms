@@ -194,6 +194,7 @@ def run_request(
     current_location: int,
     customers: List[int],
     duration: List[List[List[float]]],
+    n_hyperparams: int = 20,
 ):
     n = current_location + 1
     if customers:
@@ -204,7 +205,7 @@ def run_request(
         customers=customers,
         current_time=current_time,
         current_location=current_location,
-        n_hyperparams=20,
+        n_hyperparams=n_hyperparams,
         n_best_results=1,
     )
     result = results[0]

@@ -49,8 +49,16 @@ def parse_tsp_ga_parameters(content: dict, errors):
 
 
 def parse_tsp_sa_parameters(content: dict, errors):
-    return {}
+    return {
+        "threshold": get_parameter("threshold", content, errors),
+        "n_iterations": get_parameter("n_iterations", content, errors),
+        "alpha": get_parameter("alpha", content, errors),
+        "cooling": get_parameter("cooling", content, errors),
+        "init": get_parameter("init", content, errors),
+        "termination": get_parameter("termination", content, errors),
+        "neighborhood": get_parameter("neighborhood", content, errors),
+    }
 
 
 def parse_tsp_aco_parameters(content: dict, errors):
-    return {}
+    return {"n_hyperparams": get_parameter("n_hyperparams", content, errors)}

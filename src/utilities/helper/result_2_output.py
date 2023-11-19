@@ -5,9 +5,9 @@ TIME_UNITS = 3600  # hour = 60*60 seconds
 
 
 def tsp_result_2_output(
-    start_time: float, start_node: int, duration: List[List[List[float]]], locations: Dict, bf_result: Dict
+    start_time: float, start_node: int, duration: List[List[List[float]]], locations: Dict, tsp_result: Dict
 ) -> Dict:
-    route_time, route = bf_result["route_time"], bf_result["route"]
+    route_time, route = tsp_result["route_time"], tsp_result["route"]
     tour = []
     current_node, current_time = start_node, start_time
     for node in route:
