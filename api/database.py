@@ -13,17 +13,19 @@ class Database:
         self.client = create_client(self._url, self._key, options=ClientOptions(persist_session=False))
         if auth:
             self.login(auth)
-
+            
+            
     def login(self, token: str):
         '''Login with the JWT token of a specific user.'''
         self.client.auth.set_session(access_token=token, refresh_token=token)
+
 
     def get_locations_by_id(self, id, errors):
         try:
             result = self.client.table('locations').select('*').eq('id', id).execute()
             if not len(result.data):
-                raise (Exception(f'No location set found with given id {id}'))
-            return result.data[0]
+                raise(Exception(f'No location set found with given id {id}'))
+            return result.data[0]['json']
         except Exception as exception:
             errors += [{'what': 'Database read error', 'reason': str(exception)}]
             return None
@@ -32,8 +34,8 @@ class Database:
         try:
             result = self.client.table('durations').select('*').eq('id', id).execute()
             if not len(result.data):
-                raise (Exception(f'No duration matrix found with given id {id}'))
-            return result.data[0]
+                raise(Exception(f'No duration matrix found with given id {id}'))
+            return result.data[0]['json']
         except Exception as exception:
             errors += [{'what': 'Database read error', 'reason': str(exception)}]
             return None
