@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 from src.utilities.data_gen.based.data_gen import get_time_data
-from src.db.supabase.db_supabase_mapbox import get_mapbox_duration_data, get_mapbox_load_data
+from src.db.supabase.db_supabase_mapbox import get_mapbox_duration_data, get_mapbox_locations_data, get_mapbox_load_data
 
 
 def multiply_duration(duration: List[List[List[float]]], mult: int = 60):
@@ -126,10 +126,41 @@ def get_mapbox_and_load_data(
     supabase_key: Optional[str],
     supabase_url_key_file: Optional[str],
     n: int = 25,
-    duration_query_row_id: int = 1,
-    load_query_row_id: int = 1,
+    durations_query_row_id: int = 1,
+    locations_query_row_id: int = 1,
 ):
-    duration_old = get_mapbox_duration_data(supabase_url, supabase_key, supabase_url_key_file, duration_query_row_id)
+    duration_old = get_mapbox_duration_data(supabase_url, supabase_key, supabase_url_key_file, durations_query_row_id)
     duration = get_subset_time_data(duration_old, n, False)
-    load = get_mapbox_load_data(supabase_url, supabase_key, supabase_url_key_file, load_query_row_id, n)
+    locations = get_mapbox_locations_data(supabase_url, supabase_key, None, locations_query_row_id)
+    load = get_mapbox_load_data(locations, n)
     return duration, load
+
+
+def get_mapbox_duration_locations_load(
+    supabase_url: Optional[str],
+    supabase_key: Optional[str],
+    durations_query_row_id: int = 1,
+    locations_query_row_id: int = 2,
+):
+    duration = get_mapbox_duration_data(supabase_url, supabase_key, None, durations_query_row_id)
+    locations = get_mapbox_locations_data(supabase_url, supabase_key, None, locations_query_row_id)
+    n = len(duration)
+    load = get_mapbox_load_data(locations, n)
+    return duration, locations, load
+
+
+def get_demand_data_from_locations(durations, locations, depot=0):
+    n = len(durations)
+    demand = [0 for _ in range(n)]
+    for key, location in locations.items():
+        id, demand = location["id"], location["demand"]
+        if id < n and id != depot:
+            demand[id] = demand
+    return demand
+
+
+def convert_locations(locations):
+    new_locations = {}
+    for location in locations:
+        new_locations[location["id"]] = location
+    return new_locations

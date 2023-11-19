@@ -11,96 +11,98 @@ class Database:
     client: Client
 
     def __init__(self, auth=None):
-        '''Create supabase client using anonymous url and key.'''
+        """Create supabase client using anonymous url and key."""
         self.client = create_client(self._url, self._key, options=ClientOptions(persist_session=False))
         if auth:
             self.login(auth)
 
     def login(self, token: str):
-        '''Login with the JWT token of a specific user.'''
+        """Login with the JWT token of a specific user."""
         self.client.auth.set_session(access_token=token, refresh_token=token)
 
     def get_locations_by_id(self, id, errors):
         try:
-            result = self.client.table('locations').select('*').eq('id', id).execute()
+            result = self.client.table("locations").select("*").eq("id", id).execute()
             if not len(result.data):
-                raise (Exception(f'No location set found with given id {id}'))
-            return result.data[0]
+                raise (Exception(f"No location set found with given id {id}"))
+            return result.data[0]["json"]
         except Exception as exception:
-            errors += [{'what': 'Database read error', 'reason': str(exception)}]
+            errors += [{"what": "Database read error", "reason": str(exception)}]
             return None
 
     def get_durations_by_id(self, id, errors):
         try:
-            result = self.client.table('durations').select('*').eq('id', id).execute()
+            result = self.client.table("durations").select("*").eq("id", id).execute()
             if not len(result.data):
-                raise (Exception(f'No duration matrix found with given id {id}'))
-            return result.data[0]
+                raise (Exception(f"No duration matrix found with given id {id}"))
+            return result.data[0]["json"]
         except Exception as exception:
-            errors += [{'what': 'Database read error', 'reason': str(exception)}]
+            errors += [{"what": "Database read error", "reason": str(exception)}]
             return None
 
 
 class DatabaseVRP(Database):
-
     def save_solution(self, name, description, locations, vehicles, duration_max, duration_sum, errors):
         user = self.client.auth.get_user()
-        email = user.model_dump()['user']['email'] if user else None
+        email = user.model_dump()["user"]["email"] if user else None
 
         # This error message is only for information purposes, and the actual security is enforced by
         # row level policies of the postgres database. Still, the email string taken from the JWT
         # cannot be tampered with as the token is securely validated by Supabase.
         if not email:
-            errors += [{
-                'what': 'Not permitted',
-                'reason': 'An authentication token is required to save solutions to database.' + \
-                          " Please provide 'auth' with a valid JWT token in the request body"
-            }]
+            errors += [
+                {
+                    "what": "Not permitted",
+                    "reason": "An authentication token is required to save solutions to database."
+                    + " Please provide 'auth' with a valid JWT token in the request body",
+                }
+            ]
             return
 
         data = {
-            'name': name,
-            'description': description,
-            'owner': email,
-            'durationMax': duration_max,
-            'durationSum': duration_sum,
-            'locations': locations,
-            'vehicles': vehicles,
+            "name": name,
+            "description": description,
+            "owner": email,
+            "durationMax": duration_max,
+            "durationSum": duration_sum,
+            "locations": locations,
+            "vehicles": vehicles,
         }
 
         try:
-            return self.client.table('solutions').insert(data).execute()
+            return self.client.table("solutions").insert(data).execute()
         except Exception as exception:
-            errors += [{'what': 'Database write error', 'reason': str(exception)}]
+            errors += [{"what": "Database write error", "reason": str(exception)}]
 
 
 class DatabaseTSP(Database):
-
     def save_solution(self, name, description, locations, vehicle, duration, errors):
         user = self.client.auth.get_user()
-        email = user.model_dump()['user']['email'] if user else None
+        email = user.model_dump()["user"]["email"] if user else None
 
         # This error message is only for information purposes, and the actual security is enforced by
         # row level policies of the postgres database. Still, the email string taken from the JWT
         # cannot be tampered with as the token is securely validated by Supabase.
         if not email:
-            errors += [{
-                'what': 'Not permitted',
-                'reason': 'An authentication token is required to save solutions to database.' + \
-                          " Please provide 'auth' with a valid JWT token in the request body"
-            }]
+            errors += [
+                {
+                    "what": "Not permitted",
+                    "reason": "An authentication token is required to save solutions to database."
+                    + " Please provide 'auth' with a valid JWT token in the request body",
+                }
+            ]
             return
 
         data = {
-            'name': name,
-            'description': description,
-            'owner': email,
-            'duration': duration,
-            'locations': locations,
-            'vehicle': vehicle,
+            "name": name,
+            "description": description,
+            "owner": email,
+            "duration": duration,
+            "locations": locations,
+            "vehicle": vehicle,
         }
 
         try:
-            return self.client.table('solutions').insert(data).execute()
+            return self.client.table("solutions").insert(data).execute()
         except Exception as exception:
-            errors += [{'what': 'Database write error', 'reason': str(exception)}]
+            errors += [{"what": "Database write error", "reason": str(exception)}]

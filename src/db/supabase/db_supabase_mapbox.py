@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from supabase import create_client, Client
 
 DEPOT = 0
@@ -40,11 +40,11 @@ def get_mapbox_duration_data(
     return mapbox_data
 
 
-def get_mapbox_customers_data(
+def get_mapbox_locations_data(
     url: Optional[str] = None,
     key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
-    query_row_id: int = 1,
+    query_row_id: int = 2,
     table_name: str = "locations",
     query_column_name: str = "id",
     data_column_name: str = "json",
@@ -60,22 +60,9 @@ def get_mapbox_customers_data(
     return locations
 
 
-def get_mapbox_load_data(
-    url: Optional[str] = None,
-    key: Optional[str] = None,
-    supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
-    query_row_id: int = 1,
-    n: int = 25,
-    table_name: str = "locations",
-    query_column_name: str = "id",
-    data_column_name: str = "json",
-):
-    supabase_client = get_supabase_client(url, key, supabase_url_key_file)
-    query = supabase_client.table(table_name).select("*").eq(column=query_column_name, value=query_row_id).execute()
-    mapbox_data = query.data[0][data_column_name]
-    # print(mapbox_data)
+def get_mapbox_load_data(locations: Dict, n: int = 25):
     load = [0 for _ in range(n)]
-    for customer in mapbox_data:
+    for key, customer in locations.items():
         id, demand = customer["id"], customer["demand"]
         if DEPOT < id < n:
             load[id] = demand
@@ -84,6 +71,10 @@ def get_mapbox_load_data(
 
 
 if __name__ == "__main__":
-    print(get_mapbox_duration_data())
-    print(get_mapbox_customers_data())
-    print(get_mapbox_load_data())
+    duration = get_mapbox_duration_data()
+    locations = get_mapbox_locations_data()
+    n = len(duration)
+    load = get_mapbox_load_data(locations, n)
+    print(duration)
+    print(locations)
+    print(load)
