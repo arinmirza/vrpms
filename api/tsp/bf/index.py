@@ -50,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             start_node=params["start_node"],
             duration=durations,
             locations=locations,
-            tsp_result=tsp_result
+            tsp_result=tsp_result,
         )
 
         # Save results

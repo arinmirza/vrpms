@@ -3,6 +3,9 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
+from src.vrp.brute_force.brute_force import run_request
+from src.utilities.helper.data_helper import convert_locations, get_demand_data_from_locations
+from src.utilities.helper.result_2_output import vrp_result_2_output
 
 
 class handler(BaseHTTPRequestHandler):
@@ -35,12 +38,26 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
-        result = {
-            "durationMax": 0,
-            "durationSum": 0,
-            "vehicles": [],
-        }
+        locations = convert_locations(locations)
+        demands = get_demand_data_from_locations()
+        vrp_result = run_request(
+            q=params["capacities"][0],
+            ignore_long_trip=False,
+            duration=durations,
+            load=demands,
+            ignored_customers=params["ignored_customers"],
+            completed_customers=params["completed_customers"],
+            vehicles_start_times=params["vehicles_start_times"],
+            locations=locations,
+            objective_func_type="min_sum_time",
+        )
+        result = vrp_result_2_output(
+            vehicles_start_times=params["vehicles_start_times"],
+            duration=durations,
+            locations=locations,
+            vrp_result=vrp_result,
+            capacities=params["capacities"],
+        )
 
         # Save results
         if params["auth"]:

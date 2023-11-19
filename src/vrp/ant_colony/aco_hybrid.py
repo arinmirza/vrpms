@@ -355,7 +355,7 @@ def run(
         "pheromone_use_first_hour": result[7],
         "aco_method": result[8],
     }
-    print(result_dict)
+    print(f"result_dict = {result_dict}")
     return result_dict
 
 

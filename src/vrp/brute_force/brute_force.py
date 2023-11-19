@@ -133,14 +133,11 @@ def calculate_duration_perm(
 
 
 def solve(
-    n: int,
-    m: int,
-    k: int,
     q: int,
     ignore_long_trip: bool,
     duration: List[List[List[float]]],
     load: List[int],
-    ignored_customers: Optional[List[int]],
+    nodes: List[int],
     vehicles_start_times: Optional[List[float]],
     objective_func_type: Literal["min_max_time", "min_sum_time"],
 ) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
@@ -148,14 +145,11 @@ def solve(
     Solves VRP using brute force and gets total time it takes to visit the locations for the latest driver, sum of the
         durations of each driver and the routes for each driver
 
-    :param n: Number of locations
-    :param m: Max number of vehicles
-    :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param ignore_long_trip: Flag to ignore long trips
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
-    :param ignored_customers: List of customers to be ignored by the algorithm
+    :param nodes: List of customers to be visited
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
         as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
@@ -163,25 +157,7 @@ def solve(
     :return: Among the all possible routes, total time it takes to visit the locations for the latest driver, sum of the
         durations of each driver, the routes for each driver and the travel duration for each driver
     """
-    objective_func_type = objective_func_type.lower()
-    assert objective_func_type in [
-        "min_max_time",
-        "min_sum_time",
-    ], f"{objective_func_type} as a function type is not implemented"
-
-    if vehicles_start_times is None:
-        vehicles_start_times = [0 for _ in range(m)]
-    else:
-        assert len(vehicles_start_times) == m, f"Size of the vehicles_start_times should be {m}"
-
     start_time = datetime.now()
-
-    nodes = []
-    for i in range(1, n):
-        if ignored_customers is None or i not in ignored_customers:
-            nodes.append(i)
-    for _ in range(k - 1):
-        nodes.append(DEPOT)
 
     (
         best_route_max_time,
@@ -189,6 +165,7 @@ def solve(
         best_vehicle_routes,
         best_vehicle_times,
     ) = (INF, INF, None, None)
+    m = len(vehicles_start_times)
 
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
@@ -229,9 +206,48 @@ def solve(
     )
 
 
+def run_request(
+    q: int,
+    ignore_long_trip: bool,
+    duration: List[List[List[float]]],
+    load: List[int],
+    ignored_customers: List[int],
+    completed_customers: List[int],
+    vehicles_start_times: Optional[List[float]],
+    locations: Dict,
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
+) -> Dict:
+    nodes = []
+    sum_demand = 0
+    for key, location in locations.items():
+        id, demand = location["id"], location["demand"]
+        if id != DEPOT and id not in ignored_customers and id not in completed_customers:
+            nodes.append(id)
+            sum_demand += demand
+    k = (sum_demand + q - 1) // q
+    for _ in range(k - 1):
+        nodes.append(DEPOT)
+    result = solve(
+        q=q,
+        ignore_long_trip=ignore_long_trip,
+        duration=duration,
+        load=load,
+        nodes=nodes,
+        vehicles_start_times=vehicles_start_times,
+        objective_func_type=objective_func_type,
+    )
+    result_dict = {
+        "route_max_time": result[0],
+        "route_sum_time": result[1],
+        "vehicles_routes": result[2],
+        "vehicles_times": result[3],
+    }
+    return result_dict
+
+
 def run(
     n: int = 8,
-    m: int = 2,
+    m: int = 5,
     k: int = 3,
     q: int = 5,
     supabase_url: Optional[str] = None,
@@ -268,32 +284,50 @@ def run(
     :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
         routes for each driver and the travel duration for each driver
     """
+    objective_func_type = objective_func_type.lower()
+    assert objective_func_type in [
+        "min_max_time",
+        "min_sum_time",
+    ], f"{objective_func_type} as a function type is not implemented"
+
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
+
     if duration_data_type == "mapbox":
         duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
+
+    nodes = []
+    for i in range(1, n):
+        if ignored_customers is None or i not in ignored_customers:
+            nodes.append(i)
+    for _ in range(k - 1):
+        nodes.append(DEPOT)
+
+    if vehicles_start_times is None:
+        vehicles_start_times = [0 for _ in range(m)]
+    else:
+        assert len(vehicles_start_times) == m, f"Size of the vehicles_start_times should be {m}"
+
     result = solve(
-        n=n,
-        m=m,
-        k=k,
         q=q,
         ignore_long_trip=ignore_long_trip,
         duration=duration,
         load=load,
-        ignored_customers=ignored_customers,
+        nodes=nodes,
         vehicles_start_times=vehicles_start_times,
         objective_func_type=objective_func_type,
     )
     result_dict = {
         "route_max_time": result[0],
         "route_sum_time": result[1],
-        "vehicle_routes": result[2],
-        "vehicle_times": result[3],
+        "vehicles_routes": result[2],
+        "vehicles_times": result[3],
     }
+    print(f"result_dict = {result_dict}")
     return result_dict
 
 

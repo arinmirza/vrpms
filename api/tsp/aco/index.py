@@ -45,14 +45,14 @@ class handler(BaseHTTPRequestHandler):
             current_location=params["start_node"],
             customers=params["customers"],
             duration=durations,
-            n_hyperparams=params_aco["n_hyperparams"]
+            n_hyperparams=params_aco["n_hyperparams"],
         )
         result = tsp_result_2_output(
             start_time=params["start_time"],
             start_node=params["start_node"],
             duration=durations,
             locations=locations,
-            tsp_result=tsp_result
+            tsp_result=tsp_result,
         )
 
         # Save results
