@@ -125,7 +125,7 @@ def solve(
     time_start = datetime.datetime.now()
 
     all_hyperparams = []
-    for _ in range(n_hyperparams // 2):
+    for _ in range(n_hyperparams):
         hyperparams = get_hyperparams()
         all_hyperparams.append(hyperparams)
         hyperparams_zero = hyperparams.copy()

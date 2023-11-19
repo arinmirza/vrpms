@@ -233,7 +233,7 @@ def solve(
     time_start = datetime.datetime.now()
 
     all_hyperparams = []
-    for _ in range(n_hyperparams // 2):
+    for _ in range(n_hyperparams):
         hyperparams = get_hyperparams()
         all_hyperparams.append(hyperparams)
         hyperparams_zero = hyperparams.copy()
@@ -305,6 +305,61 @@ def solve(
         print(f"\nTime elapsed = {time_diff.total_seconds()}")
 
     return results[:n_best_results]
+
+
+def run_request(
+    q: int,
+    duration: List[List[List[float]]],
+    load: List[int],
+    ignored_customers: List[int],
+    completed_customers: List[int],
+    vehicles_start_times: Optional[List[float]],
+    locations: Dict,
+    n_hyperparams: int,
+    ignore_long_trip: bool = False,
+    optimize_tsp: bool = False,
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
+) -> Dict:
+    customers = []
+    all_ignored_customers = []
+    sum_demand = 0
+    for key, location in locations.items():
+        id, demand = location["id"], location["demand"]
+        if id != DEPOT:
+            if id not in ignored_customers and id not in completed_customers:
+                customers.append(id)
+                sum_demand += demand
+            else:
+                all_ignored_customers.append(id)
+    k = (sum_demand + q - 1) // q
+    n = 1
+    if customers:
+        n = max(n, max(customers) + 1)
+    m = len(vehicles_start_times)
+    results = solve(
+        n=n,
+        m=m,
+        k=k,
+        q=q,
+        duration=duration,
+        load=load,
+        n_hyperparams=n_hyperparams,
+        n_best_results=1,
+        optimize_tsp=optimize_tsp,
+        ignore_long_trip=ignore_long_trip,
+        ignored_customers=all_ignored_customers,
+        vehicles_start_times=vehicles_start_times,
+        objective_func_type=objective_func_type,
+        is_print_allowed=False,
+    )
+    result = results[0]
+    result_dict = {
+        "route_max_time": result[0],
+        "route_sum_time": result[1],
+        "vehicles_routes": result[2],
+        "vehicles_times": result[3],
+    }
+    return result_dict
 
 
 def run(

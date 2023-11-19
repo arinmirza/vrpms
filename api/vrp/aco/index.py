@@ -3,6 +3,9 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters, parse_vrp_aco_parameters
+from src.vrp.ant_colony.aco_hybrid import run_request
+from src.utilities.helper.data_helper import convert_locations, get_demands_from_locations
+from src.utilities.helper.result_2_output import vrp_result_2_output
 
 
 class handler(BaseHTTPRequestHandler):
@@ -36,12 +39,25 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
-        result = {
-            "durationMax": 0,
-            "durationSum": 0,
-            "vehicles": [],
-        }
+        locations = convert_locations(locations)
+        demands = get_demands_from_locations(durations, locations)
+        vrp_result = run_request(
+            q=params["capacities"][0],
+            duration=durations,
+            load=demands,
+            ignored_customers=params["ignored_customers"],
+            completed_customers=params["completed_customers"],
+            vehicles_start_times=params["start_times"],
+            locations=locations,
+            n_hyperparams=params_aco["n_hyperparams"],
+        )
+        result = vrp_result_2_output(
+            vehicles_start_times=params["start_times"],
+            duration=durations,
+            locations=locations,
+            vrp_result=vrp_result,
+            capacities=params["capacities"],
+        )
 
         # Save results
         if params["auth"]:

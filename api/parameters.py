@@ -28,7 +28,7 @@ def parse_vrp_sa_parameters(content: dict, errors):
 
 
 def parse_vrp_aco_parameters(content: dict, errors):
-    return {}
+    return {"n_hyperparams": get_parameter("n_hyperparams", content, errors)}
 
 
 def parse_common_tsp_parameters(content: dict, errors):

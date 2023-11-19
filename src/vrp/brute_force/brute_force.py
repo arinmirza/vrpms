@@ -139,7 +139,7 @@ def solve(
     load: List[int],
     nodes: List[int],
     vehicles_start_times: Optional[List[float]],
-    objective_func_type: Literal["min_max_time", "min_sum_time"],
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
     """
     Solves VRP using brute force and gets total time it takes to visit the locations for the latest driver, sum of the
@@ -208,14 +208,14 @@ def solve(
 
 def run_request(
     q: int,
-    ignore_long_trip: bool,
     duration: List[List[List[float]]],
     load: List[int],
     ignored_customers: List[int],
     completed_customers: List[int],
     vehicles_start_times: Optional[List[float]],
     locations: Dict,
-    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
+    ignore_long_trip: bool = False,
+    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Dict:
     nodes = []
     sum_demand = 0
