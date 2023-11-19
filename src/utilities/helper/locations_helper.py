@@ -31,3 +31,10 @@ def get_demands_from_locations(durations: List[List[List[float]]], locations: Di
         if id < n and id != depot:
             demands[id] = demand
     return demands
+
+
+def remove_unused_locations(
+    locations: List[Dict], ignored_customers: List[int], completed_customers: List[int]
+) -> List[Dict]:
+    disregard = ignored_customers + completed_customers
+    return [loc for loc in locations if loc["id"] not in disregard]
