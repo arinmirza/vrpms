@@ -149,14 +149,14 @@ def get_mapbox_duration_locations_load(
     return duration, locations, load
 
 
-def get_demand_data_from_locations(durations, locations, depot=0):
+def get_demands_from_locations(durations, locations, depot=0):
     n = len(durations)
-    demand = [0 for _ in range(n)]
+    demands = [0 for _ in range(n)]
     for key, location in locations.items():
         id, demand = location["id"], location["demand"]
         if id < n and id != depot:
-            demand[id] = demand
-    return demand
+            demands[id] = demand
+    return demands
 
 
 def convert_locations(locations):

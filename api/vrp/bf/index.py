@@ -4,7 +4,7 @@ from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
 from src.vrp.brute_force.brute_force import run_request
-from src.utilities.helper.data_helper import convert_locations, get_demand_data_from_locations
+from src.utilities.helper.data_helper import convert_locations, get_demands_from_locations
 from src.utilities.helper.result_2_output import vrp_result_2_output
 
 
@@ -39,7 +39,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         locations = convert_locations(locations)
-        demands = get_demand_data_from_locations(durations, locations)
+        demands = get_demands_from_locations(durations, locations)
         vrp_result = run_request(
             q=params["capacities"][0],
             ignore_long_trip=False,
