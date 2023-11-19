@@ -31,7 +31,7 @@ def get_mapbox_duration_data(
     query_row_id: int = 1,
     table_name: str = "durations",
     query_column_name: str = "id",
-    data_column_name: str = "json",
+    data_column_name: str = "matrix",
 ):
     supabase_client = get_supabase_client(url, key, supabase_url_key_file)
     query = supabase_client.table(table_name).select("*").eq(column=query_column_name, value=query_row_id).execute()
@@ -47,7 +47,7 @@ def get_mapbox_locations_data(
     query_row_id: int = 2,
     table_name: str = "locations",
     query_column_name: str = "id",
-    data_column_name: str = "json",
+    data_column_name: str = "locations",
 ):
     supabase_client = get_supabase_client(url, key, supabase_url_key_file)
     query = supabase_client.table(table_name).select("*").eq(column=query_column_name, value=query_row_id).execute()

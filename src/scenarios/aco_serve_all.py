@@ -23,7 +23,7 @@ INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" f
 def remove_customers_to_be_delayed(vehicle_id: int, cycle: List[int], delay_customers: List[int]) -> None:
     customers_to_be_delayed = list(set(cycle) & set(delay_customers))
     for customer in customers_to_be_delayed:
-        print(f"Costumer {customer} is delayed for the driver {vehicle_id}")
+        print(f"Customer {customer} is delayed for the driver {vehicle_id}")
         cycle.remove(customer)
         delay_customers.remove(customer)
 

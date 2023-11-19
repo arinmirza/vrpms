@@ -1,6 +1,7 @@
 import random
 from typing import Any, Dict, List
 
+DEPOT = 0  # depot
 N_TIME_ZONES = 12  # hours = time slices
 
 
@@ -60,6 +61,18 @@ class ACO_TSP:
             duration_power.append(duration_power_src)
         return duration_power
 
+    def normalize_pheromone(self, pheromone: List[List[float]]) -> None:
+        # Normalize
+        sum_pheromone = 0
+        for i in self.customers:
+            sum_pheromone += pheromone[i][DEPOT]
+            for j in self.customers:
+                sum_pheromone += pheromone[i][j]
+        for i in self.customers:
+            pheromone[i][DEPOT] /= sum_pheromone
+            for j in self.customers:
+                pheromone[i][j] /= sum_pheromone
+
     def init_pheromone(self) -> List[List[float]]:
         """
         Initialize pheromone values to be used while selecting next location to visit
@@ -70,8 +83,11 @@ class ACO_TSP:
         for i in range(self.n):
             pheromone_src = []
             for j in range(self.n):
-                pheromone_src.append(1 / (self.n**2))
+                pheromone_val_src = int(i == DEPOT or i in self.customers)
+                pheromone_val_dest = int(j in self.customers)
+                pheromone_src.append(pheromone_val_src*pheromone_val_dest)
             pheromone.append(pheromone_src)
+        self.normalize_pheromone(pheromone)
         return pheromone
 
     def check_unvisited_node_exists(self, visited: List[bool]) -> bool:
@@ -131,8 +147,9 @@ class ACO_TSP:
         :param paths_costs: Costs for each path
         """
         # Multiply with rho
-        for i in range(self.n):
-            for j in range(self.n):
+        for i in self.customers:
+            self.pheromone[i][DEPOT] *= self.RHO
+            for j in self.customers:
                 self.pheromone[i][j] *= self.RHO
         # Update based on the paths
         n_paths = len(paths)
@@ -144,11 +161,4 @@ class ACO_TSP:
                 u, v = path[idx - 1], path[idx]
                 if u != v:
                     self.pheromone[u][v] += self.Q / path_cost
-        # Normalize
-        sum_pheromone = 0
-        for i in range(self.n):
-            for j in range(self.n):
-                sum_pheromone += self.pheromone[i][j]
-        for i in range(self.n):
-            for j in range(self.n):
-                sum_pheromone /= sum_pheromone
+        self.normalize_pheromone(self.pheromone)
