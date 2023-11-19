@@ -39,7 +39,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         locations = convert_locations(locations)
-        demands = get_demand_data_from_locations()
+        demands = get_demand_data_from_locations(durations, locations)
         vrp_result = run_request(
             q=params["capacities"][0],
             ignore_long_trip=False,
@@ -47,12 +47,12 @@ class handler(BaseHTTPRequestHandler):
             load=demands,
             ignored_customers=params["ignored_customers"],
             completed_customers=params["completed_customers"],
-            vehicles_start_times=params["vehicles_start_times"],
+            vehicles_start_times=params["start_times"],
             locations=locations,
             objective_func_type="min_sum_time",
         )
         result = vrp_result_2_output(
-            vehicles_start_times=params["vehicles_start_times"],
+            vehicles_start_times=params["start_times"],
             duration=durations,
             locations=locations,
             vrp_result=vrp_result,
