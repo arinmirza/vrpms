@@ -54,7 +54,7 @@ class Database:
             errors += [{
                 'what': 'Not permitted', 
                 'reason': 'An authentication token is required to save solutions to database.' + \
-                    "Please provide 'auth' with a valid JWT token in the request body"
+                    " Please provide 'auth' with a valid JWT token in the request body"
             }]
             return
             

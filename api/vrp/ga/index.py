@@ -46,6 +46,7 @@ class handler(BaseHTTPRequestHandler):
             'vehicles': [],
         }
 
+        """
         # Save results
         database.save_solution(
             name=params['name'], 
@@ -55,7 +56,8 @@ class handler(BaseHTTPRequestHandler):
             durationMax=result['durationMax'],
             durationSum=result['durationSum'],
             errors=errors)
-        
+        """
+
         if len(errors) > 0:
             fail(self, errors)
             return
