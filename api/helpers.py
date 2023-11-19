@@ -16,9 +16,9 @@ def fail(handler: BaseHTTPRequestHandler, errors):
     handler.wfile.write(json.dumps(response).encode('utf-8'))
 
 
-def success(handler: BaseHTTPRequestHandler):
+def success(handler: BaseHTTPRequestHandler, result: dict):
     handler.send_response(200)
     handler.send_header('Content-type', 'application/json')
     handler.end_headers()
-    response = { 'success': True, 'message': 'Done! Saved the solution to database. 😁' }
+    response = { 'success': True, 'message': result }
     handler.wfile.write(json.dumps(response).encode('utf-8'))

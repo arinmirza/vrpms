@@ -63,4 +63,4 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Respond
-        success(self)
+        success(self, result)
