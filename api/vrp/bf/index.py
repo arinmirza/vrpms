@@ -4,7 +4,7 @@ from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
 from src.vrp.brute_force.brute_force import run_request
-from src.utilities.helper.data_helper import (
+from src.utilities.helper.locations_helper import (
     convert_locations,
     get_available_and_all_ignored_customers,
     get_demands_from_locations,

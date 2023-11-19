@@ -4,7 +4,7 @@ from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_aco_parameters
 from src.tsp.ant_colony.aco_hybrid import run_request
-from src.utilities.helper.data_helper import convert_locations
+from src.utilities.helper.locations_helper import convert_locations
 from src.utilities.helper.result_2_output import tsp_result_2_output
 
 

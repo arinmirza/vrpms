@@ -4,7 +4,7 @@ from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters, parse_vrp_aco_parameters
 from src.vrp.ant_colony.aco_hybrid import run_request
-from src.utilities.helper.data_helper import (
+from src.utilities.helper.locations_helper import (
     convert_locations,
     get_available_and_all_ignored_customers,
     get_demands_from_locations,
