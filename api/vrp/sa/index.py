@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler
 from api.database import Database
 from api.helpers import fail, success
 from api.parameters import parse_common_parameters
-from api.parameters import parse_ga_parameters
+from api.parameters import parse_sa_parameters
 
 class handler(BaseHTTPRequestHandler):
 
@@ -12,7 +12,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write("Hi, this is the VRP Genetic Algorithm endpoint".encode('utf-8'))
+        self.wfile.write("Hi, this is the VRP Simulated Annealing endpoint".encode('utf-8'))
         
     
     def do_POST(self):
@@ -24,7 +24,7 @@ class handler(BaseHTTPRequestHandler):
         # Parse parameters
         errors = []
         params = parse_common_parameters(content, errors)
-        params_ga = parse_ga_parameters(content, errors)
+        params_ga = parse_sa_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)

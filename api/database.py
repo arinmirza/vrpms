@@ -19,7 +19,7 @@ class Database:
         self.client.auth.set_session(access_token=token, refresh_token=token)
 
 
-    def get_locations_by_id(self, id: int, errors):
+    def get_locations_by_id(self, id, errors):
         try:
             result = self.client.table('locations').select('*').eq('id', id).execute()
             if not len(result.data):
@@ -30,7 +30,7 @@ class Database:
             return None
 
 
-    def get_durations_by_id(self, id: int, errors):
+    def get_durations_by_id(self, id, errors):
         try:
             result = self.client.table('durations').select('*').eq('id', id).execute()
             if not len(result.data):
