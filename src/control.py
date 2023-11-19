@@ -322,6 +322,7 @@ from supabase import create_client, Client
 
 def map_id_coordinate(json_obj):
     coordinate_index_map = {}
+    #TODO: arin json gonderiyor zaten
     for elem in json_obj["json"]:
         id = elem["id"]
         lat = elem["lat"]
@@ -374,9 +375,9 @@ if __name__ == "__main__":
 
     res = run_optimization(data_dict)
 
-    VST = [0 for _ in range(algo_inputs["M"])]
-    data = get_supabase_matrix()
-    map = map_id_coordinate(data)
-    test_solution_to_arrivals(20, res["output"][2], VST, map)
+    #VST = [0 for _ in range(algo_inputs["M"])]
+    #data = get_supabase_matrix()
+    #map = map_id_coordinate(data)
+    #test_solution_to_arrivals(20, res["output"][2], VST, map)
     pass
 

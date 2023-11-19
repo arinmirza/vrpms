@@ -3,3 +3,4 @@ iteration_utilities
 joblib
 tqdm
 requests
+supabase
