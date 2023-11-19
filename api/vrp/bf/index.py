@@ -4,7 +4,11 @@ from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
 from src.vrp.brute_force.brute_force import run_request
-from src.utilities.helper.data_helper import convert_locations, get_demands_from_locations
+from src.utilities.helper.data_helper import (
+    convert_locations,
+    get_available_and_all_ignored_customers,
+    get_demands_from_locations,
+)
 from src.utilities.helper.result_2_output import vrp_result_2_output
 
 
@@ -39,15 +43,19 @@ class handler(BaseHTTPRequestHandler):
             return
 
         locations = convert_locations(locations)
+        available_customers, all_ignored_customers = get_available_and_all_ignored_customers(
+            locations=locations,
+            ignored_customers=params["ignored_customers"],
+            completed_customers=params["completed_customers"],
+        )
         demands = get_demands_from_locations(durations, locations)
+
         vrp_result = run_request(
             q=params["capacities"][0],
             duration=durations,
             load=demands,
-            ignored_customers=params["ignored_customers"],
-            completed_customers=params["completed_customers"],
+            available_customers=available_customers,
             vehicles_start_times=params["start_times"],
-            locations=locations,
         )
         result = vrp_result_2_output(
             vehicles_start_times=params["start_times"],

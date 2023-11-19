@@ -311,30 +311,20 @@ def run_request(
     q: int,
     duration: List[List[List[float]]],
     load: List[int],
-    ignored_customers: List[int],
-    completed_customers: List[int],
+    available_customers: List[int],
+    all_ignored_customers: List[int],
     vehicles_start_times: Optional[List[float]],
-    locations: Dict,
     n_hyperparams: int,
     ignore_long_trip: bool = False,
     optimize_tsp: bool = False,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Dict:
-    customers = []
-    all_ignored_customers = []
-    sum_demand = 0
-    for key, location in locations.items():
-        id, demand = location["id"], location["demand"]
-        if id != DEPOT:
-            if id not in ignored_customers and id not in completed_customers:
-                customers.append(id)
-                sum_demand += demand
-            else:
-                all_ignored_customers.append(id)
-    k = (sum_demand + q - 1) // q
     n = 1
-    if customers:
-        n = max(n, max(customers) + 1)
+    sum_demand = 0
+    for customer in available_customers:
+        sum_demand += load[customer]
+        n = max(n, customer + 1)
+    k = (sum_demand + q - 1) // q
     m = len(vehicles_start_times)
     results = solve(
         n=n,

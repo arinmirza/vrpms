@@ -210,20 +210,16 @@ def run_request(
     q: int,
     duration: List[List[List[float]]],
     load: List[int],
-    ignored_customers: List[int],
-    completed_customers: List[int],
+    available_customers: List[int],
     vehicles_start_times: Optional[List[float]],
-    locations: Dict,
     ignore_long_trip: bool = False,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Dict:
     nodes = []
     sum_demand = 0
-    for key, location in locations.items():
-        id, demand = location["id"], location["demand"]
-        if id != DEPOT and id not in ignored_customers and id not in completed_customers:
-            nodes.append(id)
-            sum_demand += demand
+    for customer in available_customers:
+        nodes.append(customer)
+        sum_demand += load[customer]
     k = (sum_demand + q - 1) // q
     for _ in range(k - 1):
         nodes.append(DEPOT)
