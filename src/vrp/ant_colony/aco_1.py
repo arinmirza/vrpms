@@ -21,7 +21,7 @@ class ACO_VRP_1(ACO_VRP):
         pheromone_use_first_hour: bool,
         ignore_long_trip: bool,
         objective_func_type: str,
-        ignored_customers: List[int],
+        customers: List[int],
         vehicles_start_times: List[float],
         duration: List[List[List[float]]],
         load: List[int],
@@ -37,7 +37,7 @@ class ACO_VRP_1(ACO_VRP):
         :param consider_depot: Consider depot as a candidate place to visit next
         :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
         :param ignore_long_trip: Flag to ignore long trips
-        :param ignored_customers: List of customers to be ignored by the algorithm
+        :param customers: List of customers to be ignored by the algorithm
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
             assumed as zero.
         :param objective_func_type: Type of the objective function to minimize total time it takes to visit the
@@ -55,7 +55,7 @@ class ACO_VRP_1(ACO_VRP):
             pheromone_use_first_hour=pheromone_use_first_hour,
             ignore_long_trip=ignore_long_trip,
             objective_func_type=objective_func_type,
-            ignored_customers=ignored_customers,
+            customers=customers,
             vehicles_start_times=vehicles_start_times,
             duration=duration,
             load=load,
@@ -77,7 +77,7 @@ class ACO_VRP_1(ACO_VRP):
         # At each iteration, start over
         for iter_idx in range(self.N_ITERATIONS):
             self.vehicles_pq.init_vehicles()
-            visited = [bool(i in self.ignored_customers) for i in range(self.n)]
+            visited = [bool(i not in self.customers) for i in range(self.n)]
             visited[DEPOT] = True
             fail = False
             vehicle_routes = defaultdict(list)
@@ -98,14 +98,13 @@ class ACO_VRP_1(ACO_VRP):
                     if hour >= N_TIME_ZONES:
                         fail = True
                         break
-                    nodes = []
                     # Fetch unvisited nodes where it is possible to visit next considering load constraints
-                    for node in range(self.n):
-                        if node not in self.ignored_customers:
-                            if (capacity >= self.load[node] and not visited[node]) or (
-                                last_node != DEPOT and node == DEPOT and self.consider_depot
-                            ):
-                                nodes.append(node)
+                    nodes = []
+                    for node in self.customers:
+                        if capacity >= self.load[node] and not visited[node]:
+                            nodes.append(node)
+                    if self.consider_depot and last_node != DEPOT:
+                        nodes.append(DEPOT)
                     # Get the next node based on pheromones
                     next_node = self.get_next_node(nodes, last_node, hour) if nodes else DEPOT
                     visited[next_node] = True

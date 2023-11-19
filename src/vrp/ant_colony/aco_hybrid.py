@@ -175,13 +175,13 @@ def solve(
     k: int,
     q: int,
     duration: List[List[List[float]]],
-    load: Optional[List[int]] = None,
-    n_hyperparams: int = 100,
+    customers: List[int],
+    load: Optional[List[int]],
+    vehicles_start_times: List[float],
+    n_hyperparams: int,
     n_best_results: int = 1,
-    optimize_tsp: bool = True,
+    optimize_tsp: bool = False,
     ignore_long_trip: bool = False,
-    ignored_customers: Optional[List[int]] = None,
-    vehicles_start_times: Optional[List[float]] = None,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
@@ -201,7 +201,7 @@ def solve(
     :param n_best_results: Number of best results (hyperparamater settings) to print
     :param optimize_tsp: Flag to optimize first tours of the vrp solution with TSP
     :param ignore_long_trip: Flag to ignore long trips
-    :param ignored_customers: List of customers to be ignored by the algorithm
+    :param customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
         as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
@@ -218,17 +218,7 @@ def solve(
         "min_sum_time",
     ], f"{objective_func_type} as a function type is not implemented"
 
-    if load is None:
-        load = [1 for _ in range(n)]
-        load[DEPOT] = 0
-
-    if vehicles_start_times is None:
-        vehicles_start_times = [0 for _ in range(m)]
-    else:
-        assert len(vehicles_start_times) == m, f"Size of the vehicles_start_times should be {m}"
-
-    if ignored_customers is None:
-        ignored_customers = []
+    load[DEPOT] = 0
 
     time_start = datetime.datetime.now()
 
@@ -254,7 +244,7 @@ def solve(
                         pheromone_use_first_hour=pheromone_use_first_hour,
                         ignore_long_trip=ignore_long_trip,
                         objective_func_type=objective_func_type,
-                        ignored_customers=ignored_customers,
+                        customers=customers,
                         vehicles_start_times=vehicles_start_times,
                         duration=duration,
                         load=load,
@@ -312,12 +302,8 @@ def run_request(
     duration: List[List[List[float]]],
     load: List[int],
     available_customers: List[int],
-    all_ignored_customers: List[int],
     vehicles_start_times: Optional[List[float]],
     n_hyperparams: int,
-    ignore_long_trip: bool = False,
-    optimize_tsp: bool = False,
-    objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Dict:
     n = 1
     sum_demand = 0
@@ -333,14 +319,9 @@ def run_request(
         q=q,
         duration=duration,
         load=load,
-        n_hyperparams=n_hyperparams,
-        n_best_results=1,
-        optimize_tsp=optimize_tsp,
-        ignore_long_trip=ignore_long_trip,
-        ignored_customers=all_ignored_customers,
+        customers=available_customers,
         vehicles_start_times=vehicles_start_times,
-        objective_func_type=objective_func_type,
-        is_print_allowed=False,
+        n_hyperparams=n_hyperparams,
     )
     result = results[0]
     result_dict = {
@@ -387,7 +368,20 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    results = solve(n=n, m=m, k=k, q=q, duration=duration, load=load, n_hyperparams=80, n_best_results=1)
+    customers = [i for i in range(1, n)]
+    vehicles_start_times = [0 for _ in range(m)]
+    results = solve(
+        n=n,
+        m=m,
+        k=k,
+        q=q,
+        duration=duration,
+        load=load,
+        customers=customers,
+        vehicles_start_times=vehicles_start_times,
+        n_hyperparams=80,
+        n_best_results=1,
+    )
     result = results[0]
     result_dict = {
         "route_max_time": result[0],

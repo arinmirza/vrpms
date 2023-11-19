@@ -252,7 +252,6 @@ def run(
     per_km_time: float = 5,
     ignore_long_trip: bool = False,
     input_file_load: Optional[str] = None,
-    ignored_customers: Optional[List[int]] = None,
     vehicles_start_times: Optional[List[float]] = None,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_sum_time",
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
@@ -271,7 +270,6 @@ def run(
     :param ignore_long_trip: Flag to ignore long trips
     :param input_file_load: Path to the input file including loads (required capacities) of locations, set to None if
         load is not unique. Example: "../../../data/loads/data_load.txt"
-    :param ignored_customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
         as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
@@ -296,10 +294,7 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
 
-    nodes = []
-    for i in range(1, n):
-        if ignored_customers is None or i not in ignored_customers:
-            nodes.append(i)
+    nodes = [i for i in range(1, n)]
     for _ in range(k - 1):
         nodes.append(DEPOT)
 

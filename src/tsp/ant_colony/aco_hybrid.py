@@ -97,9 +97,9 @@ def solve(
     n: int,
     duration: List[List[List[float]]],
     customers: List[int],
-    current_time: float = 0,
-    current_location: int = DEPOT,
-    n_hyperparams: int = 100,
+    current_time: float,
+    current_location: int,
+    n_hyperparams: int,
     n_best_results: int = 1,
     ignore_long_trip: bool = False,
     aco_sols: List = [ACO_TSP_1, ACO_TSP_2],
@@ -206,7 +206,6 @@ def run_request(
         current_time=current_time,
         current_location=current_location,
         n_hyperparams=n_hyperparams,
-        n_best_results=1,
     )
     result = results[0]
     result_dict = {
@@ -243,11 +242,11 @@ def run(
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
+        duration, _ = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
-        duration, load = get_google_and_load_data(INPUT_FILES_TIME, None, n)
+        duration, _ = get_google_and_load_data(INPUT_FILES_TIME, None, n)
     else:
-        duration, load = get_based_and_load_data(None, n, per_km_time)
+        duration, _ = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
     results = solve(
         n=n,

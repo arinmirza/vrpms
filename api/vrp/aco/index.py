@@ -56,7 +56,6 @@ class handler(BaseHTTPRequestHandler):
             duration=durations,
             load=demands,
             available_customers=available_customers,
-            all_ignored_customers=all_ignored_customers,
             vehicles_start_times=params["start_times"],
             n_hyperparams=params_aco["n_hyperparams"],
         )

@@ -2,6 +2,7 @@ import random
 from typing import Any, Dict, List
 from src.vrp.vehicles_pq import VehiclesPQ
 
+DEPOT = 0  # depot
 N_TIME_ZONES = 12  # hours = time slices
 
 
@@ -16,7 +17,7 @@ class ACO_VRP:
         pheromone_use_first_hour: bool,
         ignore_long_trip: bool,
         objective_func_type: str,
-        ignored_customers: List[int],
+        customers: List[int],
         vehicles_start_times: List[float],
         duration: List[List[List[float]]],
         load: List[int],
@@ -32,7 +33,7 @@ class ACO_VRP:
         :param consider_depot: Consider depot as a candidate place to visit next
         :param pheromone_use_first_hour: Consider first hour of duration data for pheromone calculations
         :param ignore_long_trip: Flag to ignore long trips
-        :param ignored_customers: List of customers to be ignored by the algorithm
+        :param customers: List of customers to be visited
         :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all
             assumed as zero.
         :param objective_func_type: Type of the objective function to minimize total time it takes to visit the
@@ -49,7 +50,9 @@ class ACO_VRP:
         self.pheromone_use_first_hour = pheromone_use_first_hour
         self.ignore_long_trip = ignore_long_trip
         self.objective_func_type = objective_func_type
-        self.ignored_customers = ignored_customers
+        self.customers = customers
+        self.customers_and_depot = customers.copy()
+        self.customers_and_depot.append(DEPOT)
         self.vehicles_start_times = vehicles_start_times
         self.duration = duration
         self.load = load
@@ -79,6 +82,16 @@ class ACO_VRP:
             duration_power.append(duration_power_src)
         return duration_power
 
+    def normalize_pheromone(self, pheromone: List[List[float]]) -> None:
+        # Normalize
+        sum_pheromone = 0
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
+                sum_pheromone += pheromone[i][j]
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
+                pheromone[i][j] /= sum_pheromone
+
     def init_pheromone(self) -> List[List[float]]:
         """
         Initialize pheromone values to be used while selecting next location to visit
@@ -89,8 +102,11 @@ class ACO_VRP:
         for i in range(self.n):
             pheromone_src = []
             for j in range(self.n):
-                pheromone_src.append(1 / (self.n**2))
+                pheromone_val_src = int(i in self.customers_and_depot)
+                pheromone_val_dest = int(j in self.customers_and_depot)
+                pheromone_src.append(pheromone_val_src * pheromone_val_dest)
             pheromone.append(pheromone_src)
+        self.normalize_pheromone(pheromone)
         return pheromone
 
     def check_unvisited_node_exists(self, visited: List[bool]) -> bool:
@@ -100,8 +116,8 @@ class ACO_VRP:
         :param visited: Flags indicating that if a location is visited or not, for each location
         :return: Flag indicating that there is at least one unvisited location
         """
-        for node, mark in enumerate(visited):
-            if node > 0 and not mark and node not in self.ignored_customers:
+        for node in self.customers:
+            if not visited[node]:
                 return True
         return False
 
@@ -122,7 +138,7 @@ class ACO_VRP:
             # Sum up the values to calculate normalizing factor
             sum_probs += probs[node]
         if sum_probs is None or sum_probs == 0:
-            next_node = 0
+            next_node = DEPOT
         else:
             # Normalize to get actual probs
             for node in nodes:
@@ -150,8 +166,8 @@ class ACO_VRP:
         :param paths_costs: Costs for each path
         """
         # Multiply with rho
-        for i in range(self.n):
-            for j in range(self.n):
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
                 self.pheromone[i][j] *= self.RHO
         # Update based on the paths
         n_paths = len(paths)
@@ -164,10 +180,4 @@ class ACO_VRP:
                 if u != v:
                     self.pheromone[u][v] += self.Q / path_cost
         # Normalize
-        sum_pheromone = 0
-        for i in range(self.n):
-            for j in range(self.n):
-                sum_pheromone += self.pheromone[i][j]
-        for i in range(self.n):
-            for j in range(self.n):
-                sum_pheromone /= sum_pheromone
+        self.normalize_pheromone(self.pheromone)

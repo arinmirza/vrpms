@@ -33,6 +33,8 @@ class ACO_TSP:
         self.pheromone_use_first_hour = pheromone_use_first_hour
         self.ignore_long_trip = ignore_long_trip
         self.customers = customers
+        self.customers_and_depot = customers.copy()
+        self.customers_and_depot.append(DEPOT)
         self.start_time = start_time
         self.start_node = start_node
         self.duration = duration
@@ -64,13 +66,11 @@ class ACO_TSP:
     def normalize_pheromone(self, pheromone: List[List[float]]) -> None:
         # Normalize
         sum_pheromone = 0
-        for i in self.customers:
-            sum_pheromone += pheromone[i][DEPOT]
-            for j in self.customers:
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
                 sum_pheromone += pheromone[i][j]
-        for i in self.customers:
-            pheromone[i][DEPOT] /= sum_pheromone
-            for j in self.customers:
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
                 pheromone[i][j] /= sum_pheromone
 
     def init_pheromone(self) -> List[List[float]]:
@@ -83,9 +83,9 @@ class ACO_TSP:
         for i in range(self.n):
             pheromone_src = []
             for j in range(self.n):
-                pheromone_val_src = int(i == DEPOT or i in self.customers)
-                pheromone_val_dest = int(j in self.customers)
-                pheromone_src.append(pheromone_val_src*pheromone_val_dest)
+                pheromone_val_src = int(i in self.customers_and_depot)
+                pheromone_val_dest = int(j in self.customers_and_depot)
+                pheromone_src.append(pheromone_val_src * pheromone_val_dest)
             pheromone.append(pheromone_src)
         self.normalize_pheromone(pheromone)
         return pheromone
@@ -119,7 +119,7 @@ class ACO_TSP:
             # Sum up the values to calculate normalizing factor
             sum_probs += probs[node]
         if sum_probs is None or sum_probs == 0:
-            next_node = 0
+            next_node = DEPOT
         else:
             # Normalize to get actual probs
             for node in nodes:
@@ -147,9 +147,8 @@ class ACO_TSP:
         :param paths_costs: Costs for each path
         """
         # Multiply with rho
-        for i in self.customers:
-            self.pheromone[i][DEPOT] *= self.RHO
-            for j in self.customers:
+        for i in self.customers_and_depot:
+            for j in self.customers_and_depot:
                 self.pheromone[i][j] *= self.RHO
         # Update based on the paths
         n_paths = len(paths)
