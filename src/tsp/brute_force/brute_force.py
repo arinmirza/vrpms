@@ -86,6 +86,17 @@ def solve(
     return best_route_time, best_route
 
 
+def run_request(
+    current_time: float,
+    current_location: int,
+    customers: List[int],
+    duration: List[List[List[float]]],
+):
+    route_time, route = solve(current_time, current_location, customers, duration, False)
+    result_dict = {"route_time": route_time, "route": route}
+    return result_dict
+
+
 def run(
     n: int = 8,
     supabase_url: Optional[str] = None,
@@ -114,14 +125,15 @@ def run(
     assert current_location < n, "Current location should be in the fetched duration data"
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
+        duration, _ = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
-        duration, load = get_google_and_load_data(INPUT_FILES_TIME, None, n)
+        duration, _ = get_google_and_load_data(INPUT_FILES_TIME, None, n)
     else:
-        duration, load = get_based_and_load_data(None, n, per_km_time)
+        duration, _ = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
     result = solve(current_time, current_location, customers, duration, ignore_long_trip)
     result_dict = {"route_time": result[0], "route": result[1]}
+    print(f"result_dict = {result_dict}")
     return result_dict
 
 

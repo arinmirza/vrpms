@@ -2,11 +2,14 @@ import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 
+from src.db.supabase.db_supabase_mapbox import get_mapbox_duration_data, get_mapbox_customers_data
+from src.utilities.helper.result_2_output import tsp_result_2_output
+
 from src.vrp.ant_colony.aco_hybrid import run as vrp_aco
 from src.vrp.brute_force.brute_force import run as vrp_bf
-from src.tsp.ant_colony.aco_hybrid import run as tsp_aco
-from src.tsp.brute_force.brute_force import run as tsp_bf
-from src.tsp.simulated_annealing.simulated_annealing import run as tsp_sa
+from src.tsp.ant_colony.aco_hybrid import run_request as tsp_aco
+from src.tsp.brute_force.brute_force import run_request as tsp_bf
+from src.tsp.simulated_annealing.simulated_annealing import run_request as tsp_sa
 
 from urllib.parse import urlparse, parse_qs
 
@@ -35,20 +38,30 @@ class handler(BaseHTTPRequestHandler):
         result = "no_result"
         time_start = datetime.datetime.now()
         if program_mode != "no_program_mode" and algorithm != "no_algorithm":
-            if program_mode == "vrp" and algorithm == "aco":
-                result = vrp_aco(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
-            elif program_mode == "vrp" and algorithm == "bf":
-                result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
-            elif program_mode == "tsp" and algorithm == "aco":
-                result = tsp_aco(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
-            elif program_mode == "tsp" and algorithm == "bf":
-                result = tsp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
-            elif program_mode == "tsp" and algorithm == "sa":
-                result = tsp_sa(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            durations_id = query_params["durations_id"][0]
+            duration = get_mapbox_duration_data(SUPABASE_URL, SUPABASE_KEY, None, durations_id)
+            locations_id = query_params["locations_id"][0]
+            locations = get_mapbox_customers_data(SUPABASE_URL, SUPABASE_KEY, None, locations_id)
+            if program_mode == "vrp":
+                if algorithm == "aco":
+                    result = vrp_aco(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+                elif algorithm == "bf":
+                    result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
+            elif program_mode == "tsp":
+                start_time = query_params["start_time"][0]
+                start_node = query_params["start_node"][0]
+                customers = query_params["customers"][0]
+                if algorithm == "aco":
+                    result = tsp_aco(start_time, start_node, customers, duration)
+                elif algorithm == "bf":
+                    result = tsp_bf(start_time, start_node, customers, duration)
+                elif algorithm == "sa":
+                    result = tsp_sa(start_time, start_node, customers, duration)
+                if result != "no_result":
+                    result = tsp_result_2_output(start_time, start_node, duration, locations, result)
+
         time_end = datetime.datetime.now()
         time_diff = (time_end - time_start).total_seconds()
-
-        # Construct an example response
         body = {"input_dict": input_dict, "result": result, "time_diff": time_diff}
 
         # Convert the dictionary into JSON and serialize it, then encode as utf8

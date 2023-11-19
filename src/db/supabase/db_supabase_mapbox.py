@@ -40,6 +40,26 @@ def get_mapbox_duration_data(
     return mapbox_data
 
 
+def get_mapbox_customers_data(
+    url: Optional[str] = None,
+    key: Optional[str] = None,
+    supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
+    query_row_id: int = 1,
+    table_name: str = "locations",
+    query_column_name: str = "id",
+    data_column_name: str = "json",
+):
+    supabase_client = get_supabase_client(url, key, supabase_url_key_file)
+    query = supabase_client.table(table_name).select("*").eq(column=query_column_name, value=query_row_id).execute()
+    mapbox_data = query.data[0][data_column_name]
+    # print(mapbox_data)
+    locations = {}
+    for location in mapbox_data:
+        locations[location["id"]] = location
+    # print(locations)
+    return locations
+
+
 def get_mapbox_load_data(
     url: Optional[str] = None,
     key: Optional[str] = None,
@@ -64,5 +84,6 @@ def get_mapbox_load_data(
 
 
 if __name__ == "__main__":
-    get_mapbox_duration_data()
-    get_mapbox_load_data()
+    print(get_mapbox_duration_data())
+    print(get_mapbox_customers_data())
+    print(get_mapbox_load_data())

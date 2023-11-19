@@ -104,6 +104,9 @@ def simulated_annealing(
 
 
 def solve(
+    start_time: float,
+    start_node: int,
+    customers: List[int],
     duration: List[List[List[float]]],
     threshold: Union[int, float],
     n_iterations: int,
@@ -112,10 +115,7 @@ def solve(
     init: Literal["nearest_neighbor", "successive_insertion", "random"],
     termination: Literal["max_steps", "min_temp"],
     neighborhood: Literal["2-opt", "exchange"],
-    customers: List[int],
-    start_node: int,
-    start_time: float,
-) -> Tuple[float, List[int]]:
+) -> Tuple[float, Optional[List[int]]]:
     init = init.lower()
     assert init in ["nearest_neighbor", "successive_insertion", "random"], "Init method is not valid"
     if init == "nearest_neighbor":
@@ -146,6 +146,36 @@ def solve(
         start_time=start_time,
     )
     return best_tour_duration, best_tour
+
+
+def run_request(
+    current_time: float,
+    current_location: int,
+    customers: List[int],
+    duration: List[List[List[float]]],
+    threshold: Union[int, float] = 10,
+    n_iterations: int = 100,
+    alpha: float = 0.1,
+    cooling: float = 0.9,
+    init: Literal["nearest_neighbor", "successive_insertion", "random"] = "nearest_neighbor",
+    termination: Literal["max_steps", "min_temp"] = "max_steps",
+    neighborhood: Literal["2-opt", "exchange"] = "2-opt",
+):
+    route_time, route = solve(
+        start_time=current_time,
+        start_node=current_location,
+        customers=customers,
+        duration=duration,
+        threshold=threshold,
+        n_iterations=n_iterations,
+        alpha=alpha,
+        cooling=cooling,
+        init=init,
+        termination=termination,
+        neighborhood=neighborhood,
+    )
+    result_dict = {"route_time": route_time, "route": route}
+    return result_dict
 
 
 def run(
@@ -179,6 +209,9 @@ def run(
         raise ValueError(f"Method {duration_data_type} is not allowed. Options: 'mapbox', 'google', 'based'")
     customers = [i for i in range(1, n) if i != current_location]
     best_tour_duration, best_tour = solve(
+        start_time=current_time,
+        start_node=current_location,
+        customers=customers,
         duration=duration,
         threshold=threshold,
         n_iterations=n_iterations,
@@ -187,15 +220,13 @@ def run(
         init=init,
         termination=termination,
         neighborhood=neighborhood,
-        customers=customers,
-        start_node=current_location,
-        start_time=current_time,
     )
     end_time = datetime.now()
     print(f"Time: {end_time-start_time}")
     print(f"Best route time: {best_tour_duration}")
     print(f"Best route: {best_tour}")
     result_dict = {"route_time": best_tour_duration, "route": best_tour}
+    print(f"result_dict = {result_dict}")
     return result_dict
 
 

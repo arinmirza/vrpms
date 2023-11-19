@@ -189,6 +189,32 @@ def solve(
     return results[:n_best_results]
 
 
+def run_request(
+    current_time: float,
+    current_location: int,
+    customers: List[int],
+    duration: List[List[List[float]]],
+):
+    n = current_location + 1
+    if customers:
+        n = max(n, max(customers) + 1)
+    results = solve(
+        n=n,
+        duration=duration,
+        customers=customers,
+        current_time=current_time,
+        current_location=current_location,
+        n_hyperparams=20,
+        n_best_results=1,
+    )
+    result = results[0]
+    result_dict = {
+        "route_time": result[0],
+        "route": result[1],
+    }
+    return result_dict
+
+
 def run(
     n: int = 12,
     supabase_url: Optional[str] = None,
@@ -240,6 +266,7 @@ def run(
         "pheromone_use_first_hour": result[4],
         "aco_method": result[5],
     }
+    print(f"result_dict = {result_dict}")
     return result_dict
 
 
