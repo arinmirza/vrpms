@@ -1,7 +1,7 @@
 import json
 from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
-from api.helpers import fail, success
+from api.helpers import fail, success, remove_unused_locations
 from api.parameters import parse_common_vrp_parameters, parse_vrp_aco_parameters
 
 
@@ -49,7 +49,7 @@ class handler(BaseHTTPRequestHandler):
             database.save_solution(
                 name=params['name'],
                 description=params['description'],
-                locations=locations,
+                locations=remove_unused_locations(locations, params['ignored_customers'], params['completed_customers']),
                 vehicles=result['vehicles'],
                 duration_max=result['durationMax'],
                 duration_sum=result['durationSum'],

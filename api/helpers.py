@@ -8,6 +8,11 @@ def get_parameter(name: str, content: dict, errors, optional=False):
     return content.get(name)
 
 
+def remove_unused_locations(locations, ignored_customers, completed_customers):
+    disregard = ignored_customers + completed_customers
+    return [loc for loc in locations if loc.id not in disregard]
+    
+
 def fail(handler: BaseHTTPRequestHandler, errors):
     handler.send_response(400)
     handler.send_header('Content-type', 'application/json')

@@ -17,15 +17,20 @@ class Database:
             
     def login(self, token: str):
         '''Login with the JWT token of a specific user.'''
-        self.client.auth.set_session(access_token=token, refresh_token=token)
+        try:
+            self.client.auth.set_session(access_token=token, refresh_token=token)
+        except:
+            pass
 
 
     def get_locations_by_id(self, id, errors):
         try:
             result = self.client.table('locations').select('*').eq('id', id).execute()
             if not len(result.data):
-                raise(Exception(f'No location set found with given id {id}'))
-            return result.data[0]['json']
+                raise(Exception(f'No location set found with given id {id}. ' + \
+                                'Make sure you are accessing public data or data owned by you. ' + \
+                                'Check if your authentication token has expired.'))
+            return result.data[0]['locations']
         except Exception as exception:
             errors += [{'what': 'Database read error', 'reason': str(exception)}]
             return None
@@ -34,8 +39,10 @@ class Database:
         try:
             result = self.client.table('durations').select('*').eq('id', id).execute()
             if not len(result.data):
-                raise(Exception(f'No duration matrix found with given id {id}'))
-            return result.data[0]['json']
+                raise(Exception(f'No duration matrix found with given id {id}. ' + \
+                                'Make sure you are accessing public data or data owned by you. ' + \
+                                'Check if your authentication token has expired.'))
+            return result.data[0]['matrix']
         except Exception as exception:
             errors += [{'what': 'Database read error', 'reason': str(exception)}]
             return None
@@ -53,8 +60,9 @@ class DatabaseVRP(Database):
         if not email:
             errors += [{
                 'what': 'Not permitted',
-                'reason': 'An authentication token is required to save solutions to database.' + \
-                          " Please provide 'auth' with a valid JWT token in the request body"
+                'reason': 'An authentication token is required to save solutions to database. ' + \
+                          "Please provide 'auth' with a valid JWT token in the request body. " + \
+                          'If you have already provided a token, it has very likely expired.'
             }]
             return
 
