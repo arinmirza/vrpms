@@ -48,8 +48,8 @@ class handler(BaseHTTPRequestHandler):
                 elif algorithm == "bf":
                     result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
             elif program_mode == "tsp":
-                start_time = query_params["start_time"][0]
-                start_node = query_params["start_node"][0]
+                start_time = float(query_params["start_time"][0])
+                start_node = float(query_params["start_node"][0])
                 # customers = query_params["customers"][0]
                 customers = [1, 2, 3, 4, 5, 6]
                 if algorithm == "aco":
