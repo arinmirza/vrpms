@@ -9,6 +9,6 @@ solution = solver.solve_vrp_problem()
 today = helper.get_current_date()
 
 # Print results
-print(f'Duration: {duration}')
-print(f'Solution: {solution}')
-print(f'Today: {today}')
+print(f"Duration: {duration}")
+print(f"Solution: {solution}")
+print(f"Today: {today}")

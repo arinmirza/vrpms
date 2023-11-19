@@ -69,3 +69,26 @@ However, keep in mind this only works for local development and the environment 
 ### Deployment
 
 Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms.vercel.app
+
+
+### Formatting
+
+Code is formatted with black, and it can be set up as pre-commit-hooks via pre-commit. To get started, install the dependencies.
+
+    $ pip install -r requirements.dev
+
+Then install the pre-commit hooks:
+
+    $ pre-commit install
+
+Format the entire codebase under the root:
+
+    $ black --line-length 120 .
+
+You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
+
+### Test
+
+You should install the required packages for testing first.
+
+    $ pip install -r requirements.test

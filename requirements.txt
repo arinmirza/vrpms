@@ -1,3 +1,5 @@
 python-dotenv==1.0.0
-gurobipy==10.0.3 
+gurobipy==10.0.3
+numpy==1.24.4
+requests==2.31.0
 supabase==1.2.0
