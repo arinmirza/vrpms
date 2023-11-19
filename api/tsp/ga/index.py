@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_ga_parameters
+from src.genetic_algorithm.genetic_algorithm import run_GA as run
 
 
 class handler(BaseHTTPRequestHandler):
@@ -37,10 +38,24 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # TODO: Run algorithm
-        result = {
-            "duration": 0,
-            "vehicle": [],
-        }
+        result = run(locations=locations,
+                     durations=durations,
+                     initial_start_times=params["start_time"],
+                     capacities=None,
+                     ignored_customers=None,
+                     completed_customers=None,
+                     start_node=params["start_node"],
+                     mode="TSP",
+                     multithreaded=params_ga["multi_threaded"],
+                     customers=params["customers"],
+                     iteration_count=0,
+                     random_perm_count=0)
+
+        # TODO: Run algorithm
+        #result = {
+        #    "duration": 0,
+        #    "vehicle": [],
+        #}
 
         # Save results
         if params["auth"]:
@@ -48,8 +63,9 @@ class handler(BaseHTTPRequestHandler):
                 name=params["name"],
                 description=params["description"],
                 locations=locations,
-                vehicle=result["vehicle"],
-                duration=result["duration"],
+                vehicle=result["vehicles"],
+                duration_max=result["durationMax"],
+                duration_sum=result["durationSum"],
                 errors=errors,
             )
 

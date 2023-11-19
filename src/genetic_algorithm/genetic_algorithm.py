@@ -243,35 +243,49 @@ def map_id_coordinate(json_obj):
 
     return coordinate_index_map
 
-def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node):
+def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers):
+    if mode == "TDVRP":
+        inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities, initial_start_times=initial_start_times, ignored_customers=ignored_customers, completed_customers=completed_customers, multithreaded=multithreaded, random_perm_count=random_perm_count, iteration_count=iteration_count, mode=mode, start_node=start_node)
 
-    inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities, initial_start_times=initial_start_times, ignored_customers=ignored_customers, completed_customers=completed_customers, multithreaded=multithreaded, random_perm_count=random_perm_count, iteration_count=iteration_count, mode=mode, start_node=start_node)
+        print("Genetic Algorithm")
 
-    print("Genetic Algorithm")
+        algo_inputs = inputs#["algorithm_inputs"]
 
-    algo_inputs = inputs#["algorithm_inputs"]
+        N = algo_inputs["N"] # locations - ignored - completed
+        M = algo_inputs["M"] # ok capacities length
+        q = algo_inputs["q"] # capaciteler ayni her arabada -> capaties[0]
+        k = algo_inputs["k"] if ("k" in algo_inputs) else N/4 # k*q>n-1
+        W = 0#algo_inputs["W"] if ("W" in algo_inputs) else 0
+        duration =durations#algo_inputs["duration"] # arin veriyor #durations
+        multithreaded = multithreaded#algo_inputs["multithreaded"] # arin veriyor default False # multithreaded
+        cl = algo_inputs["cl"] # locations - ignored - completed
+        sn = algo_inputs["sn"] # tsp icin arinin index api daha hazir degil ama bu gelicek
+        load = algo_inputs["load"]# if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1 if cl == [] else len(cl)+1) # locations tablosundan cekicez
+        # TODO: prepare LOAD yerine demand_dict gonder
+        ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None # arin vericek
+        pm = algo_inputs["pm"]
 
-    N = algo_inputs["N"] # locations - ignored - completed
-    M = algo_inputs["M"] # ok capacities length
-    q = algo_inputs["q"] # capaciteler ayni her arabada -> capaties[0]
-    k = algo_inputs["k"] if ("k" in algo_inputs) else N/4 # k*q>n-1
-    W = 0#algo_inputs["W"] if ("W" in algo_inputs) else 0
-    duration =durations#algo_inputs["duration"] # arin veriyor #durations
-    multithreaded = multithreaded#algo_inputs["multithreaded"] # arin veriyor default False # multithreaded
-    cl = algo_inputs["cl"] # locations - ignored - completed
-    sn = algo_inputs["sn"] # tsp icin arinin index api daha hazir degil ama bu gelicek
-    load = algo_inputs["load"]# if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1 if cl == [] else len(cl)+1) # locations tablosundan cekicez
-    # TODO: prepare LOAD yerine demand_dict gonder
-    ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None # arin vericek
-    pm = algo_inputs["pm"]
-
+    elif mode == "TSP":
+        duration = durations
+        ist = [initial_start_times] # here initial start times is a single value
+        sn = start_node
+        cl = customers
+        multithreaded = multithreaded
+        N = len(customers)
+        demand_list = get_demands(locations=locations, customer_list=cl)
+        demand_list.insert(0, 0)
+        load = demand_list
+        pm = mode
+        W=0
+        M=1
+        q = len(customers)
     
     output = None
 
-    hc_nodes = get_stats(matrix=duration, k = k, q=q)
+    #hc_nodes = get_stats(matrix=duration, k = k, q=q)
 
-    print("CUSTOMER_LIST --->", cl)
-    print("DEMAND_LIST  ---> ",load)
+    #print("CUSTOMER_LIST --->", cl)
+    #print("DEMAND_LIST  ---> ",load)
 
     if pm == "TDVRP":
         

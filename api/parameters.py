@@ -45,7 +45,9 @@ def parse_common_tsp_parameters(content: dict, errors):
 
 
 def parse_tsp_ga_parameters(content: dict, errors):
-    return {}
+    return {
+        "multi_threaded": get_parameter("multiThreaded", content, errors)
+    }
 
 
 def parse_tsp_sa_parameters(content: dict, errors):

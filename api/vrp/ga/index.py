@@ -37,9 +37,18 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # TODO: Run algorithm
-        result = run(locations=locations, durations=durations, initial_start_times=params["start_times"],
-            capacities=params["capacities"], ignored_customers=params["ignored_customers"],
-            completed_customers=params["completed_customers"],start_node=None, mode="TDVRP",  multithreaded=params_ga["multi_threaded"], iteration_count=0,random_perm_count=0)
+        result = run(locations=locations,
+                     durations=durations,
+                     initial_start_times=params["start_times"],
+                     capacities=params["capacities"],
+                     ignored_customers=params["ignored_customers"],
+                     completed_customers=params["completed_customers"],
+                     start_node=None,
+                     mode="TDVRP",
+                     multithreaded=params_ga["multi_threaded"],
+                     iteration_count=0,
+                     random_perm_count=0,
+                     customers=None)
         #result = {
         #    "durationMax": 0,
         #    "durationSum": 0,
