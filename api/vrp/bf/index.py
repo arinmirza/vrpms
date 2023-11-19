@@ -1,20 +1,18 @@
 import json
 from http.server import BaseHTTPRequestHandler
-from api.database import Database
+from api.vrp.database_vrp import DatabaseVRP
 from api.helpers import fail, success
-from api.parameters import parse_common_parameters
-from api.parameters import parse_ant_parameters
+from api.vrp.parameters_vrp import parse_common_parameters
+
 
 class handler(BaseHTTPRequestHandler):
-
 
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write("Hi, this is the VRP Ant Colony Optimization endpoint".encode('utf-8'))
-        
-    
+        self.wfile.write("Hi, this is the VRP Brute Force endpoint".encode('utf-8'))
+
     def do_POST(self):
         # Read
         content_length = int(self.headers.get('Content-Length', 0))
@@ -24,14 +22,13 @@ class handler(BaseHTTPRequestHandler):
         # Parse parameters
         errors = []
         params = parse_common_parameters(content, errors)
-        params_ga = parse_ant_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)
             return
-        
+
         # Retrieve data from database
-        database = Database(params['auth'])
+        database = DatabaseVRP(params['auth'])
         locations = database.get_locations_by_id(params['locations_key'], errors)
         durations = database.get_durations_by_id(params['durations_key'], errors)
 
@@ -47,18 +44,19 @@ class handler(BaseHTTPRequestHandler):
         }
 
         # Save results
-        database.save_solution(
-            name=params['name'], 
-            description=params['description'], 
-            locations=locations, 
-            vehicles=result['vehicles'],
-            durationMax=result['durationMax'],
-            durationSum=result['durationSum'],
-            errors=errors)
-        
+        if params['auth']:
+            database.save_solution(
+                name=params['name'],
+                description=params['description'],
+                locations=locations,
+                vehicles=result['vehicles'],
+                duration_max=result['durationMax'],
+                duration_sum=result['durationSum'],
+                errors=errors)
+
         if len(errors) > 0:
             fail(self, errors)
             return
 
         # Respond
-        success(self)
+        success(self, result)

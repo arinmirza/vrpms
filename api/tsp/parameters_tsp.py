@@ -8,23 +8,19 @@ def parse_common_parameters(content: dict, errors):
         'description': get_parameter('solutionDescription', content, errors),
         'locations_key': get_parameter('locationsKey', content, errors),
         'durations_key': get_parameter('durationsKey', content, errors),
-        'capacities': get_parameter('capacities', content, errors),
-        'ignoredCustomers': get_parameter('ignoredCustomers', content, errors),
-        'completedCustomers': get_parameter('completedCustomers', content, errors),
+        'customers': get_parameter('customers', content, errors),
+        'start_node': get_parameter('startNode', content, errors),
+        'start_time': get_parameter('startTime', content, errors),
     }
 
 
 def parse_ga_parameters(content: dict, errors):
-    return {
-        'multiThreaded': get_parameter('multiThreaded', content, errors),
-        'randomPermutationCount': get_parameter('randomPermutationCount', content, errors),
-        'iterationCount': get_parameter('iterationCount', content, errors),
-    }
+    return {}
 
 
 def parse_sa_parameters(content: dict, errors):
     return {}
 
 
-def parse_ant_parameters(content: dict, errors):
+def parse_aco_parameters(content: dict, errors):
     return {}

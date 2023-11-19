@@ -2,7 +2,7 @@ import json
 from http.server import BaseHTTPRequestHandler
 from api.vrp.database_vrp import DatabaseVRP
 from api.helpers import fail, success
-from api.vrp.parameters_vrp import parse_common_parameters, parse_ga_parameters
+from api.vrp.parameters_vrp import parse_common_parameters, parse_aco_parameters
 
 
 class handler(BaseHTTPRequestHandler):
@@ -11,7 +11,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write("Hi, this is the VRP Genetic Algorithm endpoint".encode('utf-8'))
+        self.wfile.write("Hi, this is the VRP Ant Colony Optimization endpoint".encode('utf-8'))
 
     def do_POST(self):
         # Read
@@ -22,7 +22,7 @@ class handler(BaseHTTPRequestHandler):
         # Parse parameters
         errors = []
         params = parse_common_parameters(content, errors)
-        params_ga = parse_ga_parameters(content, errors)
+        params_aco = parse_aco_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)
@@ -54,7 +54,7 @@ class handler(BaseHTTPRequestHandler):
                 duration_max=result['durationMax'],
                 duration_sum=result['durationSum'],
                 errors=errors)
-
+        
         if len(errors) > 0:
             fail(self, errors)
             return

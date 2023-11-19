@@ -1,10 +1,6 @@
-import json
 from http.server import BaseHTTPRequestHandler
 
 # Absolute import modules inside src folder
-import src.utilities.helper
-import src.solver
-from api.database import Database
 
 class handler(BaseHTTPRequestHandler):
 

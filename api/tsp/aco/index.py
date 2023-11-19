@@ -1,8 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
-from api.vrp.database_vrp import DatabaseVRP
+from api.tsp.database_tsp import DatabaseTSP
 from api.helpers import fail, success
-from api.vrp.parameters_vrp import parse_common_parameters, parse_ga_parameters
+from api.tsp.parameters_tsp import parse_common_parameters, parse_aco_parameters
 
 
 class handler(BaseHTTPRequestHandler):
@@ -11,7 +11,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write("Hi, this is the VRP Genetic Algorithm endpoint".encode('utf-8'))
+        self.wfile.write("Hi, this is the TSP Ant Colony Optimization endpoint".encode('utf-8'))
 
     def do_POST(self):
         # Read
@@ -22,14 +22,14 @@ class handler(BaseHTTPRequestHandler):
         # Parse parameters
         errors = []
         params = parse_common_parameters(content, errors)
-        params_ga = parse_ga_parameters(content, errors)
+        params_aco = parse_aco_parameters(content, errors)
 
         if len(errors) > 0:
             fail(self, errors)
             return
-        
+
         # Retrieve data from database
-        database = DatabaseVRP(params['auth'])
+        database = DatabaseTSP(params['auth'])
         locations = database.get_locations_by_id(params['locations_key'], errors)
         durations = database.get_durations_by_id(params['durations_key'], errors)
 
@@ -39,9 +39,8 @@ class handler(BaseHTTPRequestHandler):
 
         # TODO: Run algorithm
         result = {
-            'durationMax': 0,
-            'durationSum': 0,
-            'vehicles': [],
+            'duration': 0,
+            'vehicle': [],
         }
 
         # Save results
@@ -50,9 +49,8 @@ class handler(BaseHTTPRequestHandler):
                 name=params['name'],
                 description=params['description'],
                 locations=locations,
-                vehicles=result['vehicles'],
-                duration_max=result['durationMax'],
-                duration_sum=result['durationSum'],
+                vehicle=result['vehicle'],
+                duration=result['duration'],
                 errors=errors)
 
         if len(errors) > 0:
