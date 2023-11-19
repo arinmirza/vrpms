@@ -38,9 +38,11 @@ class handler(BaseHTTPRequestHandler):
         result = "no_result"
         time_start = datetime.datetime.now()
         if program_mode != "no_program_mode" and algorithm != "no_algorithm":
-            durations_id = int(query_params["durations_id"][0])
+            # durations_id = int(query_params["durations_id"][0])
+            durations_id = 1
             duration = get_mapbox_duration_data(SUPABASE_URL, SUPABASE_KEY, None, durations_id)
-            locations_id = int(query_params["locations_id"][0])
+            # locations_id = int(query_params["locations_id"][0])
+            locations_id = 1
             locations = get_mapbox_customers_data(SUPABASE_URL, SUPABASE_KEY, None, locations_id)
             if program_mode == "vrp":
                 if algorithm == "aco":
@@ -48,8 +50,10 @@ class handler(BaseHTTPRequestHandler):
                 elif algorithm == "bf":
                     result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
             elif program_mode == "tsp":
-                start_time = float(query_params["start_time"][0])
-                start_node = float(query_params["start_node"][0])
+                # start_time = float(query_params["start_time"][0])
+                start_time = 0
+                # start_node = float(query_params["start_node"][0])
+                start_node = 0
                 # customers = query_params["customers"][0]
                 customers = [1, 2, 3, 4, 5, 6]
                 if algorithm == "aco":
