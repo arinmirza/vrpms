@@ -14,16 +14,20 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 SUPABASE_URL_KEY_FILE = "../data/supabase/supabase_url_key.txt"
 
 
-def run(program_mode: str = "tsp", algorithm: str = "sa"):
+def run(query_params):
+    program_mode = query_params["program_mode"][0] if "program_mode" in query_params else "no_program_mode"
+    if program_mode not in ["vrp", "tsp"]:
+        program_mode = "no_program_mode"
+    algorithm = query_params["algorithm"][0] if "algorithm" in query_params else "no_algorithm"
+    if algorithm not in ["aco", "bf", "sa"]:
+        algorithm = "no_algorithm"
     input_dict = {"program_mode": program_mode, "algorithm": algorithm}
     result = "no_result"
     time_start = datetime.datetime.now()
     if program_mode != "no_program_mode" and algorithm != "no_algorithm":
-        # durations_id = int(query_params["durations_id"][0])
-        durations_id = 1
+        durations_id = int(query_params["durations_id"][0])
         duration = get_mapbox_duration_data(SUPABASE_URL, SUPABASE_KEY, None, durations_id)
-        # locations_id = int(query_params["locations_id"][0])
-        locations_id = 1
+        locations_id = int(query_params["locations_id"][0])
         locations = get_mapbox_customers_data(SUPABASE_URL, SUPABASE_KEY, None, locations_id)
         print(locations)
         if program_mode == "vrp":
@@ -32,10 +36,8 @@ def run(program_mode: str = "tsp", algorithm: str = "sa"):
             elif algorithm == "bf":
                 result = vrp_bf(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, supabase_url_key_file=None)
         elif program_mode == "tsp":
-            # start_time = float(query_params["start_time"][0])
-            start_time = 0
-            # start_node = float(query_params["start_node"][0])
-            start_node = 0
+            start_time = float(query_params["start_time"][0])
+            start_node = int(query_params["start_node"][0])
             # customers = query_params["customers"][0]
             customers = [1, 2, 3, 4, 5, 6]
             if algorithm == "aco":
@@ -54,4 +56,12 @@ def run(program_mode: str = "tsp", algorithm: str = "sa"):
 
 
 if __name__ == "__main__":
-    run()
+    query_params = {}
+    query_params["program_mode"] = ["tsp"]
+    query_params["algorithm"] = ["bf"]
+    query_params["durations_id"] = ["1"]
+    query_params["locations_id"] = ["1"]
+    query_params["start_time"] = ["1"]
+    query_params["start_node"] = ["1"]
+    query_params["customers"] = ["1"]
+    run(query_params)

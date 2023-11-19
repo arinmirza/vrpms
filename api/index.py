@@ -50,8 +50,8 @@ class handler(BaseHTTPRequestHandler):
             elif program_mode == "tsp":
                 start_time = float(query_params["start_time"][0])
                 start_node = int(query_params["start_node"][0])
-                customers = query_params["customers"][0]
-                # customers = [1, 2, 3, 4, 5, 6]
+                # customers = query_params["customers"][0]
+                customers = [1, 2, 3, 4, 5, 6]
                 if algorithm == "aco":
                     result = tsp_aco(start_time, start_node, customers, duration)
                 elif algorithm == "bf":
