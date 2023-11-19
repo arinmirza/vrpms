@@ -40,7 +40,7 @@ def vrp_result_2_output(
         if vehicle_id in vehicles_routes:
             vehicle_route = vehicles_routes[vehicle_id]
             current_node = DEPOT
-            current_time = vehicles_times[vehicle_id]
+            current_time = vehicles_start_times[vehicle_id]
             for cycle in vehicle_route:
                 cycle_output = []
                 for node in cycle:
