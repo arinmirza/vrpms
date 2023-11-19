@@ -67,13 +67,15 @@ class handler(BaseHTTPRequestHandler):
 
         # Save results
         if params["auth"]:
+            duration_max = int(result["durationMax"])
+            duration_sum = int(result["durationSum"])
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
                 locations=locations,
                 vehicles=result["vehicles"],
-                duration_max=result["durationMax"],
-                duration_sum=result["durationSum"],
+                duration_max=duration_max,
+                duration_sum=duration_sum,
                 errors=errors,
             )
 

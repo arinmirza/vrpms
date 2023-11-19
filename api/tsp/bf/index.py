@@ -55,12 +55,14 @@ class handler(BaseHTTPRequestHandler):
 
         # Save results
         if params["auth"]:
+            duration = int(result["duration"])
+            vehicles = [{"tours": [result["vehicle"]], "totalDuration": result["duration"]}]  # no capacity
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
                 locations=locations,
-                vehicle=result["vehicle"],
-                duration=result["duration"],
+                vehicles=vehicles,
+                duration=duration,
                 errors=errors,
             )
 
