@@ -32,7 +32,7 @@ The user has to provide the following information:
 """
 
 import json
-from src.supabase.get_supabase_matrix import get_data
+from src.supabase_help.get_supabase_matrix import get_data
 from data.travel_time_matrix import main as generate_mapbox_duration_matrix
 from src.genetic_algorithm.genetic_algorithm import run_GA
 
@@ -279,6 +279,72 @@ def run(user_in):
 
     return run_optimization(user_in)
     #pass
+from src.utilities.vrp_helper import solution_to_arrivals
+#from src.utilities.helper
+from src.supabase_help.get_supabase_matrix import get_data
+N_TIME_ZONES = 12  # hours = time slices
+
+def test_solution_to_arrivals(N, tours, vehicle_start_times, map):
+    #vehicles_start_times = [10, 20]
+    arrivals_updated = []
+    solution =[]
+    for k, v in tours.items():
+        subgroup = []
+        for elem in v:
+            subgroup.append(elem)
+        solution.append(subgroup)
+
+    #solution = [[[0, 1, 2, 0], [0, 3, 4, 0]], [[0, 5, 6, 0], [0, 7, 8, 0]]]
+    #expected_arrivals = [[[10, 11, 12, 13], [13, 14, 15, 16]], [[20, 21, 22, 23], [23, 24, 25, 26]]]
+    duration = get_data()
+
+    arrivals = solution_to_arrivals(vehicle_start_times, solution, duration)
+
+    arrivals_final = []
+    for i in range(0, len(solution)):
+        vehicle_tours = []
+        for j in range(0, len(solution[i])):
+            tour = []
+            for k in range(0, len(solution[i][j])):
+                node = solution[i][j][k]
+                lat = map[node]["lat"]
+                lng = map[node]["lng"]
+                arrival = arrivals[i][j][k]
+                tour.append({"lat":lat , "lng":lng, "arrivalTime":arrival}) # , "node":node
+            vehicle_tours.append(tour)
+        arrivals_final.append(vehicle_tours)
+    print("")
+    #assert arrivals == expected_arrivals
+
+#import os
+from supabase import create_client, Client
+#import supabase_help
+
+def map_id_coordinate(json_obj):
+    coordinate_index_map = {}
+    for elem in json_obj["json"]:
+        id = elem["id"]
+        lat = elem["lat"]
+        lng = elem["lng"]
+        coordinate_index_map[id] = {"lat": lat , "lng": lng}
+
+    return coordinate_index_map
+def get_supabase_matrix():
+  url: str = ("https://pkeygmzuwfucblldmkjn.supabase.co")
+  key: str = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s")
+
+  supabase: Client = create_client(url, key)
+
+  #with open("dataset_matrix.npy", 'wb+') as f:
+    #res = supabase.storage.from_('public/dataset').download("matrix.npy")
+
+  res = supabase.table('locations').select('*').eq('id', 1).execute().data[0]
+    #f.write(res)
+
+
+  return res
+  print("res")
+
 
 
 if __name__ == "__main__":
@@ -291,17 +357,14 @@ if __name__ == "__main__":
     }
 
     algo_inputs = {
-        "N": 15,
+        "N": 1, #
         "M": 3,
         "q": 6,
         "k": 5,
-        "multithreaded": True,
-        "cl": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
-        "sn": 2
+        "multithreaded": False,
+        "cl": [1,2,3,4,5,6,7,8,9,10,11,22,13,14,15,16,17,18,19,20], #
+        "sn": None
     }
-
-
-
 
     # k*q >= n-1
 
@@ -311,5 +374,9 @@ if __name__ == "__main__":
 
     res = run_optimization(data_dict)
 
+    VST = [0 for _ in range(algo_inputs["M"])]
+    data = get_supabase_matrix()
+    map = map_id_coordinate(data)
+    test_solution_to_arrivals(20, res["output"][2], VST, map)
     pass
 

@@ -18,7 +18,7 @@ from tqdm import tqdm
 from src.utilities.vrp_helper import get_load_data
 from data.NODES import get_nodes
 from src.vrp.vehicles_pq import VehiclesPQ
-from src.supabase.get_supabase_matrix import get_data
+from src.supabase_help.get_supabase_matrix import get_data
 
 # PARAMETERS AND DATA GENERATION
 N = 20 # number of shops to be considered

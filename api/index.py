@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
 
         # Construct an example response
         body = {
-            "control script new data on supabase": run(data_dict)
+            "control script new data on supabase_help": run(data_dict)
         }
 
         print("get")
@@ -77,7 +77,7 @@ class handler(BaseHTTPRequestHandler):
         print(parsed_url)
 
         # Initialize empty json
-        body = {"control script new data on supabase": run(),
+        body = {"control script new data on supabase_help": run(),
                 "input": query_params}
 
         #print(parsed_url.query)

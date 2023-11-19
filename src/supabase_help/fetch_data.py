@@ -1,6 +1,6 @@
 import os
 from supabase import create_client, Client
-from src.supabase.get_supabase_matrix import get_data
+from src.supabase_help.get_supabase_matrix import get_data
 
 def get_supabase_matrix():
   url: str = os.environ.get("SUPABASE_URL")

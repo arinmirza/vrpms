@@ -19,7 +19,7 @@ from tqdm import tqdm
 # Project Files to be Imported
 from src.utilities.vrp_helper import get_based_and_load_data
 from src.vrp.vehicles_pq import VehiclesPQ
-#from src.supabase.get_duration_matrix_mapbox import get_data
+#from src.supabase_help.get_duration_matrix_mapbox import get_data
 
 # PARAMETERS AND DATA GENERATION
 N = 10 # number of shops to be considered

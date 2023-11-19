@@ -7,7 +7,7 @@ from datetime import datetime
 from iteration_utilities import random_permutation
 import math
 import random
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple, Dict
 from collections import defaultdict
 
 # Libraries for Parallel Processing
@@ -218,7 +218,7 @@ def deterministic_best_n_replacement(permutations, n=-1):
 
 # REPRODUCTION
 
-def swap_mutation(permutations, VST, dist_data, M, Q, load):
+def swap_mutation(permutations, VST, dist_data, M, Q, load, demand_dict):
     """
                   Select two random indices and swap these indices
                   If the mutated permutation has a longer duration than the previous permutation, simply revert the swap
@@ -249,7 +249,7 @@ def swap_mutation(permutations, VST, dist_data, M, Q, load):
                 single_perm[0][pos1] = single_perm[0][pos2]
                 single_perm[0][pos2] = temp
                 # calculate the new duration
-                a,b, route_sum_time, vehicle_routes, vehicle_times  = calculate_duration(permutation = single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q, load=load)
+                a,b, route_sum_time, vehicle_routes, vehicle_times  = calculate_duration(permutation = single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q, load=load, demand_dict=demand_dict)
                 #a, b = calculate_duration(single_perm[0])
 
                 # if the new duration is shorter than the previous one keep it
@@ -268,7 +268,7 @@ def swap_mutation(permutations, VST, dist_data, M, Q, load):
             count = count + 1
     return permutations
 
-def scramble_mutation(permutations, VST, dist_data, M, Q, load):
+def scramble_mutation(permutations, VST, dist_data, M, Q, load, demand_dict):
     """
                       Select two random indices
                       Shuffle everything that stays between these two randomly selected indices
@@ -337,7 +337,7 @@ def scramble_mutation(permutations, VST, dist_data, M, Q, load):
 
 
                 # calculate new duration and save
-                a, b, route_sum_time, vehicle_routes, vehicle_times= calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load)
+                a, b, route_sum_time, vehicle_routes, vehicle_times= calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load, demand_dict=demand_dict)
                 #a, b = calculate_duration(single_perm[0])
                 single_perm[2], single_perm[1] = a, b
                 single_perm[3], single_perm[4], single_perm[5] = route_sum_time, vehicle_routes, vehicle_times
@@ -348,7 +348,7 @@ def scramble_mutation(permutations, VST, dist_data, M, Q, load):
             count = count + 1
     return permutations
 
-def inversion_mutation(permutations,  VST, dist_data, M, Q,load):
+def inversion_mutation(permutations,  VST, dist_data, M, Q,load, demand_dict):
     """
                           Select two random indices
                           Reverse everything that stays between these two randomly selected indices
@@ -387,7 +387,7 @@ def inversion_mutation(permutations,  VST, dist_data, M, Q,load):
                 single_perm[0] = lower_part + subpart + upper_part
 
                 # calculate new duration and save
-                a, b, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load)
+                a, b, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(single_perm[0], VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=load, demand_dict=demand_dict)
                 #a, b = calculate_duration(single_perm[0])
                 single_perm[2], single_perm[1] = a, b
                 single_perm[3], single_perm[4], single_perm[5] = route_sum_time, vehicle_routes, vehicle_times
@@ -398,7 +398,7 @@ def inversion_mutation(permutations,  VST, dist_data, M, Q,load):
 
     return permutations
 
-def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
+def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, demand_dict ):
     """
                           Apply Mutation and Selection & Replacement operations
                           based on the random probabilities generated
@@ -436,13 +436,13 @@ def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, dem
     updated_population = population
     if SWAP_MUTATION_PROB[0] <= rand_phase_1 <= SWAP_MUTATION_PROB[1]:
         #print("REPRODUCTION: applying swap mutation...")
-        updated_population = swap_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD)
+        updated_population = swap_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD, demand_dict = demand_dict)
     elif INVERSION_MUTATION_PROB[0] <= rand_phase_1 <= INVERSION_MUTATION_PROB[1]:
         #print("REPRODUCTION: applying inversion mutation...")
-        updated_population = inversion_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD)
+        updated_population = inversion_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD, demand_dict = demand_dict)
     elif SCRAMBLE_MUTATION_PROB[0] <= rand_phase_1 <= SCRAMBLE_MUTATION_PROB[1]:
         #print("REPRODUCTION: applying scramble mutation...")
-        updated_population = scramble_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD)
+        updated_population = scramble_mutation(population, VST = vehicles_start_times, dist_data = DIST_DATA, M=M, Q=Q,load=LOAD, demand_dict = demand_dict)
 
     # PHASE 2 SELECTION & REPLACEMENT
     if len(updated_population) > MIN_ENTRY_COUNT:
@@ -538,8 +538,6 @@ def get_tours(permutations):
 #######################################################################################################################
 # DURATION CALCULATION AND RUN
 
-
-
 def helper(
     q: int,
     m: int,
@@ -548,6 +546,7 @@ def helper(
     duration: List[List[List[float]]],
     load: List[int],
     vehicles_start_times: List[float],
+    demand_dict: Dict[int, int]
 ) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
     """
     Calculates total time it takes to visit the locations for the latest driver, sum of the durations of each driver and
@@ -581,7 +580,7 @@ def helper(
         # Go over each edge in the cycle
         for node in cycle[1:]:
             # Update capacity and check if it exceeds the initial capacity
-            curr_capacity -= load[node]
+            curr_capacity -= load[demand_dict[node]]
             if curr_capacity < 0:
                 return INF, INF, None, None
             # Determine the hour and check if it exceeds the number of time zones (based on ignore_long_trip)
@@ -618,6 +617,7 @@ def calculate_duration_perm(
     q: int,
     m: int,
     load: List[int],
+    demand_dict: Dict[int, int],
     ignore_long_trip: bool = False
 
 
@@ -653,7 +653,10 @@ def calculate_duration_perm(
         else:
             last_cycle.append(node)
 
-    return helper(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times)
+    return helper(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times, demand_dict=demand_dict)
+
+
+
 
 def calculate_duration_perm_V2(
     perm: List[int],
@@ -707,8 +710,13 @@ def calculate_duration_perm_V2(
 
     return results
 
+#    results = []
 
-def calculate_duration(permutation, VST, dist_data, M, Q, load):
+#    for elem in all_cycle_perm:
+#        results.append([elem, helper(q, m, ignore_long_trip, elem, duration, load, vehicles_start_times)])
+
+
+def calculate_duration(permutation, VST, dist_data, M, Q, load, demand_dict):
 
     #route = [0]
     route=[]
@@ -721,7 +729,7 @@ def calculate_duration(permutation, VST, dist_data, M, Q, load):
     else:
         assert len(VST) == M, f"Size of the vehicles_start_times should be {M}"
 
-    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST, load = load)
+    route_max_time, route_sum_time, vehicle_routes, vehicle_times = calculate_duration_perm(q=Q, m= M, perm=route, duration=dist_data, vehicles_start_times=VST, load = load,  demand_dict=demand_dict)
 
     return route_max_time, route, route_sum_time, vehicle_routes, vehicle_times
 
@@ -794,7 +802,7 @@ def get_tour_cost(tours, VST, dist_data, M, Q, load):
 
     return tours_w_cost
 
-def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutations = None, hc_nodes = []):
+def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, demand_dict, customer_list,  permutations = None, hc_nodes = []):
     """
                 Main method that controls the mode of the genetic algorithm
                 If no input is given than it starts with population generation and runs genetic algorithm
@@ -818,18 +826,22 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
     # if the given input to this method is none, then a new population is generated from scratch
     if permutations is None:
         NODES_LIST = []
-
+        NODES = []
+        if len(customer_list) != 0:
+            NODES = customer_list
+        else:
+            NODES.extend(range(1, N + 1))
         # there can be different number of tours in each permutation
         # the upper limit is K
         # any permutation between 1 tour and up to K tours are generated
         # the mutation operations work against infeasible solutions
 
-        NODES = []
+        #NODES = []
         #NODES.extend(range(1, N+1))
 
-        for i in range(1,N+1):
-            if i not in hc_nodes:
-                NODES.append(i)
+        #for i in range(1,N+1):
+            #if i not in hc_nodes:
+        #    NODES.append(i)
 
 
         #for k in range(0,K):
@@ -863,7 +875,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
                 random_perm.append(DEPOT)
 
                 # duration and shop indices are calculated
-                total_dist, route, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(permutation=random_perm, dist_data=DIST_DATA, VST= vehicles_start_times, M=M ,Q=Q, load=LOAD)
+                total_dist, route, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(permutation=random_perm, dist_data=DIST_DATA, VST= vehicles_start_times, M=M ,Q=Q, load=LOAD, demand_dict = demand_dict)
                 #total_dist, route = calculate_duration(permutation=random_perm, dist_data=DIST_DATA)
                 # constructed a tuple of three elements 1) permutation 2) shop indices 3) total duration
                 random_perm_tuple = [random_perm, route, total_dist, route_sum_time, vehicle_routes, vehicle_times]
@@ -875,7 +887,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
         # generated tours of each permutation is calculated and saved
         get_tours(random_generated_perm)
         # genetic algorithm code is called
-        res = genetic_algorithm(population = random_generated_perm, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times)
+        res = genetic_algorithm(population = random_generated_perm, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times,  demand_dict = demand_dict)
         # temporary variables used in the last iteration of the genetic algorithm
         res = clean_permutations(res)
         # results are sorted based on total duration (i.e. x[2])
@@ -883,7 +895,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
     else:
         # permutations exist, do not generate new data and continue with the given input
-        res = genetic_algorithm(population = permutations, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times)
+        res = genetic_algorithm(population = permutations, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times,  demand_dict = demand_dict)
         # temporary variables used in the last iteration of the genetic algorithm
         res = clean_permutations(res)
         # results are sorted based on total duration (i.e. x[2])
@@ -891,7 +903,18 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, permutation
 
     return res
 
-def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
+def calculate_demand_dict(customer_list, demand_list):
+
+    demand_dict = {}
+    demand_dict[0] = 0
+    for i in range(0,len(customer_list)):
+
+        demand_dict[customer_list[i]] =  demand_list[i+1]
+
+
+    return demand_dict
+
+def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_list):
 
     N = N_in  # number of shops to be considered
     K = k_in
@@ -901,7 +924,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     DIST_DATA = duration_in
     LOAD = demand_in
     vehicles_start_times = ist_in
-
+    demand_dict = calculate_demand_dict(customer_list=customer_list, demand_list=LOAD)
     #K = K - len(hc_nodes)
     #N = N - len(hc_nodes)
 
@@ -917,7 +940,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
     inputs = tqdm(num_cores * [1])
-    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None) for i in inputs)
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None, customer_list=customer_list, demand_dict = demand_dict) for i in inputs)
 
     # save the output of the current iteration
     #entries.append(copy.deepcopy(processed_list))
@@ -929,7 +952,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list)
-        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
+        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i, demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
 
         #
         current_best_entries = []
@@ -969,7 +992,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
-                            ist_in=vehicles_start_times, permutations=None) for i in inputs)
+                            ist_in=vehicles_start_times, permutations=None,  demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
 
         #if iteration_count == ITERATION_COUNT:
         #    processed_list = Parallel(n_jobs=num_cores)(
@@ -1063,11 +1086,11 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in):
         if together:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
-                            ist_in=vehicles_start_times, permutations=best) for i in inputs)
+                            ist_in=vehicles_start_times, permutations=best,  demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
         else:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
-                            ist_in=vehicles_start_times, permutations=i) for i in inputs)
+                            ist_in=vehicles_start_times, permutations=i,  demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
 
             seperate_counter = seperate_counter + 1
 
@@ -1544,4 +1567,4 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
 
 
 if __name__ == '__main__':
-    run()
+    run_normal()
