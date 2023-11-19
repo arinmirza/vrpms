@@ -38,9 +38,9 @@ class handler(BaseHTTPRequestHandler):
         result = "no_result"
         time_start = datetime.datetime.now()
         if program_mode != "no_program_mode" and algorithm != "no_algorithm":
-            durations_id = query_params["durations_id"][0]
+            durations_id = int(query_params["durations_id"][0])
             duration = get_mapbox_duration_data(SUPABASE_URL, SUPABASE_KEY, None, durations_id)
-            locations_id = query_params["locations_id"][0]
+            locations_id = int(query_params["locations_id"][0])
             locations = get_mapbox_customers_data(SUPABASE_URL, SUPABASE_KEY, None, locations_id)
             if program_mode == "vrp":
                 if algorithm == "aco":
