@@ -11,7 +11,8 @@ def tsp_result_2_output(
     tour = []
     current_node, current_time = start_node, start_time
     for node in route:
-        lat, lng = locations[node]["lat"], lng = locations[node]["lng"]
+        location = locations[node]
+        lat, lng = locations[node]['lat'], locations[node]['lng']
         hour = int(current_time / TIME_UNITS)
         current_time += duration[current_node][node][hour]
         current_node = node
