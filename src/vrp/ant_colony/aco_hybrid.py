@@ -186,7 +186,7 @@ def solve(
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
-    is_print_allowed: bool = True,
+    is_print_allowed: bool = False,
 ) -> List[Tuple]:
     """
     Try different hyperparamater settings and solve VRP with ACO

@@ -35,6 +35,8 @@ class ACO_TSP:
         self.customers = customers
         self.customers_and_depot = customers.copy()
         self.customers_and_depot.append(DEPOT)
+        if start_node != DEPOT:
+            self.customers_and_depot.append(start_node)
         self.start_time = start_time
         self.start_node = start_node
         self.duration = duration

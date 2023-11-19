@@ -50,14 +50,18 @@ def tsp_optimize(
         customers = new_cycle[i + 1 : -1]
         new_vehicle_start_times = vehicle_solution_to_arrivals(vehicle_start_time, [new_cycle[: i + 1]], duration)
         new_vehicle_start_time = new_vehicle_start_times[0][-1]
+        print(f"customers={customers} , new_cycle={new_cycle} , i={i}")
         tsp_sol = solve_aco_tsp(
             n=n,
             duration=duration,
             customers=customers,
             current_time=new_vehicle_start_time,
             current_location=new_cycle[i],
+            n_hyperparams=5,
+            n_best_results=1,
             is_print_allowed=False,
         )
+        print(f"tsp_sol = {tsp_sol}")
         tsp_sol_cycle = tsp_sol[0][1]
         new_cycle[i:] = tsp_sol_cycle
     new_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [new_cycle], duration)
@@ -79,33 +83,31 @@ def solve_scenario(
     delay_customers: List[int],
     duration: List[List[List[float]]],
     load: Optional[List[int]],
+    is_tsp_optimize: bool = True,
 ) -> defaultdict:
     vehicles_start_times = [0 for _ in range(m)]
-    ignored_customers = []
+    customers = [i for i in range(1, n)]
     vehicle_routes = defaultdict(list)
-    while len(ignored_customers) < n - 1:
-        min_vehicle_start_times = min(vehicles_start_times)
-        available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
+    while len(customers) > 0:
         vrp_sol = solve_aco_vrp(
             n=n,
             m=m,
             k=k,
             q=q,
             duration=duration,
+            customers=customers,
             load=load,
+            vehicles_start_times=vehicles_start_times,
             n_hyperparams=10,
             n_best_results=1,
-            ignored_customers=ignored_customers,
-            vehicles_start_times=vehicles_start_times,
             is_print_allowed=False,
         )
+        min_vehicle_start_times = min(vehicles_start_times)
+        available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
         vrp_sol = vrp_sol[0][2]
-        solution_routes = []
-        for vehicle_id in range(m):
-            solution_routes.append(vrp_sol[vehicle_id])
         print(f"vehicle_routes: {vehicle_routes}")
         print(f"vehicles_start_times: {vehicles_start_times}")
-        print(f"ignored_customers: {ignored_customers}")
+        print(f"customers: {customers}")
         print(f"vrp_sol: {vrp_sol}")
         print("")
         for vehicle_id in available_vehicles:
@@ -113,16 +115,20 @@ def solve_scenario(
                 cycle = vrp_sol[vehicle_id][0]
                 remove_customers_to_be_delayed(vehicle_id, cycle, delay_customers)
                 vehicle_start_time = vehicles_start_times[vehicle_id]
-                cycle = tsp_optimize(n, tsp_freq, vehicle_id, vehicle_start_time, cycle, duration)
+                if is_tsp_optimize:
+                    cycle = tsp_optimize(n, tsp_freq, vehicle_id, vehicle_start_time, cycle, duration)
                 vehicle_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
-                new_ignored_customers = [node for node in cycle if node != DEPOT]
-                ignored_customers.extend(new_ignored_customers)
+                new_customers = []
+                for customer in customers:
+                    if customer not in cycle:
+                        new_customers.append(customer)
+                customers = new_customers
     print("FINAL")
     print(f"vehicle_routes: {vehicle_routes}")
     print(f"vehicles_finish_times: {vehicles_start_times}")
-    print(f"ignored_customers: {ignored_customers}")
+    print(f"customers: {customers}")
     return vehicle_routes
 
 
@@ -149,7 +155,15 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     result = solve_scenario(
-        n=n, m=m, k=k, q=q, tsp_freq=tsp_freq, delay_customers=delay_customers, duration=duration, load=load
+        n=n,
+        m=m,
+        k=k,
+        q=q,
+        tsp_freq=tsp_freq,
+        delay_customers=delay_customers,
+        duration=duration,
+        load=load,
+        is_tsp_optimize=True,
     )
     return result
 

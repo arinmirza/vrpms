@@ -104,7 +104,7 @@ def solve(
     ignore_long_trip: bool = False,
     aco_sols: List = [ACO_TSP_1, ACO_TSP_2],
     pheromone_uses_first_hour: List[bool] = [False, True],
-    is_print_allowed: bool = True,
+    is_print_allowed: bool = False,
 ) -> List[Tuple]:
     """
     Try different hyperparamater settings and solve TSP with ACO
