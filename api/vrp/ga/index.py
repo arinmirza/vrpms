@@ -17,7 +17,7 @@ class handler(BaseHTTPRequestHandler):
         # Read
         content_length = int(self.headers.get('Content-Length', 0))
         content_string = str(self.rfile.read(content_length).decode('utf-8'))
-        content = json.loads(content_string)
+        content = json.loads(content_string) if content_string else dict()
 
         # Parse parameters
         errors = []
