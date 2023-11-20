@@ -291,8 +291,7 @@ def solve(
             )
 
     time_diff = time_end - time_start
-    if is_print_allowed:
-        print(f"\nTime elapsed = {time_diff.total_seconds()}")
+    print(f"\nTime elapsed = {time_diff.total_seconds()}")
 
     return results[:n_best_results]
 
@@ -334,7 +333,7 @@ def run_request(
 
 
 def run(
-    n: int = 12,
+    n: int = 13,
     m: int = 2,
     k: int = 3,
     q: int = 5,
@@ -379,15 +378,15 @@ def run(
         load=load,
         customers=customers,
         vehicles_start_times=vehicles_start_times,
-        n_hyperparams=80,
+        n_hyperparams=50,
         n_best_results=1,
     )
     result = results[0]
     result_dict = {
         "route_max_time": result[0],
         "route_sum_time": result[1],
-        "vehicle_routes": result[2],
-        "vehicle_times": result[3],
+        "vehicles_routes": result[2],
+        "vehicles_times": result[3],
         "best_iter": result[4],
         "hyperparams": result[5],
         "consider_depot": result[6],
