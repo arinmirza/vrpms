@@ -13,6 +13,14 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write("Hi, this is the TSP Genetic Algorithm endpoint".encode("utf-8"))
 
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', '*')
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.end_headers()
+
     def do_POST(self):
         # Read
         content_length = int(self.headers.get("Content-Length", 0))

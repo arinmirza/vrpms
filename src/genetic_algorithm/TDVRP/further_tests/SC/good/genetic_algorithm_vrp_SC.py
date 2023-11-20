@@ -992,7 +992,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
         if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
 
             customer_list = [elem for elem in customer_list if elem != 0]
-            
+
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
                             ist_in=vehicles_start_times, permutations=None,  demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
