@@ -16,14 +16,14 @@
 import copy
 
 from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as genetic_algorithm_tsp_sc
-from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp_mc
-from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
-from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
+#from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp_mc
+#from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
+#from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
 from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp_mc
-from src.utilities.vrp_helper import get_load_data
+#from src.utilities.vrp_helper import get_load_data
 from src.utilities.vrp_helper import solution_to_arrivals
-from src.supabase_help.get_supabase_matrix import get_data
-from supabase import create_client, Client
+#from src.supabase_help.get_supabase_matrix import get_data
+#from supabase import create_client, Client
 
 
 
@@ -31,7 +31,7 @@ from supabase import create_client, Client
 #from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
 from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run_normal as test_sc_new
 import numpy as np
-import math
+#import math
 def get_stats(matrix, k, q):
     sum_all_pairs = []
 
@@ -216,26 +216,12 @@ def prepare_output_format(duration, tours, initial_start_times, map, M, q):
     return arrivals_out
 
 #TODO: delete the get_supabase_matrix method and get the data from arin
-def get_supabase_matrix():
-  url: str = ("https://pkeygmzuwfucblldmkjn.supabase.co")
-  key: str = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s")
 
-  supabase: Client = create_client(url, key)
-
-  #with open("dataset_matrix.npy", 'wb+') as f:
-    #res = supabase.storage.from_('public/dataset').download("matrix.npy")
-
-  res = supabase.table('locations').select('*').eq('id', 1).execute().data[0]
-    #f.write(res)
-
-
-  return res
-  print("res")
 
 def map_id_coordinate(json_obj):
     coordinate_index_map = {}
     #TODO: arin json gonderiyor zaten
-    for elem in json_obj["locations"]:
+    for elem in json_obj:
         id = elem["id"]
         lat = elem["lat"]
         lng = elem["lng"]
@@ -270,6 +256,7 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
         ist = [initial_start_times] # here initial start times is a single value
         sn = start_node
         cl = customers
+        cl.append(sn) # TODO: cunku sn customer list icinde yok
         multithreaded = multithreaded
         N = len(customers)
         demand_list = get_demands(locations=locations, customer_list=cl)
@@ -312,8 +299,8 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
             #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 
     #TODO: generate the map information required for the prep out method
-    data = get_supabase_matrix()
-    map = map_id_coordinate(data)
+    #data = get_supabase_matrix()
+    map = map_id_coordinate(locations)
     #TODO: set the inputs etc
     arrivals_final = prepare_output_format(duration=duration, tours=output[2], initial_start_times=ist, map=map, M=M, q=q)
 

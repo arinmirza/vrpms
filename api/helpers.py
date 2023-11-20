@@ -22,3 +22,12 @@ def success(handler: BaseHTTPRequestHandler, result: dict):
     handler.end_headers()
     response = {"success": True, "message": result}
     handler.wfile.write(json.dumps(response).encode("utf-8"))
+
+def remove_unused_locations(locations, ignored_customers, completed_customers):
+    disregard = ignored_customers + completed_customers
+    return [loc for loc in locations if loc['id'] not in disregard]
+
+def remove_unused_locations_tsp(locations, customers, start_node, depot=0):
+    customers_ids = customers.copy()
+    customers_ids.extend([start_node, depot])
+    return [loc for loc in locations if loc["id"] in customers_ids]

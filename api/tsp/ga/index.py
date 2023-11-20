@@ -4,7 +4,7 @@ from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_ga_parameters
 from src.genetic_algorithm.genetic_algorithm import run_GA as run
-
+from api.helpers import remove_unused_locations_tsp
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -62,7 +62,8 @@ class handler(BaseHTTPRequestHandler):
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=locations,
+                locations=remove_unused_locations_tsp(locations=locations, customers=params["customers"],
+                                                      start_node=params, depot=0),
                 vehicle=result["vehicles"],
                 duration_max=result["durationMax"],
                 duration_sum=result["durationSum"],
