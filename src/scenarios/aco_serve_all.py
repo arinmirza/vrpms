@@ -117,6 +117,9 @@ def solve_scenario(
                 vehicle_start_time = vehicles_start_times[vehicle_id]
                 if is_tsp_optimize:
                     cycle = tsp_optimize(n, tsp_freq, vehicle_id, vehicle_start_time, cycle, duration)
+                if cycle == [DEPOT, DEPOT]:
+                    continue
+                k -= 1
                 vehicle_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
@@ -133,9 +136,9 @@ def solve_scenario(
 
 
 def run(
-    n: int = 21,
+    n: int = 13,
     m: int = 2,
-    k: int = 10,
+    k: int = 3,
     q: int = 5,
     tsp_freq: int = 2,
     delay_customers: List[int] = [1, 3],
