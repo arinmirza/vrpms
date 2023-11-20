@@ -8,7 +8,7 @@ from src.utilities.helper.locations_helper import (
     convert_locations,
     get_available_and_all_ignored_customers,
     get_demands_from_locations,
-    remove_unused_locations,
+    remove_unused_locations_vrp,
 )
 from src.utilities.helper.result_2_output import vrp_result_2_output
 
@@ -51,7 +51,7 @@ class handler(BaseHTTPRequestHandler):
             completed_customers=params["completed_customers"],
         )
         demands = get_demands_from_locations(durations, new_locations)
-        remaning_locations = remove_unused_locations(
+        filtered_locations = remove_unused_locations_vrp(
             locations, params["ignored_customers"], params["completed_customers"]
         )
 
@@ -78,7 +78,7 @@ class handler(BaseHTTPRequestHandler):
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=remaning_locations,
+                locations=filtered_locations,
                 vehicles=result["vehicles"],
                 duration_max=duration_max,
                 duration_sum=duration_sum,

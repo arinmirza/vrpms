@@ -4,7 +4,7 @@ from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_sa_parameters
 from src.tsp.simulated_annealing.simulated_annealing import run_request
-from src.utilities.helper.locations_helper import convert_locations
+from src.utilities.helper.locations_helper import convert_locations, remove_unused_locations_tsp
 from src.utilities.helper.result_2_output import tsp_result_2_output
 
 
@@ -40,6 +40,8 @@ class handler(BaseHTTPRequestHandler):
             return
 
         new_locations = convert_locations(locations)
+        filtered_locations = remove_unused_locations_tsp(locations, params["customers"], params["start_node"])
+
         tsp_result = run_request(
             current_time=params["start_time"],
             current_location=params["start_node"],
@@ -68,7 +70,7 @@ class handler(BaseHTTPRequestHandler):
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=locations,
+                locations=filtered_locations,
                 vehicles=vehicles,
                 duration=duration,
                 errors=errors,
