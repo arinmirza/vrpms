@@ -89,6 +89,11 @@ def solve_scenario(
     customers = [i for i in range(1, n)]
     vehicle_routes = defaultdict(list)
     while len(customers) > 0:
+        total_load = 0
+        for customer in customers:
+            total_load += load[customer]
+        k_min = (total_load + q - 1) // q
+        k = max(k, k_min)
         vrp_sol = solve_aco_vrp(
             n=n,
             m=m,
@@ -136,10 +141,10 @@ def solve_scenario(
 
 
 def run(
-    n: int = 13,
-    m: int = 2,
-    k: int = 3,
-    q: int = 5,
+    n: int = 21,
+    m: int = 3,
+    k: int = 4,
+    q: int = 6,
     tsp_freq: int = 2,
     delay_customers: List[int] = [1, 3],
     supabase_url: Optional[str] = None,
