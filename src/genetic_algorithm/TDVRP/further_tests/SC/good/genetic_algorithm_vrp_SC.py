@@ -854,7 +854,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, demand_dict
 
         #NODES_LIST.append(NODES)
         random_generated_perm = []
-
+        print("NODES XDXD: ", NODES)
         #print("Generating random population with size: ", RANDOM_PERM_COUNT)
 
         while len(random_generated_perm) <= RANDOM_PERM_COUNT:
@@ -990,6 +990,9 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
         iteration_count = iteration_count + 1
 
         if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
+            print("old aq: ", customer_list)
+            customer_list = [elem for elem in customer_list if elem != 0]
+            print("new uwu: ", customer_list)
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
                             ist_in=vehicles_start_times, permutations=None,  demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
@@ -1067,6 +1070,8 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
     iteration_count = 0
 
     from itertools import groupby
+
+    print("haydaa")
 
     def all_equal(iterable):
         g = groupby(iterable)

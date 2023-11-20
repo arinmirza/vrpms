@@ -300,10 +300,11 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
 
     #TODO: generate the map information required for the prep out method
     #data = get_supabase_matrix()
+    print("output nie degisti amk: ", output)
     map = map_id_coordinate(locations)
     #TODO: set the inputs etc
     arrivals_final = prepare_output_format(duration=duration, tours=output[2], initial_start_times=ist, map=map, M=M, q=q)
-
+    print("k degeri budur: ", k)
     output_dict = {}
     output_dict["durationMax"] = int(output[0])
     output_dict["durationSum"] = int(output[1])
