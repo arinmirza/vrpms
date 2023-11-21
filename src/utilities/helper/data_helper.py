@@ -127,7 +127,7 @@ def get_mapbox_and_load_data(
     supabase_url_key_file: Optional[str],
     n: int = 25,
     durations_query_row_id: int = 1,
-    locations_query_row_id: int = 1,
+    locations_query_row_id: int = 2,
 ):
     duration_old = get_mapbox_duration_data(supabase_url, supabase_key, supabase_url_key_file, durations_query_row_id)
     duration = get_subset_time_data(duration_old, n, False)
@@ -141,9 +141,11 @@ def get_mapbox_duration_locations_load(
     supabase_key: Optional[str],
     durations_query_row_id: int = 1,
     locations_query_row_id: int = 2,
+    n: int = None,
 ):
     duration = get_mapbox_duration_data(supabase_url, supabase_key, None, durations_query_row_id)
     locations = get_mapbox_locations_data(supabase_url, supabase_key, None, locations_query_row_id)
-    n = len(duration)
+    if n is None:
+        n = len(duration)
     load = get_mapbox_load_data(locations, n)
     return duration, locations, load
