@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from api.database import Database
 from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
@@ -28,6 +28,15 @@ def remove_customers_to_be_delayed_and_cancelled(
     cancel_customers: List[int],
     cycle: List[int],
 ) -> None:
+    """
+    Removes the given customers from the given tour
+
+    :param vehicle_id: ID of the vehicle (for print purposes)
+    :param customers: Remaining customers in the VRP tours
+    :param delay_customers: Customers to delay orders
+    :param cancel_customers: Customers to cancel orders
+    :param cycle: A cycle in the vrp solution, i.e. [DEPOT, customer_i, ..., DEPOT]
+    """
     customers_to_be_delayed = list(set(cycle) & set(delay_customers))
     for customer in customers_to_be_delayed:
         print(f"Customer {customer} is delayed for the driver {vehicle_id}")
@@ -49,6 +58,17 @@ def run_tsp_algo(
     vehicle_start_node: int,
     tsp_algo_params: Dict,
 ) -> List[int]:
+    """
+    Runs TSP algo on the given customers
+
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
+    :param customers: Remaining customers in the TSP cycle
+    :param duration: Duration data of NxNx12
+    :param vehicle_start_time: Start time in terms of seconds for the vehicle
+    :param vehicle_start_node: Starting location of the vehicle
+    :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
+    :return: List of location ids to visit including the vehicle_start_node as the first and DEPOT as the last element
+    """
     algo = tsp_algo_params["algo"]
     tsp_sol = None
     if algo == "bf":
@@ -91,6 +111,18 @@ def tsp_optimize(
     duration: List[List[List[float]]],
     tsp_algo_params: Dict,
 ) -> List[int]:
+    """
+    Run TSP optimization on the given customers, considering the tsp frequency
+
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
+    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param vehicle_id: ID of the vehicle (for print purposes)
+    :param vehicle_start_time: Start time in terms of seconds for the vehicle
+    :param init_cycle: The TSP cycle found by the given VRP algorithm
+    :param duration: Duration data of NxNx12
+    :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
+    :return: List of location ids to visit including the vehicle_start_node as the first and DEPOT as the last element
+    """
     if tsp_freq <= 0:
         return init_cycle
     init_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [init_cycle], duration)
@@ -146,7 +178,21 @@ def run_vrp_algo(
     demands: Optional[List[int]],
     vehicles_start_times: List[float],
     vrp_algo_params: Dict,
-):
+) -> Union[Dict, List[List[List[int]]]]:
+    """
+    Runs VRP algo on the given customers
+
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
+    :param m: The number of vehicles
+    :param k: The number of max cycles
+    :param q: The capacity of vehicles
+    :param customers: Remaining customers in the VRP tours
+    :param duration: Duration data of NxNx12
+    :param demands: Demands of the customers
+    :param vehicles_start_times: Start times in terms of seconds for the vehicles
+    :param vrp_algo_params: Params to run VRP algo, it should include "algo" as a key
+    :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT
+    """
     algo = vrp_algo_params["algo"]
     vrp_sol = None
     if algo == "bf":
@@ -202,6 +248,24 @@ def solve_scenario(
     vrp_algo_params: Dict,
     tsp_algo_params: Dict,
 ) -> Tuple[defaultdict, List[float]]:
+    """
+    Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
+
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
+    :param m: The number of vehicles
+    :param k: The number of max cycles
+    :param q: The capacity of vehicles
+    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param customers: Remaining customers in the VRP tours
+    :param delay_customers: Customers to delay orders
+    :param cancel_customers: Customers to cancel orders
+    :param duration: Duration data of NxNx12
+    :param demands: Demands of the customers
+    :param vrp_algo_params: Params to run VRP algo, it should include "algo" as a key
+    :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
+    :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT and list
+        of vehicle finish times in terms of seconds
+    """
     vehicles_start_times = [0 for _ in range(m)]
     vehicle_routes = defaultdict(list)
     while len(customers) > 0:
@@ -276,6 +340,27 @@ def run(
     vrp_algo_params_path: str = '../../data/scenarios/vrp/config_vrp_aco_1.json',
     tsp_algo_params_path: str = '../../data/scenarios/tsp/config_tsp_bf_1.json',
 ) -> Tuple[defaultdict, List[float]]:
+    """
+    Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
+
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
+    :param m: The number of vehicles
+    :param k: The number of max cycles
+    :param q: The capacity of vehicles
+    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param ignore_customers: Customers to ignore orders
+    :param delay_customers: Customers to delay orders
+    :param cancel_customers: Customers to cancel orders
+    :param durations_query_row_id: Row ID of the "durations" table to be fetched
+    :param locations_query_row_id: Row ID of the "locations" table to be fetched
+    :param per_km_time: Multiplier to calculate duration from distance in km where duration_data_type = based
+    :param input_file_load: Path to the file of demands of customers
+    :param duration_data_type: Type of the duration data to be used
+    :param vrp_algo_params_path: Path to the file of params to run VRP algo, it should include "algo" as a key
+    :param tsp_algo_params_path: Path to the file of params to run TSP algo, it should include "algo" as a key
+    :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT and list
+        of vehicle finish times in terms of seconds
+    """
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     with open(vrp_algo_params_path, 'r') as j:
