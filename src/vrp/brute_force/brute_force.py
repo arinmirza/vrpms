@@ -1,3 +1,4 @@
+import copy
 import itertools
 from collections import defaultdict
 from datetime import datetime
@@ -133,11 +134,12 @@ def calculate_duration_perm(
 
 
 def solve(
+    k: int,
     q: int,
     ignore_long_trip: bool,
     duration: List[List[List[float]]],
     load: List[int],
-    nodes: List[int],
+    customers: List[int],
     vehicles_start_times: Optional[List[float]],
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Tuple[float, float, Optional[defaultdict], Optional[defaultdict]]:
@@ -145,11 +147,12 @@ def solve(
     Solves VRP using brute force and gets total time it takes to visit the locations for the latest driver, sum of the
         durations of each driver and the routes for each driver
 
+    :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param ignore_long_trip: Flag to ignore long trips
     :param duration: Dynamic duration data of NxNx12
     :param load: Loads of locations
-    :param nodes: List of customers to be visited
+    :param customers: List of customers to be visited
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
         as zero.
     :param objective_func_type: Type of the objective function to minimize total time it takes to visit the locations
@@ -166,6 +169,9 @@ def solve(
         best_vehicle_times,
     ) = (INF, INF, None, None)
     m = len(vehicles_start_times)
+
+    nodes = copy.deepcopy(customers)
+    nodes.extend([DEPOT for _ in range(1, k)])
 
     # Look for each permutation of visiting orders
     for perm in itertools.permutations(nodes):
@@ -215,20 +221,17 @@ def run_request(
     ignore_long_trip: bool = False,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
 ) -> Dict:
-    nodes = []
     sum_demand = 0
     for customer in available_customers:
-        nodes.append(customer)
         sum_demand += load[customer]
     k = (sum_demand + q - 1) // q
-    for _ in range(k - 1):
-        nodes.append(DEPOT)
     result = solve(
+        k=k,
         q=q,
         ignore_long_trip=ignore_long_trip,
         duration=duration,
         load=load,
-        nodes=nodes,
+        customers=available_customers,
         vehicles_start_times=vehicles_start_times,
         objective_func_type=objective_func_type,
     )
@@ -287,6 +290,11 @@ def run(
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
 
+    if vehicles_start_times is None:
+        vehicles_start_times = [0 for _ in range(m)]
+    else:
+        assert len(vehicles_start_times) == m, f"Size of the vehicles_start_times should be {m}"
+
     if duration_data_type == "mapbox":
         duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
     elif duration_data_type == "google":
@@ -294,21 +302,15 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
 
-    nodes = [i for i in range(1, n)]
-    for _ in range(k - 1):
-        nodes.append(DEPOT)
-
-    if vehicles_start_times is None:
-        vehicles_start_times = [0 for _ in range(m)]
-    else:
-        assert len(vehicles_start_times) == m, f"Size of the vehicles_start_times should be {m}"
+    customers = [i for i in range(1, n)]
 
     result = solve(
+        k=k,
         q=q,
         ignore_long_trip=ignore_long_trip,
         duration=duration,
         load=load,
-        nodes=nodes,
+        customers=customers,
         vehicles_start_times=vehicles_start_times,
         objective_func_type=objective_func_type,
     )

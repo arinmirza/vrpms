@@ -4,8 +4,10 @@ from typing import Dict, List, Literal, Optional, Tuple
 from api.database import Database
 from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
 from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
-from src.vrp.ant_colony.aco_hybrid import solve as solve_aco_vrp
-from src.tsp.ant_colony.aco_hybrid import solve as solve_aco_tsp
+from src.vrp.ant_colony.aco_hybrid import solve as solve_vrp_aco
+from src.vrp.brute_force.brute_force import solve as solve_vrp_bf
+from src.tsp.ant_colony.aco_hybrid import solve as solve_tsp_aco
+from src.tsp.brute_force.brute_force import solve as solve_tsp_bf
 from src.utilities.helper.locations_helper import convert_locations, get_demands_from_locations
 
 DEPOT = 0  # depot
@@ -49,9 +51,16 @@ def run_tsp_algo(
     algo = tsp_algo_params["algo"]
     tsp_sol = None
     if algo == "bf":
-        ...
+        tsp_sol = solve_tsp_bf(
+            current_time=vehicle_start_time,
+            current_location=vehicle_start_node,
+            customers=customers,
+            duration=duration,
+            ignore_long_trip=False,
+        )
+        tsp_sol = tsp_sol[1]
     elif algo == "aco":
-        tsp_sol = solve_aco_tsp(
+        tsp_sol = solve_tsp_aco(
             n=n,
             duration=duration,
             customers=customers,
@@ -60,6 +69,7 @@ def run_tsp_algo(
             n_hyperparams=tsp_algo_params["n_hyperparams"],
             n_best_results=1,
             is_print_allowed=False,
+            ignore_long_trip=False,
         )
         tsp_sol = tsp_sol[0][1]
     elif algo == "sa":
@@ -139,9 +149,19 @@ def run_vrp_algo(
     algo = vrp_algo_params["algo"]
     vrp_sol = None
     if algo == "bf":
-        ...
+        vrp_sol = solve_vrp_bf(
+            k=k,
+            q=q,
+            duration=duration,
+            load=demands,
+            customers=customers,
+            vehicles_start_times=vehicles_start_times,
+            ignore_long_trip=False,
+            objective_func_type="min_max_time",
+        )
+        vrp_sol = vrp_sol[2]
     elif algo == "aco":
-        vrp_sol = solve_aco_vrp(
+        vrp_sol = solve_vrp_aco(
             n=n,
             m=m,
             k=k,
@@ -152,6 +172,9 @@ def run_vrp_algo(
             vehicles_start_times=vehicles_start_times,
             n_hyperparams=vrp_algo_params["n_hyperparams"],
             n_best_results=1,
+            optimize_tsp=False,
+            ignore_long_trip=False,
+            objective_func_type="min_max_time",
             is_print_allowed=False,
         )
         vrp_sol = vrp_sol[0][2]
@@ -250,7 +273,7 @@ def run(
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params: Dict = {"algo": "aco", "n_hyperparams": 10},
-    tsp_algo_params: Dict = {"algo": "aco", "n_hyperparams": 10},
+    tsp_algo_params: Dict = {"algo": "bf", "n_hyperparams": 10},
 ) -> Tuple[defaultdict, List[float]]:
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
