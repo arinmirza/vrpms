@@ -14,7 +14,6 @@ from src.utilities.helper.locations_helper import convert_locations, get_demands
 DEPOT = 0  # depot
 N_TIME_ZONES = 12  # hours = time slices
 EPS = 1e-6
-INF = float("inf")
 
 INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
@@ -267,7 +266,7 @@ def solve_scenario(
         of vehicle finish times in terms of seconds
     """
     vehicles_start_times = [0 for _ in range(m)]
-    vehicle_routes = defaultdict(list)
+    vehicles_routes = defaultdict(list)
     while len(customers) > 0:
         total_demands = 0
         for customer in customers:
@@ -287,7 +286,7 @@ def solve_scenario(
             vehicles_start_times=vehicles_start_times,
             vrp_algo_params=vrp_algo_params,
         )
-        print(f"vehicle_routes: {vehicle_routes}")
+        print(f"vehicles_routes: {vehicles_routes}")
         print(f"vehicles_start_times: {vehicles_start_times}")
         print(f"customers: {customers}")
         print(f"vrp_sol: {vrp_sol}")
@@ -311,16 +310,16 @@ def solve_scenario(
                     tsp_algo_params=tsp_algo_params,
                 )
                 k -= 1
-                vehicle_routes[vehicle_id].append(cycle)
+                vehicles_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
                 for customer in cycle[1:-1]:
                     customers.remove(customer)
     print("FINAL")
-    print(f"vehicle_routes: {vehicle_routes}")
+    print(f"vehicles_routes: {vehicles_routes}")
     print(f"vehicles_finish_times: {vehicles_start_times}")
     print(f"customers: {customers}")
-    return vehicle_routes, vehicles_start_times
+    return vehicles_routes, vehicles_start_times
 
 
 def run(
@@ -337,8 +336,8 @@ def run(
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-    vrp_algo_params_path: str = '../../data/scenarios/vrp/config_vrp_aco_1.json',
-    tsp_algo_params_path: str = '../../data/scenarios/tsp/config_tsp_bf_1.json',
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Tuple[defaultdict, List[float]]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -363,9 +362,9 @@ def run(
     """
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
-    with open(vrp_algo_params_path, 'r') as j:
+    with open(vrp_algo_params_path, "r") as j:
         vrp_algo_params = json.loads(j.read())
-    with open(tsp_algo_params_path, 'r') as j:
+    with open(tsp_algo_params_path, "r") as j:
         tsp_algo_params = json.loads(j.read())
     assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
     assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
@@ -381,7 +380,7 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     customers = [i for i in range(1, n) if i not in ignore_customers]
-    vehicle_routes, vehicles_finish_times = solve_scenario(
+    vehicles_routes, vehicles_finish_times = solve_scenario(
         n=n,
         m=m,
         k=k,
@@ -395,7 +394,7 @@ def run(
         vrp_algo_params=vrp_algo_params,
         tsp_algo_params=tsp_algo_params,
     )
-    return vehicle_routes, vehicles_finish_times
+    return vehicles_routes, vehicles_finish_times
 
 
 if __name__ == "__main__":
