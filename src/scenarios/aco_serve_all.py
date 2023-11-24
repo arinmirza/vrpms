@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple
 
@@ -272,11 +273,17 @@ def run(
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-    vrp_algo_params: Dict = {"algo": "aco", "n_hyperparams": 10},
-    tsp_algo_params: Dict = {"algo": "bf", "n_hyperparams": 10},
+    vrp_algo_params_path: str = '../../data/scenarios/vrp/config_vrp_aco_1.json',
+    tsp_algo_params_path: str = '../../data/scenarios/tsp/config_tsp_bf_1.json',
 ) -> Tuple[defaultdict, List[float]]:
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
+    with open(vrp_algo_params_path, 'r') as j:
+        vrp_algo_params = json.loads(j.read())
+    with open(tsp_algo_params_path, 'r') as j:
+        tsp_algo_params = json.loads(j.read())
+    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
+    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
     if duration_data_type == "mapbox":
         errors = []
         database = Database()
