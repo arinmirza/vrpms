@@ -244,8 +244,8 @@ def solve_scenario(
     cancel_customers: List[int],
     duration: List[List[List[float]]],
     demands: Optional[List[int]],
-    vrp_algo_params: Dict,
-    tsp_algo_params: Dict,
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Tuple[defaultdict, List[float]]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -260,11 +260,18 @@ def solve_scenario(
     :param cancel_customers: Customers to cancel orders
     :param duration: Duration data of NxNx12
     :param demands: Demands of the customers
-    :param vrp_algo_params: Params to run VRP algo, it should include "algo" as a key
-    :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
+    :param vrp_algo_params_path: Path to the file of params to run VRP algo, it should include "algo" as a key
+    :param tsp_algo_params_path: Path to the file of params to run TSP algo, it should include "algo" as a key
     :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT and list
         of vehicle finish times in terms of seconds
     """
+    with open(vrp_algo_params_path, "r") as j:
+        vrp_algo_params = json.loads(j.read())
+    with open(tsp_algo_params_path, "r") as j:
+        tsp_algo_params = json.loads(j.read())
+    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
+    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
+
     vehicles_start_times = [0 for _ in range(m)]
     vehicles_routes = defaultdict(list)
     while len(customers) > 0:
@@ -362,12 +369,6 @@ def run(
     """
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
-    with open(vrp_algo_params_path, "r") as j:
-        vrp_algo_params = json.loads(j.read())
-    with open(tsp_algo_params_path, "r") as j:
-        tsp_algo_params = json.loads(j.read())
-    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
-    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
     if duration_data_type == "mapbox":
         errors = []
         database = Database()
@@ -391,8 +392,8 @@ def run(
         cancel_customers=cancel_customers,
         duration=duration,
         demands=load,
-        vrp_algo_params=vrp_algo_params,
-        tsp_algo_params=tsp_algo_params,
+        vrp_algo_params_path=vrp_algo_params_path,
+        tsp_algo_params_path=tsp_algo_params_path,
     )
     return vehicles_routes, vehicles_finish_times
 

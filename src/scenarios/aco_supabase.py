@@ -99,12 +99,6 @@ def run(
     :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT and list
         of vehicle finish times in terms of seconds
     """
-    with open(vrp_algo_params_path, "r") as j:
-        vrp_algo_params = json.loads(j.read())
-    with open(tsp_algo_params_path, "r") as j:
-        tsp_algo_params = json.loads(j.read())
-    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
-    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
     errors = []
     database = DatabaseVRP()
     duration = database.get_durations_by_id(durations_query_row_id, errors)
@@ -123,8 +117,8 @@ def run(
         cancel_customers=cancel_customers,
         duration=duration,
         demands=load,
-        vrp_algo_params=vrp_algo_params,
-        tsp_algo_params=tsp_algo_params,
+        vrp_algo_params_path=vrp_algo_params_path,
+        tsp_algo_params_path=tsp_algo_params_path,
     )
     record = upload_supabase(n, m, q, vehicles_routes, duration, locations, ignore_customers)
     return record
