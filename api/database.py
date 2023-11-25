@@ -18,7 +18,10 @@ class Database:
 
     def login(self, token: str):
         """Login with the JWT token of a specific user."""
-        self.client.auth.set_session(access_token=token, refresh_token=token)
+        try:
+            self.client.auth.set_session(access_token=token, refresh_token=token)
+        except:
+            pass
 
     def get_locations_by_id(self, id, errors, table_name="locations", column_name="locations"):
         try:
