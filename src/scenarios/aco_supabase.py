@@ -17,6 +17,7 @@ RECORD_DESCRIPTION = "simulation_scenario_description"
 
 
 def upload_supabase(
+    n: int,
     m: int,
     q: int,
     vehicles_routes: defaultdict,
@@ -27,6 +28,7 @@ def upload_supabase(
     """
     Uploads the result of simulation to a new Supabase row
 
+    :param n: The number of locations, it should be larger than id of the depot and the given customers
     :param m: The number of vehicles
     :param q: The capacity of vehicles
     :param vehicles_routes: List of location ids to visit where first and last element of each 1D inner list (cycle) is
@@ -36,12 +38,8 @@ def upload_supabase(
     :param ignore_customers: Customers to ignore orders
     :return: Record (json) to be stored in Supabase
     """
-    database = DatabaseVRP(ACCESS_TOKEN)
-    if database.client.auth is None:
-        print("Invalid authentication")
-        return {}
     new_locations = convert_locations(locations)
-    filtered_locations = remove_unused_locations_vrp(locations, ignore_customers, [])
+    filtered_locations = remove_unused_locations_vrp(locations, ignore_customers, [], n)
     vehicles_start_times = [0 for _ in range(m)]
     capacities = [q for _ in range(m)]
     vrp_result = {"vehicles_routes": vehicles_routes}
@@ -65,6 +63,7 @@ def upload_supabase(
         duration_sum=duration_sum,
         errors=errors,
     )
+    print(f"\n{result}")
     return result
 
 
@@ -127,7 +126,7 @@ def run(
         vrp_algo_params=vrp_algo_params,
         tsp_algo_params=tsp_algo_params,
     )
-    record = upload_supabase(m, q, vehicles_routes, duration, locations, ignore_customers)
+    record = upload_supabase(n, m, q, vehicles_routes, duration, locations, ignore_customers)
     return record
 
 

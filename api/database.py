@@ -4,8 +4,8 @@ from supabase.lib.client_options import ClientOptions
 
 
 class Database:
-    _url: str = os.environ.get('SUPABASE_URL') or ''
-    _key: str = os.environ.get('SUPABASE_KEY') or ''
+    _url: str = os.environ.get("SUPABASE_URL") or ""
+    _key: str = os.environ.get("SUPABASE_KEY") or ""
     client: Client
 
     def __init__(self, auth=None):

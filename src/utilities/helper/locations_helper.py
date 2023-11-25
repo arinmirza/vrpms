@@ -34,10 +34,13 @@ def get_demands_from_locations(durations: List[List[List[float]]], locations: Di
 
 
 def remove_unused_locations_vrp(
-    locations: List[Dict], ignored_customers: List[int], completed_customers: List[int]
+    locations: List[Dict],
+    ignored_customers: List[int],
+    completed_customers: List[int],
+    n: int = int(1e9),
 ) -> List[Dict]:
     disregard = ignored_customers + completed_customers
-    return [loc for loc in locations if loc["id"] not in disregard]
+    return [loc for loc in locations if loc["id"] not in disregard and loc["id"] < n]
 
 
 def remove_unused_locations_tsp(
