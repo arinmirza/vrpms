@@ -266,7 +266,7 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
         W=0
         M=1
         q = len(customers)
-    
+
     output = None
 
     #hc_nodes = get_stats(matrix=duration, k = k, q=q)
@@ -275,7 +275,7 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
     #print("DEMAND_LIST  ---> ",load)
 
     if pm == "TDVRP":
-        
+
         if not multithreaded:
             #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
@@ -287,9 +287,9 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
             output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, customer_list = cl)
-    
+
     elif pm == "TSP":
-        
+
         if not multithreaded:
            #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
             output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load,  ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl)
@@ -309,3 +309,81 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
     output_dict["durationSum"] = int(output[1])
     output_dict["vehicles"] = arrivals_final
     return output_dict#output[0],output[1], arrivals_final
+
+
+def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded):
+
+    if mode == "TDVRP":
+        N = n
+        M = m
+        q = q
+        k = k
+        W = 0
+        duration = duration
+        multithreaded = multithreaded
+        cl = customers
+        sn = start_node
+        load = load
+        ist = vehicle_start_times
+        pm = mode
+
+    elif mode == "TSP":
+
+        N = n
+        k = k
+        W = 0
+        duration = duration
+        multithreaded = multithreaded
+
+        cl = customers
+        cl.append(start_node)  # TODO: cunku sn customer list icinde yok
+
+        sn = start_node
+        load = load
+        ist = vehicle_start_times
+        pm = mode
+        multithreaded = multithreaded
+
+        M = 1
+        q = len(customers)
+
+    output = None
+
+    # hc_nodes = get_stats(matrix=duration, k = k, q=q)
+
+    # print("CUSTOMER_LIST --->", cl)
+    # print("DEMAND_LIST  ---> ",load)
+
+    if pm == "TDVRP":
+
+        if not multithreaded:
+            # output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
+            # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
+            output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,
+                                 ist_in=ist, customer_list=cl)
+
+        else:
+            # good example
+            # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
+
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
+                                              demand_in=load, ist_in=ist, customer_list=cl)
+
+    elif pm == "TSP":
+
+        if not multithreaded:
+            # N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
+            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                              demand_in=load, ist_in=ist, multithreaded=False, start_node=sn,
+                                              customer_list=cl)
+        else:
+            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                              demand_in=load, ist_in=ist, multithreaded=True, start_node=sn,
+                                              customer_list=cl)
+            # output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
+
+    # TODO: generate the map information required for the prep out method
+    # data = get_supabase_matrix()
+
+
+    return output  # output[0],output[1], arrivals_final

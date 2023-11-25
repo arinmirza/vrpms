@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
 from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
-from src.vrp.brute_force.brute_force import run_request
+from src.vrp.brute_force_old.brute_force import run_request
 from src.utilities.helper.data_helper import convert_locations, get_demand_data_from_locations
 from src.utilities.helper.result_2_output import vrp_result_2_output
 

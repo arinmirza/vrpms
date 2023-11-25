@@ -6,10 +6,18 @@ from api.database import Database
 from src.utilities2.helper.vrp_helper import vehicle_solution_to_arrivals
 from src.utilities2.helper.data_helper import get_based_and_load_data, get_google_and_load_data
 #from src.vrp.ant_colony.aco_hybrid import solve as solve_vrp_aco
-from src.vrp.brute_force.brute_force import solve as solve_vrp_bf
+from src.vrp.brute_force_old.brute_force import solve as solve_vrp_bf
 #from src.tsp.ant_colony.aco_hybrid import solve as solve_tsp_aco
 from src.tsp.brute_force.brute_force import solve as solve_tsp_bf
 from src.utilities2.helper.locations_helper import convert_locations, get_demands_from_locations
+
+#from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as ga_tsp_sc
+#from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as ga_vrp_mc
+#from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run_normal as ga_vrp_sc
+
+from src.genetic_algorithm.genetic_algorithm import run_GA_local_scenario as run_ga
+
+
 
 DEPOT = 0  # depot
 N_TIME_ZONES = 12  # hours = time slices
@@ -196,27 +204,14 @@ def run_vrp_algo(
         )
         vrp_sol = vrp_sol[2]
     elif algo == "aco":
-        vrp_sol = solve_vrp_aco(
-            n=n,
-            m=m,
-            k=k,
-            q=q,
-            duration=duration,
-            customers=customers,
-            load=demands,
-            vehicles_start_times=vehicles_start_times,
-            n_hyperparams=vrp_algo_params["n_hyperparams"],
-            n_best_results=1,
-            optimize_tsp=False,
-            ignore_long_trip=False,
-            objective_func_type="min_max_time",
-            is_print_allowed=False,
-        )
-        vrp_sol = vrp_sol[0][2]
+
+       ...
     elif algo == "sa":
         ...
     elif algo == "ga":
-        ...
+        vrp_sol = run_ga(n=n, m=m, k=k, q=q, duration=duration, customers=customers, load=demands, vehicle_start_times=vehicles_start_times, mode="TDVRP", start_node=None, multithreaded=True)
+        vrp_sol_part= vrp_sol[0][2]
+        #run_ga(locations, durations=duration, capacities=[q]*m, initial_start_times=vehicles_start_times, ignored_customers=[], completed_customers=[], multithreaded=True, random_perm_count=0, iteration_count=0, mode="TDVRP", start_node=None, customers=customers)
     else:
         raise "Algo not defined"
     return vrp_sol
