@@ -107,7 +107,6 @@ def run(
     load = get_demands_from_locations(duration, new_locations)
     customers = [i for i in range(1, n) if i not in ignore_customers]
     vehicles_routes, _ = solve_scenario(
-        n=n,
         m=m,
         k=k,
         q=q,

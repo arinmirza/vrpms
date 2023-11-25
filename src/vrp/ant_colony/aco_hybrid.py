@@ -122,8 +122,9 @@ def tsp_optimize(
     for vehicle_id in available_vehicles:
         if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
             vehicle_route = vehicle_routes[vehicle_id][0]
+            if vehicle_route == [DEPOT, DEPOT]:
+                continue
             tsp_sol = solve_aco_tsp(
-                n=n,
                 duration=duration,
                 customers=vehicle_route[1:-1],
                 current_time=min_vehicle_start_times,
@@ -170,8 +171,6 @@ def tsp_optimize(
 
 
 def solve(
-    n: int,
-    m: int,
     k: int,
     q: int,
     duration: List[List[List[float]]],
@@ -191,8 +190,6 @@ def solve(
     """
     Try different hyperparamater settings and solve VRP with ACO
 
-    :param n: Number of locations
-    :param m: Max number of vehicles
     :param k: Max number of cycles
     :param q: Capacity of vehicle
     :param duration: Dynamic duration data
@@ -218,9 +215,13 @@ def solve(
         "min_sum_time",
     ], f"{objective_func_type} as a function type is not implemented"
 
-    load[DEPOT] = 0
-
     time_start = datetime.datetime.now()
+
+    load[DEPOT] = 0
+    n = 1
+    for customer in customers:
+        n = max(n, customer + 1)
+    m = len(vehicles_start_times)
 
     all_hyperparams = []
     for _ in range(n_hyperparams):
@@ -304,16 +305,11 @@ def run_request(
     vehicles_start_times: Optional[List[float]],
     n_hyperparams: int,
 ) -> Dict:
-    n = 1
     sum_demand = 0
     for customer in available_customers:
         sum_demand += load[customer]
-        n = max(n, customer + 1)
     k = (sum_demand + q - 1) // q
-    m = len(vehicles_start_times)
     results = solve(
-        n=n,
-        m=m,
         k=k,
         q=q,
         duration=duration,
@@ -370,8 +366,6 @@ def run(
     customers = [i for i in range(1, n)]
     vehicles_start_times = [0 for _ in range(m)]
     results = solve(
-        n=n,
-        m=m,
         k=k,
         q=q,
         duration=duration,

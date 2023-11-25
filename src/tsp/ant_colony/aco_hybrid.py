@@ -94,7 +94,6 @@ def print_sol(
 
 
 def solve(
-    n: int,
     duration: List[List[List[float]]],
     customers: List[int],
     current_time: float,
@@ -109,7 +108,6 @@ def solve(
     """
     Try different hyperparamater settings and solve TSP with ACO
 
-    :param n: Number of locations
     :param duration: Dynamic duration data
     :param customers: Customers to be visited
     :param current_time: Current time
@@ -123,6 +121,10 @@ def solve(
     :return: Best results
     """
     time_start = datetime.datetime.now()
+
+    n = current_location + 1
+    if customers:
+        n = max(n, max(customers) + 1)
 
     all_hyperparams = []
     for _ in range(n_hyperparams):
@@ -196,11 +198,7 @@ def run_request(
     duration: List[List[List[float]]],
     n_hyperparams: int = 20,
 ):
-    n = current_location + 1
-    if customers:
-        n = max(n, max(customers) + 1)
     results = solve(
-        n=n,
         duration=duration,
         customers=customers,
         current_time=current_time,
@@ -249,7 +247,6 @@ def run(
         duration, _ = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
     results = solve(
-        n=n,
         duration=duration,
         customers=customers,
         current_time=current_time,

@@ -50,7 +50,6 @@ def remove_customers_to_be_delayed_and_cancelled(
 
 
 def run_tsp_algo(
-    n: int,
     customers: List[int],
     duration: List[List[List[float]]],
     vehicle_start_time: float,
@@ -60,7 +59,6 @@ def run_tsp_algo(
     """
     Runs TSP algo on the given customers
 
-    :param n: The number of locations, it should be larger than id of the depot and the given customers
     :param customers: Remaining customers in the TSP cycle
     :param duration: Duration data of NxNx12
     :param vehicle_start_time: Start time in terms of seconds for the vehicle
@@ -81,7 +79,6 @@ def run_tsp_algo(
         tsp_sol = tsp_sol[1]
     elif algo == "aco":
         tsp_sol = solve_tsp_aco(
-            n=n,
             duration=duration,
             customers=customers,
             current_time=vehicle_start_time,
@@ -102,7 +99,6 @@ def run_tsp_algo(
 
 
 def tsp_optimize(
-    n: int,
     tsp_freq: int,
     vehicle_id: int,
     vehicle_start_time: float,
@@ -113,7 +109,6 @@ def tsp_optimize(
     """
     Run TSP optimization on the given customers, considering the tsp frequency
 
-    :param n: The number of locations, it should be larger than id of the depot and the given customers
     :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
     :param vehicle_id: ID of the vehicle (for print purposes)
     :param vehicle_start_time: Start time in terms of seconds for the vehicle
@@ -138,7 +133,6 @@ def tsp_optimize(
         curr_vehicle_start_time = curr_vehicle_start_times[0][-1]
         print(f"customers={customers} , final_cycle={final_cycle} , i={i}")
         tsp_sol = run_tsp_algo(
-            n=n,
             customers=customers,
             duration=duration,
             vehicle_start_time=curr_vehicle_start_time,
@@ -168,8 +162,6 @@ def tsp_optimize(
 
 
 def run_vrp_algo(
-    n: int,
-    m: int,
     k: int,
     q: int,
     customers: List[int],
@@ -181,8 +173,6 @@ def run_vrp_algo(
     """
     Runs VRP algo on the given customers
 
-    :param n: The number of locations, it should be larger than id of the depot and the given customers
-    :param m: The number of vehicles
     :param k: The number of max cycles
     :param q: The capacity of vehicles
     :param customers: Remaining customers in the VRP tours
@@ -208,8 +198,6 @@ def run_vrp_algo(
         vrp_sol = vrp_sol[2]
     elif algo == "aco":
         vrp_sol = solve_vrp_aco(
-            n=n,
-            m=m,
             k=k,
             q=q,
             duration=duration,
@@ -234,7 +222,6 @@ def run_vrp_algo(
 
 
 def solve_scenario(
-    n: int,
     m: int,
     k: int,
     q: int,
@@ -250,7 +237,6 @@ def solve_scenario(
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
 
-    :param n: The number of locations, it should be larger than id of the depot and the given customers
     :param m: The number of vehicles
     :param k: The number of max cycles
     :param q: The capacity of vehicles
@@ -283,8 +269,6 @@ def solve_scenario(
         min_vehicle_start_times = min(vehicles_start_times)
         available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
         vrp_sol = run_vrp_algo(
-            n=n,
-            m=m,
             k=k,
             q=q,
             customers=customers,
@@ -308,7 +292,6 @@ def solve_scenario(
                     continue
                 vehicle_start_time = min_vehicle_start_times  # vehicles_start_times[vehicle_id]
                 cycle = tsp_optimize(
-                    n=n,
                     tsp_freq=tsp_freq,
                     vehicle_id=vehicle_id,
                     vehicle_start_time=vehicle_start_time,
@@ -382,7 +365,6 @@ def run(
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     customers = [i for i in range(1, n) if i not in ignore_customers]
     vehicles_routes, vehicles_finish_times = solve_scenario(
-        n=n,
         m=m,
         k=k,
         q=q,
