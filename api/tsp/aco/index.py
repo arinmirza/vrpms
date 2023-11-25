@@ -77,11 +77,8 @@ class handler(BaseHTTPRequestHandler):
                 errors=errors,
             )
 
-        """
-        if len(errors) > 0:
-            fail(self, errors)
-            return
-        """
+        if errors:
+            result["errors"] = errors
 
         # Respond
         success(self, result)
