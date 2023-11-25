@@ -1,3 +1,4 @@
+import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
@@ -51,6 +52,8 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
+        time_start = datetime.datetime.now()
+
         new_locations = convert_locations(locations)
         available_customers, all_ignored_customers = get_available_and_all_ignored_customers(
             locations=new_locations,
@@ -77,6 +80,10 @@ class handler(BaseHTTPRequestHandler):
             vrp_result=vrp_result,
             capacities=params["capacities"],
         )
+
+        time_end = datetime.datetime.now()
+        time_diff = (time_end - time_start).total_seconds()
+        result["time_diff"] = time_diff
 
         # Save results
         if params["auth"]:

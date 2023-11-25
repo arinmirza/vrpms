@@ -1,3 +1,4 @@
+import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseTSP
@@ -46,6 +47,8 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
+        time_start = datetime.datetime.now()
+
         new_locations = convert_locations(locations)
         filtered_locations = remove_unused_locations_tsp(locations, params["customers"], params["start_node"])
 
@@ -69,6 +72,10 @@ class handler(BaseHTTPRequestHandler):
             locations=new_locations,
             tsp_result=tsp_result,
         )
+
+        time_end = datetime.datetime.now()
+        time_diff = (time_end - time_start).total_seconds()
+        result["time_diff"] = time_diff
 
         # Save results
         if params["auth"]:
