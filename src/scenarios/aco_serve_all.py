@@ -210,7 +210,7 @@ def run_vrp_algo(
         ...
     elif algo == "ga":
         vrp_sol = run_ga(n=n, m=m, k=k, q=q, duration=duration, customers=customers, load=demands, vehicle_start_times=vehicles_start_times, mode="TDVRP", start_node=None, multithreaded=True)
-        vrp_sol_part= vrp_sol[0][2]
+        vrp_sol = vrp_sol[2]
         #run_ga(locations, durations=duration, capacities=[q]*m, initial_start_times=vehicles_start_times, ignored_customers=[], completed_customers=[], multithreaded=True, random_perm_count=0, iteration_count=0, mode="TDVRP", start_node=None, customers=customers)
     else:
         raise "Algo not defined"

@@ -767,7 +767,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
         #NODES_LIST.append(NODES)
         random_generated_perm = []
 
-        print("Generating random population with size: ", RANDOM_PERM_COUNT)
+        #print("Generating random population with size: ", RANDOM_PERM_COUNT)
 
         while len(random_generated_perm) <= RANDOM_PERM_COUNT:
             for elem in NODES_LIST:
@@ -878,22 +878,22 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
                 #total_elem_count = 1
             elem = sorted(elem, key=lambda x: x[2], reverse=False)
             #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
-            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             best.append(copy.deepcopy(elem[0]))
-            print("-----------------------------------------")
+            #print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
         # save the last results of each thread
         #entries.append(copy.deepcopy(processed_list))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
-        print("Number of Iterations Done: ", (iteration_count + 1))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("Number of Iterations Done: ", (iteration_count + 1))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
         iteration_count = iteration_count + 1
 
         if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
@@ -909,7 +909,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
     best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
-    print("BEST RESULT BELOW:")
+    #print("BEST RESULT BELOW:")
     # print(best_result_list[0])
 
     best_route_max_time = best_result_list[0][2]
@@ -917,17 +917,17 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     best_vehicle_routes = best_result_list[0][4]
     best_vehicle_times = best_result_list[0][5]
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+        #print("No feasible solution")
+    #else:
+        #print(f"Best route max time: {best_route_max_time}")
+        #print(f"Best route sum time: {best_route_sum_time}")
+        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            #print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        #for vehicle_id, vehicle_time in best_vehicle_times.items():
+            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
-    print("wowowowowowowoowowowow")
+    #print("wowowowowowowoowowowow")
 
     best = sorted(best, key=lambda x: x[2], reverse=False)
 
@@ -969,10 +969,10 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
                 #total_elem_count = 1
             elem = sorted(elem, key=lambda x: x[2], reverse=False)
             #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
-            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             current_best_entries.append(elem[0][2])
             best.append(copy.deepcopy(elem[0]))
-            print("-----------------------------------------")
+            #print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
             #current_best_entries.append(elem[0])
@@ -987,13 +987,13 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
         # save the last results of each thread
         #entries.append(copy.deepcopy(processed_list))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
-        print("Number of Iterations Done: ", (iteration_count + 1))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("Number of Iterations Done: ", (iteration_count + 1))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
         iteration_count = iteration_count + 1
 
         if all_equal(current_best_entries):
@@ -1008,7 +1008,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
     #res = calculate_duration(permutation=)
 
-    print("BEST RESULT BELOW:")
+    #print("BEST RESULT BELOW:")
     #print(best_result_list[0])
 
     best_route_max_time = best_result_list[0][2]
@@ -1017,21 +1017,21 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     best_vehicle_times = best_result_list[0][5]
 
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+        #print("No feasible solution")
+    #else:
+        #print(f"Best route max time: {best_route_max_time}")
+        #print(f"Best route sum time: {best_route_sum_time}")
+        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            #print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        #for vehicle_id, vehicle_time in best_vehicle_times.items():
+            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     exec_time = end_time - start_time
-    print(f"Time: {exec_time}")
+    print(f"Genetic Algorithm VRP MC Time: {exec_time}")
 
-    print("END")
+    #print("END")
 
     return (
         best_route_max_time,
