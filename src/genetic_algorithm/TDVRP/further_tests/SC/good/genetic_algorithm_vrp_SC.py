@@ -1212,7 +1212,12 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
     #print(f"Time: {exec_time}")
 
     #print("END")
-    print(f"Genetic Algorithm VRP SC Time: {exec_time}")
+    #print(f"Genetic Algorithm VRP SC Time: {exec_time}")
+    print("Best route", best_route_max_time)
+    print("Best sum time", best_route_sum_time)
+    print("Best routes", best_vehicle_routes)
+    print("Best vehicle times", best_vehicle_times)
+    print("vrp sc exec time", exec_time)
     return (
         best_route_max_time,
         best_route_sum_time,
