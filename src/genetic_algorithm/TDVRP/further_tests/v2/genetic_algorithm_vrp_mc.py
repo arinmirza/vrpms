@@ -849,7 +849,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
-    inputs = tqdm(num_cores * [1])
+    inputs = tqdm(num_cores * [1], disable=True)
     processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=None, customer_list=customer_list, demand_dict = demand_dict) for i in inputs)
 
     # save the output of the current iteration
@@ -861,7 +861,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
-        inputs = tqdm(processed_list)
+        inputs = tqdm(processed_list, disable=True)
         processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i, demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
 
         #
@@ -948,7 +948,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     while iteration_count < ITERATION_COUNT/4:
 
         # tqdm library prepares the previously generated permutations for the next iteration
-        inputs = tqdm(processed_list)
+        inputs = tqdm(processed_list, disable=True)
         #processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, permutations=i) for i in inputs)
 
         processed_list = Parallel(n_jobs=num_cores)(

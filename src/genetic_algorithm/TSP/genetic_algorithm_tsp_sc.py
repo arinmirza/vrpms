@@ -630,7 +630,8 @@ def calculate_duration_perm(
     return helper(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times, demand_dict=demand_dict)
 
 def calculate_duration(permutation, VST, dist_data, M, Q, load, demand_dict,sn):
-    if sn !=None:
+    #Q = Q + len(permutation)
+    if sn !=None and sn!=0:
     #    permutation.insert(1, sn)
         sn_index = permutation.index(sn)
         del permutation[sn_index]
@@ -685,7 +686,12 @@ def check_neighbor(perm):
 def calculate_demand_dict(customer_list, demand_list):
 
     demand_dict = {}
+
     demand_dict[0] = 0
+
+    #print(customer_list)
+    #print(demand_list)
+
     for i in range(0,len(customer_list)):
 
         demand_dict[customer_list[i]] =  demand_list[i+1]
@@ -818,7 +824,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, multithrea
 
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
-    inputs = tqdm(num_cores * [1])
+    inputs = tqdm(num_cores * [1], disable=True)
     processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=None) for i in inputs)
 
     # save the output of the current iteration
@@ -830,7 +836,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, multithrea
 
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
-        inputs = tqdm(processed_list)
+        inputs = tqdm(processed_list, disable=True)
         processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=i) for i in inputs)
 
         #
@@ -847,22 +853,22 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, multithrea
                 #total_elem_count = 1
             elem = sorted(elem, key=lambda x: x[2], reverse=False)
             #print("Thread: " + str(thread_index) + " and Current Average: " + str(total_sum / total_elem_count))
-            print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
+            #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             best.append(copy.deepcopy(elem[0]))
-            print("-----------------------------------------")
+            #print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
         # save the last results of each thread
         #entries.append(copy.deepcopy(processed_list))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
-        print("Number of Iterations Done: ", (iteration_count + 1))
-        print("**********************************************")
-        print("**********************************************")
-        print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("Number of Iterations Done: ", (iteration_count + 1))
+        #print("**********************************************")
+        #print("**********************************************")
+        #print("**********************************************")
         iteration_count = iteration_count + 1
 
     # All iterations are done
@@ -885,7 +891,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, multithrea
     # sort the best results and get the first element as the solution
     best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
-    print("BEST RESULT BELOW:")
+    #print("BEST RESULT BELOW:")
     #print(best_result_list[0])
 
     best_route_max_time = best_result_list[0][2]
@@ -894,21 +900,21 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, multithrea
     best_vehicle_times = best_result_list[0][5]
 
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+    #    print("No feasible solution")
+    #else:
+     #   print(f"Best route max time: {best_route_max_time}")
+     #   print(f"Best route sum time: {best_route_sum_time}")
+     #   for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+     #       print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+     #   for vehicle_id, vehicle_time in best_vehicle_times.items():
+     #       print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     exec_time = end_time - start_time
-    print(f"Time: {exec_time}")
+    #print(f"Time: {exec_time}")
 
-    print("END")
+    #print("END")
 
     return (
         best_route_max_time,

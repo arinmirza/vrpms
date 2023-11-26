@@ -87,6 +87,7 @@ def run_tsp_algo(
             ignore_long_trip=False,
         )
         tsp_sol = tsp_sol[1]
+        print("tsp")
     elif algo == "aco":
         ...
     elif algo == "sa":
@@ -94,7 +95,14 @@ def run_tsp_algo(
     elif algo == "ga":
         load = [1]*len(customers)
         load.insert(0,0)
-        run_ga(n=len(customers), m=1, k=0, q=len(customers), duration=duration, vehicle_start_times = vehicle_start_time, mode="TSP", start_node=vehicle_start_node, load = load, multithreaded=True if tsp_algo_params["multithreaded"]=="Y" else False, customers=customers)
+        n = len(customers)
+        q = len(customers)
+        if vehicle_start_node != 0 and vehicle_start_node != None: #len(load) <= len(customers):
+            load.append(1)
+            n = n + 1
+            q = q + 1
+        tsp_sol = run_ga(n=n, m=1, k=0, q=q, duration=duration, vehicle_start_times = [vehicle_start_time], mode="TSP", start_node=vehicle_start_node, load = load, multithreaded=True if tsp_algo_params["multithreaded"]=="Y" else False, customers=customers)
+        tsp_sol = (tsp_sol[2][0])[0]
     else:
         raise "Algo not defined"
     return tsp_sol
