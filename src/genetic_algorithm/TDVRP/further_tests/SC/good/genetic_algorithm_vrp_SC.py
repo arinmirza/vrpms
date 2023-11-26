@@ -854,7 +854,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, demand_dict
 
         #NODES_LIST.append(NODES)
         random_generated_perm = []
-        print("NODES XDXD: ", NODES)
+        #print("NODES XDXD: ", NODES)
         #print("Generating random population with size: ", RANDOM_PERM_COUNT)
 
         while len(random_generated_perm) <= RANDOM_PERM_COUNT:
@@ -1040,7 +1040,7 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
         iteration_count = iteration_count + 1
-    print("BEST RESULT BELOW:")
+    #print("BEST RESULT BELOW:")
     # print(best_result_list[0])
     best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
@@ -1049,15 +1049,15 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
     best_vehicle_routes = best_result_list[0][4]
     best_vehicle_times = best_result_list[0][5]
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+    #    print("No feasible solution")
+    #else:
+        #print(f"Best route max time: {best_route_max_time}")
+        #print(f"Best route sum time: {best_route_sum_time}")
+        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+        #    print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        #for vehicle_id, vehicle_time in best_vehicle_times.items():
+         #   print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     #print("wowowowowowowoowowowow")
 
@@ -1071,7 +1071,6 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
 
     from itertools import groupby
 
-    print("haydaa")
 
     def all_equal(iterable):
         g = groupby(iterable)
@@ -1193,27 +1192,27 @@ def run_normal(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, cus
     #    for vehicle_id, vehicle_time in best_vehicle_times_normal.items():
     #       print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
-    print("BEST RESULT BELOW preproc:")
+#    print("BEST RESULT BELOW preproc:")
     # print(best_result_list[0])
 
     # for elem in hc_nodes:
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+#    if best_vehicle_times is None:
+#        print("No feasible solution")
+#    else:
+#        print(f"Best route max time: {best_route_max_time}")
+#        print(f"Best route sum time: {best_route_sum_time}")
+#        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+#            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+#        for vehicle_id, vehicle_time in best_vehicle_times.items():
+#            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     exec_time = end_time - start_time
-    print(f"Time: {exec_time}")
+    #print(f"Time: {exec_time}")
 
-    print("END")
-
+    #print("END")
+    print(f"Genetic Algorithm VRP SC Time: {exec_time}")
     return (
         best_route_max_time,
         best_route_sum_time,
@@ -1349,7 +1348,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
             #current_best_entries.append(elem[0])
             thread_index = thread_index + 1
         iteration_count = iteration_count + 1
-    print("BEST RESULT BELOW:")
+    #print("BEST RESULT BELOW:")
     # print(best_result_list[0])
     best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
 
@@ -1358,15 +1357,15 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     best_vehicle_routes = best_result_list[0][4]
     best_vehicle_times = best_result_list[0][5]
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time}")
-        print(f"Best route sum time: {best_route_sum_time}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+    #    print("No feasible solution")
+    #else:
+        #print(f"Best route max time: {best_route_max_time}")
+        #print(f"Best route sum time: {best_route_sum_time}")
+        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+        #    print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        #for vehicle_id, vehicle_time in best_vehicle_times.items():
+            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     #print("wowowowowowowoowowowow")
 
@@ -1541,26 +1540,26 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, hc_nodes):
     #       print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
 
-    print("BEST RESULT BELOW preproc:")
+    #print("BEST RESULT BELOW preproc:")
     # print(best_result_list[0])
 
     # for elem in hc_nodes:
 
-    if best_vehicle_times is None:
-        print("No feasible solution")
-    else:
-        print(f"Best route max time: {best_route_max_time_preproc}")
-        print(f"Best route sum time: {best_route_sum_time_preproc}")
-        for vehicle_id, vehicle_cycles in best_vehicle_routes_preproc.items():
-            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        for vehicle_id, vehicle_time in best_vehicle_times_preproc.items():
-            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    #if best_vehicle_times is None:
+     #   print("No feasible solution")
+    #else:
+        #print(f"Best route max time: {best_route_max_time_preproc}")
+        #print(f"Best route sum time: {best_route_sum_time_preproc}")
+        #for vehicle_id, vehicle_cycles in best_vehicle_routes_preproc.items():
+            #print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        #for vehicle_id, vehicle_time in best_vehicle_times_preproc.items():
+            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     exec_time = end_time - start_time
-    print(f"Time: {exec_time}")
+    print(f"Genetic Algorithm VRP SC Time: {exec_time}")
 
-    print("END")
+    #print("END")
 
     return (
         best_route_max_time,

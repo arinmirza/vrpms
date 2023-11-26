@@ -15,7 +15,7 @@
 """
 import copy
 
-from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as genetic_algorithm_tsp_sc
+from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as genetic_algorithm_tsp
 #from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp_mc
 #from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
 #from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
@@ -292,10 +292,10 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
 
         if not multithreaded:
            #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load,  ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl)
         else:
-            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist, multithreaded=True,  start_node = sn, customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                           demand_in=load, ist_in=ist, multithreaded=True, start_node = sn, customer_list=cl)
             #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 
     #TODO: generate the map information required for the prep out method
@@ -330,13 +330,14 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
     elif mode == "TSP":
 
         N = n
-        k = k
+        k = 0
         W = 0
         duration = duration
         multithreaded = multithreaded
 
         cl = customers
-        cl.append(start_node)  # TODO: cunku sn customer list icinde yok
+        if start_node not in cl and start_node != W:
+            cl.append(start_node)  # TODO: cunku sn customer list icinde yok
 
         sn = start_node
         load = load
@@ -373,13 +374,13 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
 
         if not multithreaded:
             # N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist, multithreaded=False, start_node=sn,
-                                              customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                           demand_in=load, ist_in=ist, multithreaded=False, start_node=sn,
+                                           customer_list=cl)
         else:
-            output = genetic_algorithm_tsp_sc(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist, multithreaded=True, start_node=sn,
-                                              customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                           demand_in=load, ist_in=ist, multithreaded=True, start_node=sn,
+                                           customer_list=cl)
             # output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 
     # TODO: generate the map information required for the prep out method

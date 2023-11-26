@@ -78,7 +78,7 @@ def run(
     cancel_customers: List[int] = [3],
     durations_query_row_id: int = 1,
     locations_query_row_id: int = 2,
-    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
     tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Dict:
     """
