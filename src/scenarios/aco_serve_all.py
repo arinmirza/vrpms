@@ -260,6 +260,7 @@ def solve_scenario(
 
     vehicles_start_times = [0 for _ in range(m)]
     vehicles_routes = defaultdict(list)
+    vehicles_max_time, vehicles_sum_time = 0, 0
     while len(customers) > 0:
         total_demands = 0
         for customer in customers:
@@ -305,9 +306,14 @@ def solve_scenario(
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
                 for customer in cycle[1:-1]:
                     customers.remove(customer)
+    for i in range(m):
+        vehicles_sum_time += vehicles_start_times[i]
+        vehicles_max_time = max(vehicles_max_time, vehicles_start_times[i])
     print("FINAL")
     print(f"vehicles_routes: {vehicles_routes}")
     print(f"vehicles_finish_times: {vehicles_start_times}")
+    print(f"vehicles_max_time: {vehicles_max_time}")
+    print(f"vehicles_sum_time: {vehicles_sum_time}")
     print(f"customers: {customers}")
     return vehicles_routes, vehicles_start_times
 
@@ -316,18 +322,18 @@ def run(
     n: int = 21,
     m: int = 3,
     k: int = 4,
-    q: int = 6,
-    tsp_freq: int = 2,
+    q: int = 5,
+    tsp_freq: int = 1,
     ignore_customers: List[int] = [1],
     delay_customers: List[int] = [2],
     cancel_customers: List[int] = [3],
-    durations_query_row_id: int = 1,
-    locations_query_row_id: int = 2,
+    durations_query_row_id: int = 3,
+    locations_query_row_id: int = 4,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_aco_1.json",
 ) -> Tuple[defaultdict, List[float]]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
