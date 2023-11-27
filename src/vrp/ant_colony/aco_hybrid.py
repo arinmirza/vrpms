@@ -329,9 +329,9 @@ def run_request(
 
 
 def run(
-    n: int = 13,
-    m: int = 2,
-    k: int = 3,
+    n: int = 51,
+    m: int = 4,
+    k: int = 10,
     q: int = 5,
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
@@ -372,7 +372,7 @@ def run(
         load=load,
         customers=customers,
         vehicles_start_times=vehicles_start_times,
-        n_hyperparams=50,
+        n_hyperparams=10,
         n_best_results=1,
     )
     result = results[0]

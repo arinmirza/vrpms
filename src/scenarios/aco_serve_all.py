@@ -12,6 +12,8 @@ from src.tsp.brute_force.brute_force import solve as solve_tsp_bf
 from src.utilities.helper.locations_helper import convert_locations, get_demands_from_locations
 
 DEPOT = 0  # depot
+SELF_CYCLE = [DEPOT, DEPOT]
+
 N_TIME_ZONES = 12  # hours = time slices
 EPS = 1e-6
 
@@ -39,14 +41,14 @@ def remove_customers_to_be_delayed_and_cancelled(
     customers_to_be_delayed = list(set(cycle) & set(delay_customers))
     for customer in customers_to_be_delayed:
         print(f"Customer {customer} is delayed for the driver {vehicle_id}")
-        cycle.remove(customer)
         delay_customers.remove(customer)
     customers_to_be_cancelled = list(set(cycle) & set(cancel_customers))
     for customer in customers_to_be_cancelled:
         print(f"Customer {customer} is cancelled for the driver {vehicle_id}")
-        cycle.remove(customer)
         cancel_customers.remove(customer)
-        customers.remove(customer)
+    for customer in cycle[1: -1]:
+        if customer not in customers_to_be_delayed:
+            customers.remove(customer)
 
 
 def run_tsp_algo(
@@ -286,10 +288,7 @@ def solve_scenario(
         for vehicle_id in available_vehicles:
             if len(vrp_sol[vehicle_id]) > 0:
                 cycle = vrp_sol[vehicle_id][0]
-                remove_customers_to_be_delayed_and_cancelled(
-                    vehicle_id, customers, delay_customers, cancel_customers, cycle
-                )
-                if cycle == [DEPOT, DEPOT]:
+                if cycle == SELF_CYCLE:
                     continue
                 vehicle_start_time = min_vehicle_start_times  # vehicles_start_times[vehicle_id]
                 cycle = tsp_optimize(
@@ -300,12 +299,14 @@ def solve_scenario(
                     duration=duration,
                     tsp_algo_params=tsp_algo_params,
                 )
-                k -= 1
+                remove_customers_to_be_delayed_and_cancelled(
+                    vehicle_id, customers, delay_customers, cancel_customers, cycle
+                )
+                if cycle != SELF_CYCLE:
+                    k -= 1
                 vehicles_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
                 vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
-                for customer in cycle[1:-1]:
-                    customers.remove(customer)
     for i in range(m):
         vehicles_sum_time += vehicles_start_times[i]
         vehicles_max_time = max(vehicles_max_time, vehicles_start_times[i])

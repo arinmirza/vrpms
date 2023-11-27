@@ -71,15 +71,15 @@ def run(
     n: int = 21,
     m: int = 3,
     k: int = 4,
-    q: int = 6,
+    q: int = 5,
     tsp_freq: int = 2,
     ignore_customers: List[int] = [1],
     delay_customers: List[int] = [2],
     cancel_customers: List[int] = [3],
-    durations_query_row_id: int = 1,
-    locations_query_row_id: int = 2,
+    durations_query_row_id: int = 3,
+    locations_query_row_id: int = 4,
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_aco_1.json",
 ) -> Dict:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
