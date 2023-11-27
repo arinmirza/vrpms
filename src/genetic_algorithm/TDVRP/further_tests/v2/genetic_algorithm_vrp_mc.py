@@ -54,9 +54,14 @@ def random_selection(permutations, sel_count, already_selected = []):
         :param already_selected: previously selected permutations
     """
     # select 'sel_count' many permutations in a random fashion
+    selection_indices = []
     while len(already_selected) < sel_count:
-        rand_index = random.randint(0, len(permutations)-1)
+        rand_index = random.randint(0, len(permutations) - 1)
+        while rand_index in selection_indices:
+            rand_index = random.randint(0, len(permutations) - 1)
+
         already_selected.append(permutations[rand_index])
+        selection_indices.append(rand_index)
 
     return already_selected
 
@@ -171,7 +176,7 @@ def select_based_on_fitness_proportional(permutations):
 
         end = datetime.now()
 
-        if (end - start).seconds >= 0.6:
+        if (end - start).seconds >= 0.05:
             # current implementation of the fitness proportional method might take some time
             # current time limit is 10 seconds
             # if the threshold is exceeded than selection mode is switched to RANDOM selection
@@ -234,7 +239,7 @@ def swap_mutation(permutations, VST, dist_data, M, Q, load, demand_dict):
 
         single_perm = permutations[index]
         count = 0
-        while count < 10:  # threshold for the number of inversion mutation to be applied, for now it is 10
+        while count < 10:  # threshold for the number of SWAP mutation to be applied, for now it is 10
             # select two random positions
             # indices 0 and -1 are not included
             pos1 = random.randint(1, len(single_perm[0])-2)
@@ -283,7 +288,7 @@ def scramble_mutation(permutations, VST, dist_data, M, Q, load, demand_dict):
         single_perm = permutations[index]
 
         count = 0
-        while count < 1: # threshold for the number of inversion mutation to be applied, for now it is 1
+        while count < 1: # threshold for the number of SCRAMBLE mutation to be applied, for now it is 1
             # select two random positions
             # indices 0 and -1 are not included
             pos1 = random.randint(1, len(single_perm[0]) - 2)
@@ -425,7 +430,7 @@ def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, dem
     SELECTION_PROB = (0, 0)
     REPLACEMENT_PROB = (0, 0.5)
     RANDOM_SELECTION_PROB = (0.5, 0.75)
-    NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
+    NO_SELECTION_REPLACEMENT_PROB = (0.75, 1)
 
     # generate random probabilities
     rand_phase_1 = random.uniform(0,1)
@@ -827,7 +832,7 @@ def calculate_demand_dict(customer_list, demand_list):
     return demand_dict
 
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_list):
+def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_list, multithreaded):
 
     N = N_in  # number of shops to be considered
     K = k_in
@@ -841,11 +846,12 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     start_time = datetime.now()  # used for runtime calculation
     entries = []
 
-    #if multithreaded:
+    if multithreaded:
         # get the number of available cores
-    num_cores = int(multiprocessing.cpu_count())
-    #else:
-    #    num_cores = 1
+        num_cores = int(multiprocessing.cpu_count())
+    else:
+    #    print("SC version START")
+        num_cores = 1
 
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
@@ -859,6 +865,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
 
     best = []
 
+    print("FIRST ITER START")
+
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list, disable=True)
@@ -867,6 +875,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
         #
         current_best_entries = []
         thread_index = 1
+        print("iter done: ",iteration_count)
         for elem in processed_list:
 
             # calculate total element count and total sum
@@ -896,11 +905,11 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
         #print("**********************************************")
         iteration_count = iteration_count + 1
 
-        if (iteration_count % 8) == 0 and iteration_count != ITERATION_COUNT:
+        if (iteration_count % 16) == 0 and iteration_count != ITERATION_COUNT:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
                             ist_in=vehicles_start_times, permutations=None, demand_dict = demand_dict, customer_list=customer_list) for i in inputs)
-
+            print("new pop...")
         #if iteration_count == ITERATION_COUNT:
         #    processed_list = Parallel(n_jobs=num_cores)(
         #        delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
@@ -912,22 +921,22 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     #print("BEST RESULT BELOW:")
     # print(best_result_list[0])
 
-    best_route_max_time = best_result_list[0][2]
-    best_route_sum_time = best_result_list[0][3]
-    best_vehicle_routes = best_result_list[0][4]
-    best_vehicle_times = best_result_list[0][5]
+    best_route_max_time_r1 = best_result_list[0][2]
+    best_route_sum_time_r1 = best_result_list[0][3]
+    best_vehicle_routes_r1 = best_result_list[0][4]
+    best_vehicle_times_r1 = best_result_list[0][5]
 
-    #if best_vehicle_times is None:
-        #print("No feasible solution")
-    #else:
-        #print(f"Best route max time: {best_route_max_time}")
-        #print(f"Best route sum time: {best_route_sum_time}")
-        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            #print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        #for vehicle_id, vehicle_time in best_vehicle_times.items():
-            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    if best_vehicle_times_r1 is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time_r1}")
+        print(f"Best route sum time: {best_route_sum_time_r1}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes_r1.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times_r1.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
-    #print("wowowowowowowoowowowow")
+    print("wowowowowowowoowowowow")
 
     best = sorted(best, key=lambda x: x[2], reverse=False)
 
@@ -944,7 +953,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
         return next(g, True) and not next(g, False)
 
     all_equal_count = 0
-
+    new_best = []
+    print("SECOND ITER START")
     while iteration_count < ITERATION_COUNT/4:
 
         # tqdm library prepares the previously generated permutations for the next iteration
@@ -972,6 +982,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
             #print("Thread: " + str(thread_index) + " and Current Best: " + str(elem[0][2]))
             current_best_entries.append(elem[0][2])
             best.append(copy.deepcopy(elem[0]))
+            new_best.append(copy.deepcopy(elem[0]))
             #print("-----------------------------------------")
             total_sum = 0
             # save the best entry of this current thread for the current iteration
@@ -1002,30 +1013,45 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
             else:
                 all_equal_count = all_equal_count +1
 
+    print("SECOND ITER END")
 
     # sort the best results and get the first element as the solution
-    best_result_list = sorted(best, key=lambda x: x[2], reverse=False)
+    best_result_list_2 = sorted(new_best, key=lambda x: x[2], reverse=False)
 
     #res = calculate_duration(permutation=)
 
     #print("BEST RESULT BELOW:")
     #print(best_result_list[0])
 
-    best_route_max_time = best_result_list[0][2]
-    best_route_sum_time = best_result_list[0][3]
-    best_vehicle_routes = best_result_list[0][4]
-    best_vehicle_times = best_result_list[0][5]
 
 
-    #if best_vehicle_times is None:
-        #print("No feasible solution")
-    #else:
-        #print(f"Best route max time: {best_route_max_time}")
-        #print(f"Best route sum time: {best_route_sum_time}")
-        #for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
-            #print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
-        #for vehicle_id, vehicle_time in best_vehicle_times.items():
-            #print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
+    best_route_max_time = best_result_list_2[0][2]
+    best_route_sum_time = best_result_list_2[0][3]
+    best_vehicle_routes = best_result_list_2[0][4]
+    best_vehicle_times = best_result_list_2[0][5]
+
+    if best_route_max_time_r1 > best_route_max_time:
+        print("as expected new val is optimized")
+        print("r1: ", best_route_max_time_r1)
+        print("new: ", best_route_max_time)
+    else:
+        print("nein")
+        print("r1: ", best_route_max_time_r1)
+        print("new: ", best_route_max_time)
+        best_route_max_time = best_route_max_time_r1
+        best_route_sum_time = best_route_sum_time_r1
+        best_vehicle_routes = best_vehicle_routes_r1
+        best_vehicle_times = best_vehicle_times_r1
+
+    if best_vehicle_times is None:
+        print("No feasible solution")
+    else:
+        print(f"Best route max time: {best_route_max_time}")
+        print(f"Best route sum time: {best_route_sum_time}")
+        for vehicle_id, vehicle_cycles in best_vehicle_routes.items():
+            print(f"Route of vehicle {vehicle_id}: {vehicle_cycles}")
+        for vehicle_id, vehicle_time in best_vehicle_times.items():
+            print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
     end_time = datetime.now()
     exec_time = end_time - start_time

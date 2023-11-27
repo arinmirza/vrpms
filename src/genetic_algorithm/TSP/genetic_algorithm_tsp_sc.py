@@ -29,7 +29,7 @@ M = 1
 DIST_DATA = None
 vehicles_start_times = None
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 1000 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 125 # Genetic Algorithm initial sample size
 DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=0.25) # generate the distance data matrix
 #DIST_DATA = get_data()#DIST_DATA = get_data()
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
@@ -60,9 +60,14 @@ def random_selection(permutations, sel_count, already_selected = []):
         :param already_selected: previously selected permutations
     """
     # select 'sel_count' many permutations in a random fashion
+    selection_indices = []
     while len(already_selected) < sel_count:
-        rand_index = random.randint(0, len(permutations)-1)
+        rand_index = random.randint(0, len(permutations) - 1)
+        while rand_index in selection_indices:
+            rand_index = random.randint(0, len(permutations) - 1)
+
         already_selected.append(permutations[rand_index])
+        selection_indices.append(rand_index)
 
     return already_selected
 
@@ -401,7 +406,7 @@ def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, dem
     SELECTION_PROB = (0, 0)
     REPLACEMENT_PROB = (0, 0.5)
     RANDOM_SELECTION_PROB = (0.5, 0.75)
-    NO_SELECTION_REPLACEMENT_PROB = (0.5, 1)
+    NO_SELECTION_REPLACEMENT_PROB = (0.75, 1)
 
     # generate random probabilities
     rand_phase_1 = random.uniform(0,1)
