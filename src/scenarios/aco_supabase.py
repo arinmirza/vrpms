@@ -72,7 +72,7 @@ def run(
     m: int = 3,
     k: int = 4,
     q: int = 5,
-    tsp_freq: int = 2,
+    tsp_period: int = 1,
     ignore_customers: List[int] = [1],
     delay_customers: List[int] = [2],
     cancel_customers: List[int] = [3],
@@ -88,7 +88,7 @@ def run(
     :param m: The number of vehicles
     :param k: The number of max cycles
     :param q: The capacity of vehicles
-    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param ignore_customers: Customers to ignore orders
     :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
@@ -106,11 +106,11 @@ def run(
     new_locations = convert_locations(locations)
     load = get_demands_from_locations(duration, new_locations)
     customers = [i for i in range(1, n) if i not in ignore_customers]
-    vehicles_routes, _ = solve_scenario(
+    vehicles_routes, _, _, _ = solve_scenario(
         m=m,
         k=k,
         q=q,
-        tsp_freq=tsp_freq,
+        tsp_period=tsp_period,
         customers=customers,
         delay_customers=delay_customers,
         cancel_customers=cancel_customers,

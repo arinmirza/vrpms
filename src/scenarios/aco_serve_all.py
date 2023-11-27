@@ -101,7 +101,7 @@ def run_tsp_algo(
 
 
 def tsp_optimize(
-    tsp_freq: int,
+    tsp_period: int,
     vehicle_id: int,
     vehicle_start_time: float,
     init_cycle: List[int],
@@ -111,7 +111,7 @@ def tsp_optimize(
     """
     Run TSP optimization on the given customers, considering the tsp frequency
 
-    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param vehicle_id: ID of the vehicle (for print purposes)
     :param vehicle_start_time: Start time in terms of seconds for the vehicle
     :param init_cycle: The TSP cycle found by the given VRP algorithm
@@ -119,7 +119,7 @@ def tsp_optimize(
     :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
     :return: List of location ids to visit including the vehicle_start_node as the first and DEPOT as the last element
     """
-    if tsp_freq <= 0:
+    if tsp_period <= 0:
         return init_cycle
     init_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [init_cycle], duration)
     init_vehicle_finish_time = init_vehicle_finish_times[0][-1]
@@ -129,7 +129,7 @@ def tsp_optimize(
     print()
     n_cycle_nodes = len(init_cycle)
     final_cycle = init_cycle.copy()
-    for i in range(0, n_cycle_nodes - 3, tsp_freq):
+    for i in range(0, n_cycle_nodes - 3, tsp_period):
         customers = final_cycle[i + 1 : -1]
         curr_vehicle_start_times = vehicle_solution_to_arrivals(vehicle_start_time, [final_cycle[: i + 1]], duration)
         curr_vehicle_start_time = curr_vehicle_start_times[0][-1]
@@ -227,7 +227,7 @@ def solve_scenario(
     m: int,
     k: int,
     q: int,
-    tsp_freq: int,
+    tsp_period: int,
     customers: List[int],
     delay_customers: List[int],
     cancel_customers: List[int],
@@ -235,14 +235,14 @@ def solve_scenario(
     demands: Optional[List[int]],
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
     tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
-) -> Tuple[defaultdict, List[float]]:
+) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
 
     :param m: The number of vehicles
     :param k: The number of max cycles
     :param q: The capacity of vehicles
-    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param customers: Remaining customers in the VRP tours
     :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
@@ -260,7 +260,7 @@ def solve_scenario(
     assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
     assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
 
-    vehicles_start_times = [0 for _ in range(m)]
+    vehicles_times = [0 for _ in range(m)]
     vehicles_routes = defaultdict(list)
     vehicles_max_time, vehicles_sum_time = 0, 0
     while len(customers) > 0:
@@ -269,19 +269,19 @@ def solve_scenario(
             total_demands += demands[customer]
         k_min = (total_demands + q - 1) // q
         k = max(k, k_min)
-        min_vehicle_start_times = min(vehicles_start_times)
-        available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
+        min_vehicle_start_times = min(vehicles_times)
+        available_vehicles = [i for i in range(m) if abs(vehicles_times[i] - min_vehicle_start_times) < EPS]
         vrp_sol = run_vrp_algo(
             k=k,
             q=q,
             customers=customers,
             duration=duration,
             demands=demands,
-            vehicles_start_times=vehicles_start_times,
+            vehicles_start_times=vehicles_times,
             vrp_algo_params=vrp_algo_params,
         )
         print(f"vehicles_routes: {vehicles_routes}")
-        print(f"vehicles_start_times: {vehicles_start_times}")
+        print(f"vehicles_times: {vehicles_times}")
         print(f"customers: {customers}")
         print(f"vrp_sol: {vrp_sol}")
         print("")
@@ -290,9 +290,9 @@ def solve_scenario(
                 cycle = vrp_sol[vehicle_id][0]
                 if cycle == SELF_CYCLE:
                     continue
-                vehicle_start_time = min_vehicle_start_times  # vehicles_start_times[vehicle_id]
+                vehicle_start_time = min_vehicle_start_times  # vehicles_times[vehicle_id]
                 cycle = tsp_optimize(
-                    tsp_freq=tsp_freq,
+                    tsp_period=tsp_period,
                     vehicle_id=vehicle_id,
                     vehicle_start_time=vehicle_start_time,
                     init_cycle=cycle,
@@ -306,17 +306,17 @@ def solve_scenario(
                     k -= 1
                 vehicles_routes[vehicle_id].append(cycle)
                 vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
-                vehicles_start_times[vehicle_id] = vehicle_arrivals[0][-1]
+                vehicles_times[vehicle_id] = vehicle_arrivals[0][-1]
     for i in range(m):
-        vehicles_sum_time += vehicles_start_times[i]
-        vehicles_max_time = max(vehicles_max_time, vehicles_start_times[i])
+        vehicles_sum_time += vehicles_times[i]
+        vehicles_max_time = max(vehicles_max_time, vehicles_times[i])
     print("FINAL")
     print(f"vehicles_routes: {vehicles_routes}")
-    print(f"vehicles_finish_times: {vehicles_start_times}")
+    print(f"vehicles_finish_times: {vehicles_times}")
     print(f"vehicles_max_time: {vehicles_max_time}")
     print(f"vehicles_sum_time: {vehicles_sum_time}")
     print(f"customers: {customers}")
-    return vehicles_routes, vehicles_start_times
+    return vehicles_routes, vehicles_times, vehicles_max_time, vehicles_sum_time
 
 
 def run(
@@ -324,7 +324,7 @@ def run(
     m: int = 3,
     k: int = 4,
     q: int = 5,
-    tsp_freq: int = 1,
+    tsp_period: int = 1,
     ignore_customers: List[int] = [1],
     delay_customers: List[int] = [2],
     cancel_customers: List[int] = [3],
@@ -335,7 +335,7 @@ def run(
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
     tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_aco_1.json",
-) -> Tuple[defaultdict, List[float]]:
+) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
 
@@ -343,7 +343,7 @@ def run(
     :param m: The number of vehicles
     :param k: The number of max cycles
     :param q: The capacity of vehicles
-    :param tsp_freq: Frequency of the TSP to run in terms of the number of locations
+    :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param ignore_customers: Customers to ignore orders
     :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
@@ -371,11 +371,11 @@ def run(
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     customers = [i for i in range(1, n) if i not in ignore_customers]
-    vehicles_routes, vehicles_finish_times = solve_scenario(
+    vehicles_routes, vehicles_finish_times, vehicles_max_time, vehicles_sum_time = solve_scenario(
         m=m,
         k=k,
         q=q,
-        tsp_freq=tsp_freq,
+        tsp_period=tsp_period,
         customers=customers,
         delay_customers=delay_customers,
         cancel_customers=cancel_customers,
@@ -384,7 +384,7 @@ def run(
         vrp_algo_params_path=vrp_algo_params_path,
         tsp_algo_params_path=tsp_algo_params_path,
     )
-    return vehicles_routes, vehicles_finish_times
+    return vehicles_routes, vehicles_finish_times, vehicles_max_time, vehicles_sum_time
 
 
 if __name__ == "__main__":
