@@ -745,9 +745,10 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
         NODES_LIST = []
         NODES = []
         if len(customer_list) != 0:
-            NODES = customer_list
+            NODES =  copy.deepcopy(customer_list)
         else:
             NODES.extend(range(1, N + 1))
+
 
 
         # there can be different number of tours in each permutation
@@ -799,6 +800,11 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
                 #random_perm_tuple = [random_perm, route, total_dist, route_sum_time, vehicle_routes, vehicle_times]
                 random_generated_perm.append(random_perm_tuple)
 
+        #if len(NODES) == 1:
+            #del random_generated_perm[0][6]
+        #    del random_generated_perm[0][1]
+        #    del random_generated_perm[0][0]
+        #    return random_generated_perm[0],"force-stop-return-source"
         # generated permutation list is sorted based on total duration (i.e. x[2])
         random_generated_perm = sorted(random_generated_perm, key=lambda x: x[2], reverse=False)
         # generated tours of each permutation is calculated and saved
@@ -845,6 +851,24 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
     demand_dict = calculate_demand_dict(customer_list=customer_list, demand_list=LOAD)
     start_time = datetime.now()  # used for runtime calculation
     entries = []
+
+    if len(customer_list) == 1:
+        one_node = copy.deepcopy(customer_list)
+        one_node.append(DEPOT)
+        one_node.insert(0, DEPOT)
+        route_max_time, route, route_sum_time, vehicle_routes, vehicle_times = calculate_duration(permutation=one_node,
+                                                                                              dist_data=DIST_DATA,
+                                                                                              VST=vehicles_start_times,
+                                                                                              M=M, Q=Q, load=LOAD,
+                                                                                              demand_dict=demand_dict)
+
+        return(
+            route_max_time,
+            route_sum_time,
+            vehicle_routes,
+            vehicle_times,
+            str(0)
+        )
 
     if multithreaded:
         # get the number of available cores

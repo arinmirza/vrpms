@@ -94,15 +94,19 @@ def run_tsp_algo(
     elif algo == "sa":
         ...
     elif algo == "ga":
-        load = [1]*len(customers)
-        load.insert(0,0)
-        n = len(customers)
-        q = len(customers)
+        customers_adjusted = copy.deepcopy(customers)
+
         if vehicle_start_node != 0 and vehicle_start_node != None: #len(load) <= len(customers):
-            load.append(1)
-            n = n + 1
-            q = q + 1
-        tsp_sol = run_ga(n=n, m=1, k=0, q=q, duration=duration, vehicle_start_times = [vehicle_start_time], mode="TSP", start_node=vehicle_start_node, load = load, multithreaded=True if tsp_algo_params["multithreaded"]=="Y" else False, customers=customers)
+            customers_adjusted.append(vehicle_start_node)
+        #    load.append(1)
+        #    n = n + 1
+        #    q = q + 1
+
+        load = [1] * len(customers_adjusted)
+        load.insert(0, 0)
+        n = len(customers_adjusted)
+        q = len(customers_adjusted)
+        tsp_sol = run_ga(n=n, m=1, k=0, q=q, duration=duration, vehicle_start_times = [vehicle_start_time], mode="TSP", start_node=vehicle_start_node, load = load, multithreaded=True if tsp_algo_params["multithreaded"]=="Y" else False, customers=customers_adjusted)
         tsp_sol = (tsp_sol[2][0])[0]
     else:
         raise "Algo not defined"
@@ -221,9 +225,9 @@ def run_vrp_algo(
         ...
     elif algo == "ga":
         customers_old = copy.deepcopy(customers)
-        if 0 in customers and (customers.count(0) > 1):
-            customers = [i for i in customers if i != 0]
-            customers.append(0)
+        #if 0 in customers:# and (customers.count(0) > 1):
+        #    customers = [i for i in customers if i != 0]
+            #customers.append(0)
         vrp_sol = run_ga(n=n, m=m, k=k, q=q, duration=duration, customers=customers, load=demands, vehicle_start_times=vehicles_start_times, mode="TDVRP", start_node=None, multithreaded= True if vrp_algo_params["multithreaded"]=="Y" else False)
         vrp_sol = vrp_sol[2]
         #run_ga(locations, durations=duration, capacities=[q]*m, initial_start_times=vehicles_start_times, ignored_customers=[], completed_customers=[], multithreaded=True, random_perm_count=0, iteration_count=0, mode="TDVRP", start_node=None, customers=customers)
@@ -335,8 +339,8 @@ def run(
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_2.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_2.json",
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_1.json",
 ) -> Tuple[defaultdict, List[float]]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP

@@ -729,7 +729,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, start_node,
     if permutations is None:
         NODES = []
         if len(customer_list) != 0:
-            NODES = customer_list
+            NODES = copy.deepcopy(customer_list)
         else:
             NODES.extend(range(1, N + 1))
 
