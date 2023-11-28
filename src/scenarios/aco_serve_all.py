@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from api.database import Database
-from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
+from src.utilities.helper.tsp_helper import route_solution_to_arrivals
 from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
 from src.vrp.ant_colony.aco_hybrid import solve as solve_vrp_aco
 from src.vrp.brute_force.brute_force import solve as solve_vrp_bf
@@ -22,40 +22,40 @@ INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
 
-def remove_customers_to_be_delayed_and_cancelled(
+def remove_customers_to_be_cancelled(
     vehicle_id: int,
     customers: List[int],
-    delay_customers: List[int],
     cancel_customers: List[int],
     cycle: List[int],
-) -> None:
+) -> List[int]:
     """
     Removes the given customers from the given tour
 
     :param vehicle_id: ID of the vehicle (for print purposes)
     :param customers: Remaining customers in the VRP tours
-    :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
     :param cycle: A cycle in the vrp solution, i.e. [DEPOT, customer_i, ..., DEPOT]
+    :return: customers_to_be_cancelled
     """
-    customers_to_be_delayed = list(set(cycle) & set(delay_customers))
-    for customer in customers_to_be_delayed:
-        print(f"Customer {customer} is delayed for the driver {vehicle_id}")
-        delay_customers.remove(customer)
+    print(f"remove_customers_to_be_cancelled for {vehicle_id}")
     customers_to_be_cancelled = list(set(cycle) & set(cancel_customers))
     for customer in customers_to_be_cancelled:
         print(f"Customer {customer} is cancelled for the driver {vehicle_id}")
         cancel_customers.remove(customer)
-    for customer in cycle[1: -1]:
-        if customer not in customers_to_be_delayed:
-            customers.remove(customer)
+    for customer in cycle[1:-1]:
+        customers.remove(customer)
+    print()
+    return customers_to_be_cancelled
 
 
 def run_tsp_algo(
     customers: List[int],
     duration: List[List[List[float]]],
+    load: List[int],
     vehicle_start_time: float,
     vehicle_start_node: int,
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
     tsp_algo_params: Dict,
 ) -> List[int]:
     """
@@ -63,8 +63,11 @@ def run_tsp_algo(
 
     :param customers: Remaining customers in the TSP cycle
     :param duration: Duration data of NxNx12
+    :param load: ...
     :param vehicle_start_time: Start time in terms of seconds for the vehicle
     :param vehicle_start_node: Starting location of the vehicle
+    :param do_loading_unloading: ...
+    :param cancelled_customers: ...
     :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
     :return: List of location ids to visit including the vehicle_start_node as the first and DEPOT as the last element
     """
@@ -76,15 +79,21 @@ def run_tsp_algo(
             current_location=vehicle_start_node,
             customers=customers,
             duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
             ignore_long_trip=False,
         )
         tsp_sol = tsp_sol[1]
     elif algo == "aco":
         tsp_sol = solve_tsp_aco(
             duration=duration,
+            load=load,
             customers=customers,
             current_time=vehicle_start_time,
             current_location=vehicle_start_node,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
             n_hyperparams=tsp_algo_params["n_hyperparams"],
             n_best_results=1,
             is_print_allowed=False,
@@ -105,9 +114,11 @@ def tsp_optimize(
     vehicle_id: int,
     vehicle_start_time: float,
     init_cycle: List[int],
+    customers_to_be_cancelled: List[int],
     duration: List[List[List[float]]],
+    demands: List[int],
     tsp_algo_params: Dict,
-) -> List[int]:
+) -> Tuple[List[int], float]:
     """
     Run TSP optimization on the given customers, considering the tsp frequency
 
@@ -115,52 +126,70 @@ def tsp_optimize(
     :param vehicle_id: ID of the vehicle (for print purposes)
     :param vehicle_start_time: Start time in terms of seconds for the vehicle
     :param init_cycle: The TSP cycle found by the given VRP algorithm
+    :param customers_to_be_cancelled: ...
     :param duration: Duration data of NxNx12
+    :param demands: Loads of locations
     :param tsp_algo_params: Params to run TSP algo, it should include "algo" as a key
     :return: List of location ids to visit including the vehicle_start_node as the first and DEPOT as the last element
     """
+    _, init_vehicle_finish_time_with = route_solution_to_arrivals(
+        vehicle_start_time, init_cycle, duration, demands, True, customers_to_be_cancelled
+    )
     if tsp_period <= 0:
-        return init_cycle
-    init_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [init_cycle], duration)
-    init_vehicle_finish_time = init_vehicle_finish_times[0][-1]
+        return init_cycle, init_vehicle_finish_time_with
+    _, init_vehicle_finish_time_without = route_solution_to_arrivals(
+        vehicle_start_time, init_cycle, duration, demands, True, []
+    )
     print(f"Vehicle {vehicle_id} before TSP optimization")
-    print(f"Route time: {init_vehicle_finish_time}")
+    print(f"Route time (without customers_to_be_cancelled): {init_vehicle_finish_time_without}")
+    print(f"Route time (with customers_to_be_cancelled): {init_vehicle_finish_time_with}")
     print(f"Route: {init_cycle}")
     print()
     n_cycle_nodes = len(init_cycle)
     final_cycle = init_cycle.copy()
     for i in range(0, n_cycle_nodes - 3, tsp_period):
+        current_cancels = []
+        for j in range(i + 1):
+            if final_cycle[j] in customers_to_be_cancelled:
+                current_cancels.append(final_cycle[j])
         customers = final_cycle[i + 1 : -1]
-        curr_vehicle_start_times = vehicle_solution_to_arrivals(vehicle_start_time, [final_cycle[: i + 1]], duration)
-        curr_vehicle_start_time = curr_vehicle_start_times[0][-1]
+        _, curr_vehicle_start_time = route_solution_to_arrivals(
+            vehicle_start_time, final_cycle[: i + 1], duration, demands, True, []
+        )
         print(f"customers={customers} , final_cycle={final_cycle} , i={i}")
         tsp_sol = run_tsp_algo(
             customers=customers,
             duration=duration,
+            load=demands,
             vehicle_start_time=curr_vehicle_start_time,
             vehicle_start_node=final_cycle[i],
+            do_loading_unloading=False,
+            cancelled_customers=current_cancels,
             tsp_algo_params=tsp_algo_params,
         )
         print(f"tsp_sol = {tsp_sol}")
-        final_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [final_cycle], duration)
-        final_vehicle_finish_time = final_vehicle_finish_times[0][-1]
-        new_vehicle_finish_times = vehicle_solution_to_arrivals(curr_vehicle_start_time, [tsp_sol], duration)
-        new_vehicle_finish_time = new_vehicle_finish_times[0][-1]
-        improved = new_vehicle_finish_time < final_vehicle_finish_time
+        _, vehicle_finish_time = route_solution_to_arrivals(
+            curr_vehicle_start_time, final_cycle[i:], duration, demands, False, current_cancels
+        )
+        _, new_vehicle_finish_time = route_solution_to_arrivals(
+            curr_vehicle_start_time, tsp_sol, duration, demands, False, current_cancels
+        )
+        improved = new_vehicle_finish_time < vehicle_finish_time
         if improved:
             print(f"Partial TSP improvement")
-            print(f"Route time: from {final_vehicle_finish_time} to {new_vehicle_finish_time}")
+            print(f"Route time: from {vehicle_finish_time} to {new_vehicle_finish_time}")
             print(f"Route: from {final_cycle[i:]} to {tsp_sol}")
             final_cycle[i:] = tsp_sol
-    final_vehicle_finish_times = vehicle_solution_to_arrivals(vehicle_start_time, [final_cycle], duration)
-    final_vehicle_finish_time = final_vehicle_finish_times[0][-1]
+    _, final_vehicle_finish_time = route_solution_to_arrivals(
+        vehicle_start_time, final_cycle, duration, demands, True, customers_to_be_cancelled
+    )
     print(f"Vehicle {vehicle_id} after TSP optimization")
     print(f"Route time: {final_vehicle_finish_time}")
     print(f"Route: {final_cycle}")
-    improved = final_vehicle_finish_time < init_vehicle_finish_time
+    improved = final_vehicle_finish_time < init_vehicle_finish_time_with
     print("TSP improvement" if improved else "No improvement")
     print()
-    return final_cycle if improved else init_cycle
+    return final_cycle, final_vehicle_finish_time
 
 
 def run_vrp_algo(
@@ -229,7 +258,6 @@ def solve_scenario(
     q: int,
     tsp_period: int,
     customers: List[int],
-    delay_customers: List[int],
     cancel_customers: List[int],
     duration: List[List[List[float]]],
     demands: Optional[List[int]],
@@ -244,7 +272,6 @@ def solve_scenario(
     :param q: The capacity of vehicles
     :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param customers: Remaining customers in the VRP tours
-    :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
     :param duration: Duration data of NxNx12
     :param demands: Demands of the customers
@@ -262,15 +289,15 @@ def solve_scenario(
 
     vehicles_times = [0 for _ in range(m)]
     vehicles_routes = defaultdict(list)
-    vehicles_max_time, vehicles_sum_time = 0, 0
+
     while len(customers) > 0:
+        min_vehicle_start_times = min(vehicles_times)
+        available_vehicles = [i for i in range(m) if abs(vehicles_times[i] - min_vehicle_start_times) < EPS]
         total_demands = 0
         for customer in customers:
             total_demands += demands[customer]
         k_min = (total_demands + q - 1) // q
         k = max(k, k_min)
-        min_vehicle_start_times = min(vehicles_times)
-        available_vehicles = [i for i in range(m) if abs(vehicles_times[i] - min_vehicle_start_times) < EPS]
         vrp_sol = run_vrp_algo(
             k=k,
             q=q,
@@ -291,25 +318,28 @@ def solve_scenario(
                 if cycle == SELF_CYCLE:
                     continue
                 vehicle_start_time = min_vehicle_start_times  # vehicles_times[vehicle_id]
-                cycle = tsp_optimize(
+                customers_to_be_cancelled = remove_customers_to_be_cancelled(
+                    vehicle_id, customers, cancel_customers, cycle
+                )
+                cycle, cycle_finish_time = tsp_optimize(
                     tsp_period=tsp_period,
                     vehicle_id=vehicle_id,
                     vehicle_start_time=vehicle_start_time,
                     init_cycle=cycle,
+                    customers_to_be_cancelled=customers_to_be_cancelled,
                     duration=duration,
+                    demands=demands,
                     tsp_algo_params=tsp_algo_params,
                 )
-                remove_customers_to_be_delayed_and_cancelled(
-                    vehicle_id, customers, delay_customers, cancel_customers, cycle
-                )
-                if cycle != SELF_CYCLE:
-                    k -= 1
+                k -= 1
                 vehicles_routes[vehicle_id].append(cycle)
-                vehicle_arrivals = vehicle_solution_to_arrivals(vehicle_start_time, [cycle], duration)
-                vehicles_times[vehicle_id] = vehicle_arrivals[0][-1]
+                vehicles_times[vehicle_id] = cycle_finish_time
+
+    vehicles_max_time, vehicles_sum_time = 0, 0
     for i in range(m):
         vehicles_sum_time += vehicles_times[i]
         vehicles_max_time = max(vehicles_max_time, vehicles_times[i])
+
     print("FINAL")
     print(f"vehicles_routes: {vehicles_routes}")
     print(f"vehicles_finish_times: {vehicles_times}")
@@ -326,15 +356,14 @@ def run(
     q: int = 5,
     tsp_period: int = 1,
     ignore_customers: List[int] = [1],
-    delay_customers: List[int] = [2],
-    cancel_customers: List[int] = [3],
+    cancel_customers: List[int] = [2],
     durations_query_row_id: int = 3,
     locations_query_row_id: int = 4,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_aco_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -345,7 +374,6 @@ def run(
     :param q: The capacity of vehicles
     :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param ignore_customers: Customers to ignore orders
-    :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
     :param durations_query_row_id: Row ID of the "durations" table to be fetched
     :param locations_query_row_id: Row ID of the "locations" table to be fetched
@@ -377,7 +405,6 @@ def run(
         q=q,
         tsp_period=tsp_period,
         customers=customers,
-        delay_customers=delay_customers,
         cancel_customers=cancel_customers,
         duration=duration,
         demands=load,

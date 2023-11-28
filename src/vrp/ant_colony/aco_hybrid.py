@@ -16,6 +16,8 @@ from src.utilities.helper.data_helper import (
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 DEPOT = 0
+SELF_CYCLE = [DEPOT, DEPOT]
+
 N_TIME_ZONES = 12  # hours = time slices
 EPS = 1e-6
 
@@ -122,7 +124,7 @@ def tsp_optimize(
     for vehicle_id in available_vehicles:
         if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
             vehicle_route = vehicle_routes[vehicle_id][0]
-            if vehicle_route == [DEPOT, DEPOT]:
+            if vehicle_route == SELF_CYCLE:
                 continue
             tsp_sol = solve_aco_tsp(
                 duration=duration,

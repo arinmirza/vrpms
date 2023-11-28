@@ -19,10 +19,14 @@ INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
+LOADING_TIME_INIT = 30
+LOADING_TIME_PER_UNIT = 10
+UNLOADING_CUSTOMER_TIME_INIT = 60
+UNLOADING_CUSTOMER_TIME_PER_UNIT = 10
+
 
 def calculate_duration(
     q: int,
-    m: int,
     ignore_long_trip: bool,
     cycles: List[List[int]],
     duration: List[List[List[float]]],
@@ -34,7 +38,6 @@ def calculate_duration(
         the routes for each driver, given list of cycles
 
     :param q: Capacity of vehicle
-    :param m: Max number of vehicles
     :param ignore_long_trip: Flag to ignore long trips
     :param cycles: The cycles to be assigned where one cycle is demonstrated as [DEPOT, c_i, ..., c_j, DEPOT]
     :param duration: Dynamic duration data of NxNx12
@@ -46,7 +49,6 @@ def calculate_duration(
     """
     # Initialize vehicle id to cycles and times mapping
     vehicle_routes = defaultdict(list)
-    vehicle_times = defaultdict(float)
 
     # Initialize the PQ of vehicles (drivers) with given (expected) start time
     vehicles_pq = VehiclesPQ(vehicles_start_times)
@@ -58,6 +60,11 @@ def calculate_duration(
         vehicle_t, vehicle_id = vehicles_pq.get_vehicle()
         last_node = DEPOT
         curr_capacity = q
+        total_load = 0
+        for customer in cycle[1:-1]:
+            total_load += load[customer]
+        if total_load > 0:
+            vehicle_t += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load
         # Go over each edge in the cycle
         for node in cycle[1:]:
             # Update capacity and check if it exceeds the initial capacity
@@ -72,6 +79,8 @@ def calculate_duration(
                 return INF, INF, None, None
             # Update time and node
             vehicle_t += duration[last_node][node][hour]
+            if node != DEPOT:
+                vehicle_t += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[node]
             last_node = node
         # Update PQ with the chosen vehicle and updated time
         vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
@@ -86,13 +95,11 @@ def calculate_duration(
     if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
 
-    # Return :)
     return route_max_time, route_sum_time, vehicle_routes, vehicle_times
 
 
 def calculate_duration_perm(
     q: int,
-    m: int,
     ignore_long_trip: bool,
     perm: List[int],
     duration: List[List[List[float]]],
@@ -104,7 +111,6 @@ def calculate_duration_perm(
         the routes for each driver, given permutation of nodes
 
     :param q: Capacity of vehicle
-    :param m: Max number of vehicles
     :param ignore_long_trip: Flag to ignore long trips
     :param perm: The locations to visit in order
     :param duration: Dynamic duration data of NxNx12
@@ -122,15 +128,13 @@ def calculate_duration_perm(
     for node in perm:
         if node == DEPOT:
             if len(last_cycle) > 0:
-                cycle = [DEPOT]
-                cycle.extend(last_cycle)
-                cycle.append(DEPOT)
+                cycle = [DEPOT] + last_cycle + [DEPOT]
                 cycles.append(cycle)
                 last_cycle = []
         else:
             last_cycle.append(node)
 
-    return calculate_duration(q, m, ignore_long_trip, cycles, duration, load, vehicles_start_times)
+    return calculate_duration(q, ignore_long_trip, cycles, duration, load, vehicles_start_times)
 
 
 def solve(
@@ -168,7 +172,6 @@ def solve(
         best_vehicle_routes,
         best_vehicle_times,
     ) = (INF, INF, None, None)
-    m = len(vehicles_start_times)
 
     nodes = copy.deepcopy(customers)
     nodes.extend([DEPOT for _ in range(1, k)])
@@ -180,7 +183,7 @@ def solve(
             route_sum_time,
             vehicle_routes,
             vehicle_times,
-        ) = calculate_duration_perm(q, m, ignore_long_trip, list(perm), duration, load, vehicles_start_times)
+        ) = calculate_duration_perm(q, ignore_long_trip, list(perm), duration, load, vehicles_start_times)
         # Check if it is the best order
         if vehicle_times is not None and (
             (objective_func_type == "min_max_time" and route_max_time < best_route_max_time)

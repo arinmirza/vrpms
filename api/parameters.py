@@ -41,6 +41,8 @@ def parse_common_tsp_parameters(content: dict, errors):
         "customers": get_parameter("customers", content, errors),
         "start_node": get_parameter("startNode", content, errors),
         "start_time": get_parameter("startTime", content, errors),
+        "do_loading_unloading": get_parameter("do_loading_unloading", content, errors),
+        "cancel_customers": get_parameter("cancel_customers", content, errors),
     }
 
 

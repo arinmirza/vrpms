@@ -74,8 +74,7 @@ def run(
     q: int = 5,
     tsp_period: int = 1,
     ignore_customers: List[int] = [1],
-    delay_customers: List[int] = [2],
-    cancel_customers: List[int] = [3],
+    cancel_customers: List[int] = [2],
     durations_query_row_id: int = 3,
     locations_query_row_id: int = 4,
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
@@ -90,7 +89,6 @@ def run(
     :param q: The capacity of vehicles
     :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param ignore_customers: Customers to ignore orders
-    :param delay_customers: Customers to delay orders
     :param cancel_customers: Customers to cancel orders
     :param durations_query_row_id: Row ID of the "durations" table to be fetched
     :param locations_query_row_id: Row ID of the "locations" table to be fetched
@@ -112,7 +110,6 @@ def run(
         q=q,
         tsp_period=tsp_period,
         customers=customers,
-        delay_customers=delay_customers,
         cancel_customers=cancel_customers,
         duration=duration,
         demands=load,

@@ -95,9 +95,12 @@ def print_sol(
 
 def solve(
     duration: List[List[List[float]]],
+    load: List[int],
     customers: List[int],
     current_time: float,
     current_location: int,
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
     n_hyperparams: int,
     n_best_results: int = 1,
     ignore_long_trip: bool = False,
@@ -109,9 +112,12 @@ def solve(
     Try different hyperparamater settings and solve TSP with ACO
 
     :param duration: Dynamic duration data
+    :param load: ...
     :param customers: Customers to be visited
     :param current_time: Current time
     :param current_location: Current (starting) location
+    :param do_loading_unloading: ...
+    :param cancelled_customers: ...
     :param n_hyperparams: Number of hyperparamater settings to try
     :param n_best_results: Number of best results (hyperparamater settings) to print
     :param ignore_long_trip: Flag to ignore long trips
@@ -196,13 +202,19 @@ def run_request(
     current_location: int,
     customers: List[int],
     duration: List[List[List[float]]],
+    load: List[int],
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
     n_hyperparams: int = 20,
 ):
     results = solve(
         duration=duration,
+        load=load,
         customers=customers,
         current_time=current_time,
         current_location=current_location,
+        do_loading_unloading=do_loading_unloading,
+        cancelled_customers=cancelled_customers,
         n_hyperparams=n_hyperparams,
     )
     result = results[0]
