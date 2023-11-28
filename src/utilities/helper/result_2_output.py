@@ -17,9 +17,9 @@ def tsp_result_2_output(
     duration: List[List[List[float]]],
     load: List[int],
     locations: Dict,
-    tsp_result: Dict,
     do_loading_unloading: bool,
     cancelled_customers: List[int],
+    tsp_result: Dict,
 ) -> Dict:
     # route_time = tsp_result["route_time"]
     route = tsp_result["route"]

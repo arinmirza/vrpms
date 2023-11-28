@@ -131,6 +131,8 @@ def solve(
     n = current_location + 1
     if customers:
         n = max(n, max(customers) + 1)
+    if cancelled_customers:
+        n = max(n, max(customers) + 1)
 
     all_hyperparams = []
     for _ in range(n_hyperparams):

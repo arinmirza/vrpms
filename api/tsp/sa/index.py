@@ -80,7 +80,10 @@ class handler(BaseHTTPRequestHandler):
             start_time=params["start_time"],
             start_node=params["start_node"],
             duration=durations,
+            load=demands,
             locations=new_locations,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancel_customers,
             tsp_result=tsp_result,
         )
 

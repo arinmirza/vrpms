@@ -76,6 +76,7 @@ class handler(BaseHTTPRequestHandler):
         result = vrp_result_2_output(
             vehicles_start_times=params["start_times"],
             duration=durations,
+            load=demands,
             locations=new_locations,
             vrp_result=vrp_result,
             capacities=params["capacities"],
