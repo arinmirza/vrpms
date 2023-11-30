@@ -65,7 +65,7 @@ class ACO_VRP_1(ACO_VRP):
     def __str__(self):
         return "ACO_1"
 
-    def solve(self) -> Tuple[int, float, float, Optional[defaultdict], Optional[defaultdict]]:
+    def solve(self) -> Tuple[Optional[int], float, float, Optional[defaultdict], Optional[defaultdict]]:
         """
         Solves VRP problem by using ACO (1st method)
 

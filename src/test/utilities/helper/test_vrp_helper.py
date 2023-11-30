@@ -1,4 +1,4 @@
-from src.utilities.helper.vrp_helper import solution_to_arrivals
+from src.utilities.helper.vrp_helper import complete_solution_to_arrivals
 
 N_TIME_ZONES = 12  # hours = time slices
 N = 9
@@ -17,5 +17,5 @@ def test_solution_to_arrivals():
                 duration_src_dest.append(int(i != j))
             duration_src.append(duration_src_dest)
         duration.append(duration_src)
-    arrivals = solution_to_arrivals(vehicles_start_times, solution, duration)
+    arrivals = complete_solution_to_arrivals(vehicles_start_times, solution, duration)
     assert arrivals == expected_arrivals

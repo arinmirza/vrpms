@@ -10,6 +10,7 @@ from src.utilities.helper.data_helper import (
     get_google_and_load_data,
     get_mapbox_and_load_data,
 )
+from src.utilities.helper.tsp_helper import route_solution_to_arrivals
 
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
@@ -158,6 +159,14 @@ def solve(
                 )
                 route_time, route, best_iter = tsp.solve()
                 if best_iter is not None:
+                    _, route_time = route_solution_to_arrivals(
+                        vehicle_start_time=current_time,
+                        route=route,
+                        duration=duration,
+                        load=load,
+                        do_loading_unloading=do_loading_unloading,
+                        cancelled_customers=cancelled_customers
+                    )
                     results.append(
                         (
                             route_time,
@@ -228,7 +237,7 @@ def run_request(
 
 
 def run(
-    n: int = 12,
+    n: int = 8,
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
@@ -260,11 +269,15 @@ def run(
     else:
         duration, _ = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
+    load = [int(i > 0) for i in range(n)]
     results = solve(
         duration=duration,
+        load=load,
         customers=customers,
         current_time=current_time,
         current_location=current_location,
+        do_loading_unloading=True,
+        cancelled_customers=[],
         n_hyperparams=80,
         n_best_results=1,
     )

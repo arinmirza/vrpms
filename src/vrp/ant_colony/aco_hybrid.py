@@ -5,8 +5,7 @@ import random
 from collections import defaultdict
 from src.vrp.ant_colony.aco_1 import ACO_VRP_1
 from src.vrp.ant_colony.aco_2 import ACO_VRP_2
-from src.tsp.ant_colony.aco_hybrid import solve as solve_aco_tsp
-from src.utilities.helper.vrp_helper import vehicle_solution_to_arrivals
+from src.utilities.helper.vrp_helper import complete_solution_to_arrivals
 from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
@@ -109,69 +108,6 @@ def print_sol(
         print(f"Time of vehicle {vehicle_id}: {vehicle_time}")
 
 
-def tsp_optimize(
-    n: int,
-    m: int,
-    duration: List[List[List[float]]],
-    vehicles_start_times: List[float],
-    is_print_allowed: bool,
-    result: Tuple,
-) -> Tuple:
-    route_max_time, route_sum_time, vehicle_routes, vehicle_times = result[:4]
-    min_vehicle_start_times = min(vehicles_start_times)
-    available_vehicles = [i for i in range(m) if abs(vehicles_start_times[i] - min_vehicle_start_times) < EPS]
-    improved_vehicles = set()
-    for vehicle_id in available_vehicles:
-        if vehicle_id in vehicle_routes and len(vehicle_routes[vehicle_id]) > 0:
-            vehicle_route = vehicle_routes[vehicle_id][0]
-            if vehicle_route == SELF_CYCLE:
-                continue
-            tsp_sol = solve_aco_tsp(
-                duration=duration,
-                customers=vehicle_route[1:-1],
-                current_time=min_vehicle_start_times,
-                current_location=DEPOT,
-                is_print_allowed=False,
-            )
-            arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, [vehicle_route], duration)
-            vrp_sol_route_time = arrivals[0][-1]
-            tsp_sol_route_time, tsp_sol_route = tsp_sol[0][0], tsp_sol[0][1]
-            if tsp_sol_route_time < vrp_sol_route_time:
-                improved_vehicles.add(vehicle_id)
-                vehicle_routes[vehicle_id][0] = tsp_sol_route
-                if is_print_allowed:
-                    print(f"Improved vehicle {vehicle_id}")
-                    print(f"TSP Improved from {vrp_sol_route_time} to {tsp_sol_route_time}")
-                    print(f"Old TSP cycle: {vehicle_route}")
-                    print(f"New TSP cycle: {tsp_sol_route}")
-                    print(f"Old finish time for {vehicle_id} = {vehicle_times[vehicle_id]}")
-            elif is_print_allowed:
-                print(f"No improvement for vehicle {vehicle_id}")
-    new_route_max_time, new_route_sum_time, new_vehicle_times = 0, 0, defaultdict(list)
-    for vehicle_id in range(m):
-        if vehicle_id in improved_vehicles:
-            arrivals = vehicle_solution_to_arrivals(min_vehicle_start_times, vehicle_routes[vehicle_id], duration)
-            vehicle_time = arrivals[-1][-1]
-            if is_print_allowed:
-                print(f"New finish time for {vehicle_id} = {vehicle_time}")
-        else:
-            vehicle_time = vehicle_times[vehicle_id]
-        new_route_max_time = max(new_route_max_time, vehicle_time)
-        new_route_sum_time += vehicle_time
-        new_vehicle_times[vehicle_id] = vehicle_time
-    return (
-        new_route_max_time,
-        new_route_sum_time,
-        vehicle_routes,
-        new_vehicle_times,
-        result[4],
-        result[5],
-        result[6],
-        result[7],
-        result[8],
-    )
-
-
 def solve(
     k: int,
     q: int,
@@ -181,7 +117,6 @@ def solve(
     vehicles_start_times: List[float],
     n_hyperparams: int,
     n_best_results: int = 1,
-    optimize_tsp: bool = False,
     ignore_long_trip: bool = False,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
@@ -198,7 +133,6 @@ def solve(
     :param load: Loads of locations
     :param n_hyperparams: Number of hyperparamater settings to try
     :param n_best_results: Number of best results (hyperparamater settings) to print
-    :param optimize_tsp: Flag to optimize first tours of the vrp solution with TSP
     :param ignore_long_trip: Flag to ignore long trips
     :param customers: List of customers to be ignored by the algorithm
     :param vehicles_start_times: List of (expected) start times of the vehicle. If not specified, they are all assumed
@@ -255,6 +189,12 @@ def solve(
                     )
                     best_iter, route_max_time, route_sum_time, vehicle_routes, vehicle_times = vrp.solve()
                     if best_iter is not None:
+                        _, vehicle_times, route_max_time, route_sum_time = complete_solution_to_arrivals(
+                            vehicles_start_times=vehicles_start_times,
+                            solution=vehicle_routes,
+                            duration=duration,
+                            load=load,
+                        )
                         results.append(
                             (
                                 route_max_time,
@@ -274,9 +214,6 @@ def solve(
         results.sort(key=lambda x: x[1])
 
     time_end = datetime.datetime.now()
-
-    if optimize_tsp:
-        results[0] = tsp_optimize(n, m, duration, vehicles_start_times, is_print_allowed, results[0])
 
     if is_print_allowed:
         for result_idx in range(n_best_results):
