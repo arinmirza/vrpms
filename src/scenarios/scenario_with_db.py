@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Tuple
 
 from api.database import DatabaseVRP
-from src.scenarios.aco_serve_all import solve_scenario
+from src.scenarios.scenario import solve_scenario
 from src.utilities.helper.locations_helper import (
     convert_locations,
     get_demands_from_locations,
@@ -22,6 +22,7 @@ def upload_supabase(
     q: int,
     vehicles_routes: defaultdict,
     duration: List[List[List[float]]],
+    load: List[int],
     locations: List[Dict],
     ignore_customers: List[int],
 ) -> Dict:
@@ -46,6 +47,7 @@ def upload_supabase(
     result = vrp_result_2_output(
         vehicles_start_times=vehicles_start_times,
         duration=duration,
+        load=load,
         locations=new_locations,
         vrp_result=vrp_result,
         capacities=capacities,
@@ -116,7 +118,7 @@ def run(
         vrp_algo_params_path=vrp_algo_params_path,
         tsp_algo_params_path=tsp_algo_params_path,
     )
-    record = upload_supabase(n, m, q, vehicles_routes, duration, locations, ignore_customers)
+    record = upload_supabase(n, m, q, vehicles_routes, duration, load, locations, ignore_customers)
     return record
 
 
