@@ -55,7 +55,7 @@ def calculate_duration(
             current_time += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[current_location]
         else:
             total_load = 0
-            for customer in route[1:-1]:
+            for customer in route:
                 total_load += load[customer]
             if total_load > 0:
                 current_time += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load
@@ -69,13 +69,13 @@ def calculate_duration(
         current_time += duration[last_node][node][hour]
         if node != DEPOT:
             current_time += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[node]
+        else:
+            total_load = 0
+            for customer in cancelled_customers:
+                total_load += load[customer]
+            if total_load > 0:
+                current_time += UNLOADING_DEPOT_TIME_INIT + UNLOADING_DEPOT_TIME_PER_UNIT * total_load
         last_node = node
-
-    total_load = 0
-    for customer in cancelled_customers:
-        total_load += load[customer]
-    if total_load > 0:
-        current_time += UNLOADING_DEPOT_TIME_INIT + UNLOADING_DEPOT_TIME_PER_UNIT * total_load
 
     if ignore_long_trip and current_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, None

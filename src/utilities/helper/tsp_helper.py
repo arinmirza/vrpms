@@ -33,7 +33,7 @@ def route_solution_to_arrivals(
                 current_time += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[node]
             else:
                 total_load = 0
-                for customer in route[1:-1]:
+                for customer in route:
                     total_load += load[customer]
                 if total_load > 0:
                     current_time += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load

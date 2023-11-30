@@ -15,6 +15,7 @@ from src.utilities.helper.data_helper import (
     get_google_and_load_data,
     get_mapbox_and_load_data,
 )
+from src.utilities.helper.tsp_helper import route_solution_to_arrivals
 
 DEPOT = 0
 N_TIME_ZONES = 12
@@ -25,6 +26,9 @@ INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" f
 
 def simulated_annealing_iterations(
     duration: List[List[List[float]]],
+    load: List[int],
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
     tour: List[int],
     n_iterations: int,
     neighborhood: Literal["2-opt", "exchange"],
@@ -41,17 +45,21 @@ def simulated_annealing_iterations(
         if neighborhood == "2-opt":
             i = random.randrange(n_tour_nodes - 3)
             j = random.randrange(i + 2, n_tour_nodes - 1)
-            new_tour_duration, new_tour = update_tour_with_2opt(
-                tour=tour, i=i, j=j, duration=duration, start_time=start_time
-            )
+            new_tour = update_tour_with_2opt(tour=tour, i=i, j=j)
         elif neighborhood == "exchange":
             i = random.randrange(1, n_tour_nodes - 2)
             j = random.randrange(i + 1, n_tour_nodes - 1)
-            new_tour_duration, new_tour = update_tour_with_exchange(
-                tour=tour, i=i, j=j, duration=duration, start_time=start_time
-            )
+            new_tour = update_tour_with_exchange(tour=tour, i=i, j=j)
         else:
             raise ValueError(f"Method {neighborhood} is not allowed. Options: '2-opt', 'exchange'")
+        _, new_tour_duration = route_solution_to_arrivals(
+            vehicle_start_time=start_time,
+            route=new_tour,
+            duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
+        )
         delta = tour_duration - new_tour_duration
         if delta > 0 or (random.random() < math.exp(delta / temperature)):
             tour, tour_duration = new_tour, new_tour_duration
@@ -63,6 +71,9 @@ def simulated_annealing_iterations(
 
 def simulated_annealing(
     duration: List[List[List[float]]],
+    load: List[int],
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
     tour: List[int],
     tour_duration: float,
     init_temperature: float,
@@ -81,6 +92,9 @@ def simulated_annealing(
     while True:
         tour_duration, tour, best_tour_duration, best_tour = simulated_annealing_iterations(
             duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
             tour=tour,
             n_iterations=n_iterations,
             neighborhood=neighborhood,
@@ -122,22 +136,43 @@ def solve(
     init = init.lower()
     assert init in ["nearest_neighbor", "successive_insertion", "random"], "Init method is not valid"
     if init == "nearest_neighbor":
-        tour_duration, tour = compute_nearest_neighbor_tour(
-            customers=customers, start_node=start_node, duration=duration, start_time=start_time
+        tour = compute_nearest_neighbor_tour(
+            customers=customers,
+            start_node=start_node,
+            start_time=start_time,
+            duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
         )
     elif init == "successive_insertion":
-        tour_duration, tour = compute_successive_insertion_tour(
-            customers=customers, start_node=start_node, duration=duration, start_time=start_time
+        tour = compute_successive_insertion_tour(
+            customers=customers,
+            start_node=start_node,
+            start_time=start_time,
+            duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
         )
     elif init == "random":
-        tour_duration, tour = compute_random_tour(
-            customers=customers, start_node=start_node, duration=duration, start_time=start_time
-        )
+        tour = compute_random_tour(customers=customers, start_node=start_node)
     else:
         raise ValueError(f"Method {init} is not allowed. Options: 'nearest_neighbor', 'nearest_neighbor', 'random'")
+    _, tour_duration = route_solution_to_arrivals(
+        vehicle_start_time=start_time,
+        route=tour,
+        duration=duration,
+        load=load,
+        do_loading_unloading=do_loading_unloading,
+        cancelled_customers=cancelled_customers,
+    )
     init_temperature = tour_duration * alpha
     best_tour_duration, best_tour = simulated_annealing(
         duration=duration,
+        load=load,
+        do_loading_unloading=do_loading_unloading,
+        cancelled_customers=cancelled_customers,
         tour=tour,
         tour_duration=tour_duration,
         init_temperature=init_temperature,
@@ -217,11 +252,15 @@ def run(
     else:
         raise ValueError(f"Method {duration_data_type} is not allowed. Options: 'mapbox', 'google', 'based'")
     customers = [i for i in range(1, n) if i != current_location]
+    load = [int(i > 0) for i in range(n)]
     best_tour_duration, best_tour = solve(
         start_time=current_time,
         start_node=current_location,
         customers=customers,
         duration=duration,
+        load=load,
+        do_loading_unloading=True,
+        cancelled_customers=[],
         threshold=threshold,
         n_iterations=n_iterations,
         alpha=alpha,

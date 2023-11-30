@@ -61,7 +61,7 @@ def calculate_duration(
         last_node = DEPOT
         curr_capacity = q
         total_load = 0
-        for customer in cycle[1:-1]:
+        for customer in cycle:
             total_load += load[customer]
         if total_load > 0:
             vehicle_t += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load

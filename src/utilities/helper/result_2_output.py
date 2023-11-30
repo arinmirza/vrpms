@@ -38,7 +38,7 @@ def tsp_result_2_output(
                 current_time += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[node]
             else:
                 total_load = 0
-                for customer in route[1:-1]:
+                for customer in route:
                     total_load += load[customer]
                 if total_load > 0:
                     current_time += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load
@@ -91,7 +91,7 @@ def vrp_result_2_output(
                         current_time += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * load[node]
                     elif node_idx == 0:
                         total_load = 0
-                        for customer in cycle[1:-1]:
+                        for customer in cycle:
                             total_load += load[customer]
                         if total_load > 0:
                             current_time += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load

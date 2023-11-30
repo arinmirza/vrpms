@@ -1,85 +1,88 @@
 from typing import List, Tuple
 import random
 
+from src.utilities.helper.tsp_helper import route_solution_to_arrivals
+
 DEPOT = 0
 TIME_UNITS = 3600  # hour = 60*60 seconds
 INF = float("inf")
 
 
-def calculate_tour_duration(tour: List[int], duration: List[List[List[float]]], start_time: float) -> float:
-    t = start_time
-    last_node = tour[0]
-    for node in tour[1:]:
-        h = int(t / TIME_UNITS)
-        t += duration[last_node][node][h]
-        last_node = node
-    return t
-
-
-def update_tour_with_2opt(
-    tour: List[int], i: int, j: int, duration: List[List[List[float]]], start_time: float
-) -> Tuple[float, List[int]]:
+def update_tour_with_2opt(tour: List[int], i: int, j: int) -> List[int]:
     tour_new = tour[: i + 1] + tour[j:i:-1] + tour[j + 1 :]
-    t_new = calculate_tour_duration(tour=tour_new, duration=duration, start_time=start_time)
-    return t_new, tour_new
+    return tour_new
 
 
-def update_tour_with_exchange(
-    tour: List[int], i: int, j: int, duration: List[List[List[float]]], start_time: float
-) -> Tuple[float, List[int]]:
+def update_tour_with_exchange(tour: List[int], i: int, j: int) -> List[int]:
     tour_new = tour.copy()
     tour_new[i], tour_new[j] = tour[j], tour[i]
-    t_new = calculate_tour_duration(tour=tour_new, duration=duration, start_time=start_time)
-    return t_new, tour_new
+    return tour_new
 
 
 def compute_nearest_neighbor_tour(
-    customers: List[int], start_node: int, duration: List[List[List[float]]], start_time: float
-) -> Tuple[float, List[int]]:
-    t = start_time
+    customers: List[int],
+    start_node: int,
+    start_time: float,
+    duration: List[List[List[float]]],
+    load: List[int],
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
+) -> List[int]:
     tour = [start_node]
-    last_node = start_node
     for _ in range(len(customers)):
-        best_city = None
-        min_duration = INF
-        h = int(t / TIME_UNITS)
-        for node in customers:
-            if node not in tour and duration[last_node][node][h] < min_duration:
-                best_city = node
-                min_duration = duration[last_node][node][h]
-        t += min_duration
-        tour.append(best_city)
-        last_node = best_city
-    h = int(t / TIME_UNITS)
-    t += duration[last_node][DEPOT][h]
+        best_customer = None
+        t_min = INF
+        for customer in customers:
+            if customer not in tour:
+                tour_new = tour.copy() + [customer]
+                _, t_new = route_solution_to_arrivals(
+                    vehicle_start_time=start_time,
+                    route=tour_new,
+                    duration=duration,
+                    load=load,
+                    do_loading_unloading=do_loading_unloading,
+                    cancelled_customers=cancelled_customers,
+                )
+                if t_new < t_min:
+                    best_customer = customer
+                    t_min = t_new
+        tour.append(best_customer)
     tour.append(DEPOT)
-    return t, tour
+    return tour
 
 
 def compute_successive_insertion_tour(
-    customers: List[int], start_node: int, duration: List[List[List[float]]], start_time: float
-) -> Tuple[float, List[int]]:
+    customers: List[int],
+    start_node: int,
+    start_time: float,
+    duration: List[List[List[float]]],
+    load: List[int],
+    do_loading_unloading: bool,
+    cancelled_customers: List[int],
+) -> List[int]:
     tour = [start_node, DEPOT]
     for node in customers:
         best_index = None
-        min_duration = INF
+        t_min = INF
         for i in range(1, len(tour)):
             tour_new = tour[:i] + [node] + tour[i:]
-            t_new = calculate_tour_duration(tour=tour_new, duration=duration, start_time=start_time)
-            if t_new < min_duration:
+            _, t_new = route_solution_to_arrivals(
+                vehicle_start_time=start_time,
+                route=tour_new,
+                duration=duration,
+                load=load,
+                do_loading_unloading=do_loading_unloading,
+                cancelled_customers=cancelled_customers,
+            )
+            if t_new < t_min:
                 best_index = i
-                min_duration = t_new
+                t_min = t_new
         tour = tour[:best_index] + [node] + tour[best_index:]
-    t = calculate_tour_duration(tour=tour, duration=duration, start_time=start_time)
-    return t, tour
+    return tour
 
 
-def compute_random_tour(
-    customers: List[int], start_node: int, duration: List[List[List[float]]], start_time: float
-) -> Tuple[float, List[int]]:
+def compute_random_tour(customers: List[int], start_node: int) -> List[int]:
     tour = customers.copy()
     random.shuffle(tour)
-    tour.insert(0, start_node)
-    tour.append(DEPOT)
-    t = calculate_tour_duration(tour=tour, duration=duration, start_time=start_time)
-    return t, tour
+    tour = [start_node] + tour + [DEPOT]
+    return tour
