@@ -237,7 +237,6 @@ def run_vrp_algo(
             vehicles_start_times=vehicles_start_times,
             n_hyperparams=vrp_algo_params["n_hyperparams"],
             n_best_results=1,
-            optimize_tsp=False,
             ignore_long_trip=False,
             objective_func_type="min_max_time",
             is_print_allowed=False,
@@ -341,11 +340,11 @@ def solve_scenario(
         vehicles_max_time = max(vehicles_max_time, vehicles_times[i])
 
     print("FINAL")
-    print(f"vehicles_routes: {vehicles_routes}")
-    print(f"vehicles_finish_times: {vehicles_times}")
     print(f"vehicles_max_time: {vehicles_max_time}")
     print(f"vehicles_sum_time: {vehicles_sum_time}")
-    print(f"customers: {customers}")
+    for i in range(m):
+        print(f"vehicles_times[{i}]: {vehicles_times[i]}")
+        print(f"vehicles_route[{i}]: {vehicles_routes[i]}")
     return vehicles_routes, vehicles_times, vehicles_max_time, vehicles_sum_time
 
 
