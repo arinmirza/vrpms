@@ -28,6 +28,7 @@ PER_KM_TIME = 0.25
 #DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=PER_KM_TIME) # generate the distance data matrix
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
 ITERATION_COUNT = 48  # limits the number of iterations for the genetic algorithm
+ITERATION_NEW_POPULATION_THRESHOLD = ITERATION_COUNT / 3
 INF = float("inf")
 N_TIME_SLICES = 12
 #DEPOT_TUPLE = (0, -1, "Depot")
@@ -238,6 +239,7 @@ def swap_mutation(permutations, VST, dist_data, M, Q, load, demand_dict):
     for index in range(0, len(permutations)):
 
         single_perm = permutations[index]
+
         count = 0
         while count < 10:  # threshold for the number of SWAP mutation to be applied, for now it is 10
             # select two random positions
@@ -541,6 +543,12 @@ def get_tours(permutations):
 #######################################################################################################################
 #######################################################################################################################
 # DURATION CALCULATION AND RUN
+
+LOADING_TIME_INIT = 30
+LOADING_TIME_PER_UNIT = 10
+UNLOADING_CUSTOMER_TIME_INIT = 60
+UNLOADING_CUSTOMER_TIME_PER_UNIT = 10
+
 def helper(
     q: int,
     m: int,
@@ -566,9 +574,13 @@ def helper(
     :return: Total time it takes to visit the locations for the latest driver, sum of the durations of each driver, the
         routes for each driver and the travel duration for each driver
     """
+
+
+    ############################
+    #new cd
+
     # Initialize vehicle id to cycles and times mapping
     vehicle_routes = defaultdict(list)
-    vehicle_times = defaultdict(float)
 
     # Initialize the PQ of vehicles (drivers) with given (expected) start time
     vehicles_pq = VehiclesPQ(vehicles_start_times)
@@ -580,10 +592,15 @@ def helper(
         vehicle_t, vehicle_id = vehicles_pq.get_vehicle()
         last_node = DEPOT
         curr_capacity = q
+        total_load = 0
+        for customer in cycle:
+            total_load += demand_dict[customer]
+        if total_load > 0:
+            vehicle_t += LOADING_TIME_INIT + LOADING_TIME_PER_UNIT * total_load
         # Go over each edge in the cycle
         for node in cycle[1:]:
             # Update capacity and check if it exceeds the initial capacity
-            curr_capacity -= load[demand_dict[node]]
+            curr_capacity -= demand_dict[node]
             if curr_capacity < 0:
                 return INF, INF, None, None
             # Determine the hour and check if it exceeds the number of time zones (based on ignore_long_trip)
@@ -594,6 +611,8 @@ def helper(
                 return INF, INF, None, None
             # Update time and node
             vehicle_t += duration[last_node][node][hour]
+            if node != DEPOT:
+                vehicle_t += UNLOADING_CUSTOMER_TIME_INIT + UNLOADING_CUSTOMER_TIME_PER_UNIT * demand_dict[node]
             last_node = node
         # Update PQ with the chosen vehicle and updated time
         vehicles_pq.put_vehicle(vehicle_t, vehicle_id)
@@ -605,9 +624,9 @@ def helper(
     route_max_time, route_sum_time, vehicle_times = vehicles_pq.get_route_and_vehicle_times()
 
     # Check if it exceeds the number of time zones (based on ignore_long_trip)
-    # Actually, it is not that necessary since all cycles checked
     if ignore_long_trip and route_max_time >= N_TIME_ZONES * TIME_UNITS:
         return INF, INF, None, None
+
 
     # Return :)
     return route_max_time, route_sum_time, vehicle_routes, vehicle_times
@@ -929,7 +948,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_l
         #print("**********************************************")
         iteration_count = iteration_count + 1
 
-        if (iteration_count % 16) == 0 and iteration_count != ITERATION_COUNT:
+        if (iteration_count % ITERATION_NEW_POPULATION_THRESHOLD) == 0 and iteration_count != ITERATION_COUNT:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=LOAD,
                             ist_in=vehicles_start_times, permutations=None, demand_dict = demand_dict, customer_list=customer_list) for i in inputs)

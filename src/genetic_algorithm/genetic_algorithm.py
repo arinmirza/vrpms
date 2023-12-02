@@ -310,8 +310,28 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
     output_dict["vehicles"] = arrivals_final
     return output_dict#output[0],output[1], arrivals_final
 
+def calculate_demand_dict(customer_list, demand_list, start_node, cancelled_customers):
 
-def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded):
+    demand_dict = {}
+
+    demand_dict[0] = 0
+
+    #print(customer_list)
+    #print(demand_list)
+
+    for i in range(0,len(customer_list)):
+
+        demand_dict[customer_list[i]] = demand_list[customer_list[i]]
+
+    for cancelled in cancelled_customers:
+        demand_dict[cancelled] = demand_list[cancelled]
+
+    demand_dict[start_node] = demand_list[start_node]
+
+    #demand_dict[start_node] =
+    return demand_dict
+
+def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded, cancelled=[], do_load_unload=True):
 
     if mode == "TDVRP":
         N = n
@@ -321,7 +341,8 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         W = 0
         duration = duration
         multithreaded = multithreaded
-        cl = customers
+        #customers_old =
+        cl = copy.deepcopy(customers)
         sn = start_node
         load = load
         ist = vehicle_start_times
@@ -335,9 +356,9 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         duration = duration
         multithreaded = multithreaded
 
-        cl = customers
-        if start_node not in cl and start_node != W:
-            cl.append(start_node)  # TODO: cunku sn customer list icinde yok
+        cl = copy.deepcopy(customers)
+        #if start_node not in cl and start_node != W:
+        #cl.append(start_node)  # TODO: cunku sn customer list icinde yok
 
         sn = start_node
         load = load
@@ -345,8 +366,10 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         pm = mode
         multithreaded = multithreaded
 
+        demand_dict = calculate_demand_dict(customer_list=cl, demand_list=load, start_node=start_node, cancelled_customers=cancelled)
+
         M = 1
-        q = len(customers)
+        q = len(customers)*len(customers) # never run out of capacity, for TSP the capacity constraint is not important
 
     output = None
 
@@ -374,15 +397,18 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
 
     elif pm == "TSP":
 
+        if start_node != 0:
+            print('check')
+
         if not multithreaded:
             # N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                           demand_in=load, ist_in=ist, multithreaded=False, start_node=sn,
-                                           customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=q, W_in=W, duration_in=duration,
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node=sn,
+                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
         else:
-            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                           demand_in=load, ist_in=ist, multithreaded=True, start_node=sn,
-                                           customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=q, W_in=W, duration_in=duration,
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node=sn,
+                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
             # output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 
     # TODO: generate the map information required for the prep out method
