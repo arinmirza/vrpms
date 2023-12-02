@@ -56,7 +56,9 @@ class handler(BaseHTTPRequestHandler):
                      multithreaded=params_ga["multi_threaded"],
                      iteration_count=0,
                      random_perm_count=0,
-                     customers=None)
+                     customers=None,
+                     cancelled_customers=[],
+                     do_load_unload=False) # TODO CHECK
         #result = {
         #    "durationMax": 0,
         #    "durationSum": 0,

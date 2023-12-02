@@ -35,6 +35,7 @@ import json
 from src.supabase_help.get_supabase_matrix import get_data
 from data.travel_time_matrix import main as generate_mapbox_duration_matrix
 from src.genetic_algorithm.genetic_algorithm import run_GA
+from api.database import DatabaseVRP
 
 def read_json(json_input):
     data = open(json_input)
@@ -350,30 +351,48 @@ def get_supabase_matrix():
 
 if __name__ == "__main__":
 
+    params = {
+        "auth":"",
+         "locations_key": 1,
+        "durations_key": 3
+    }
     # Example dict format
+    # Retrieve data from database
+    database = DatabaseVRP(params["auth"])
+    locations = database.get_locations_by_id(params["locations_key"], {})
+    durations = database.get_durations_by_id(params["durations_key"], {})
 
-    data_dict = {
-        "program_mode": "TDVRP",
-        "algorithm": "GA"
-    }
 
-    algo_inputs = {
-        "N": 1, #
-        "M": 3,
-        "q": 6,
-        "k": 5,
-        "multithreaded": True,
-        "cl": [1,2,3,4,5,6,7,8,9,10,11,22,13,14,15,16,17,18,19,20], #
-        "sn": None
-    }
+    #21,22,23,24,25,26,27,28,29,30,
+    capacities =  [5, 5, 5]
+    startTimes =  [0, 0, 0]
+    ignoredCustomers = [21,22,23,24,25,26,27,28,29,30,31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+    completedCustomers = []
+    multiThreaded = False
+    result = run_GA(locations=locations,
+                 durations=durations,
+                 initial_start_times=startTimes,
+                 capacities=capacities,
+                 ignored_customers=ignoredCustomers,
+                 completed_customers=completedCustomers,
+                 start_node=None,
+                 mode="TDVRP",
+                 multithreaded=multiThreaded,
+                 iteration_count=0,
+                 random_perm_count=0,
+                 customers=None,
+                 cancelled_customers=[],
+                 do_load_unload=False)
+    #randomPermutationCount =  0,
+    #iterationCount = 0
 
     # k*q >= n-1
 
-    data_dict["algorithm_inputs"] = algo_inputs
+    #data_dict["algorithm_inputs"] = algo_inputs
 
     # TODO: algorithm_input key will be added
 
-    res = run_optimization(data_dict)
+    #res = run_optimization(data_dict)
 
     #VST = [0 for _ in range(algo_inputs["M"])]
     #data = get_supabase_matrix()

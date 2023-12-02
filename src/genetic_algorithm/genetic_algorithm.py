@@ -229,7 +229,7 @@ def map_id_coordinate(json_obj):
 
     return coordinate_index_map
 
-def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers):
+def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers, cancelled_customers, do_load_unload):
     if mode == "TDVRP":
         inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities, initial_start_times=initial_start_times, ignored_customers=ignored_customers, completed_customers=completed_customers, multithreaded=multithreaded, random_perm_count=random_perm_count, iteration_count=iteration_count, mode=mode, start_node=start_node)
 
@@ -247,6 +247,8 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
         cl = algo_inputs["cl"] # locations - ignored - completed
         sn = algo_inputs["sn"] # tsp icin arinin index api daha hazir degil ama bu gelicek
         load = algo_inputs["load"]# if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1 if cl == [] else len(cl)+1) # locations tablosundan cekicez
+        demand_dict = calculate_demand_dict_from_locs(locations)
+        #calculate_demand_dict_vrp(customer_list=cl, locations=locations)
         # TODO: prepare LOAD yerine demand_dict gonder
         ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None # arin vericek
         pm = algo_inputs["pm"]
@@ -262,6 +264,7 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
         demand_list = get_demands(locations=locations, customer_list=cl)
         demand_list.insert(0, 0)
         load = demand_list
+        demand_dict = calculate_demand_dict_from_locs(locations)
         pm = mode
         W=0
         M=1
@@ -280,22 +283,22 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
             #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list = cl)
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, customer_list = cl, multithreaded=False)
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=False, demand_dict=demand_dict)
 
         else:
             # good example
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, customer_list = cl, multithreaded=True)
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=True, demand_dict=demand_dict)
 
     elif pm == "TSP":
 
         if not multithreaded:
            #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_in=load, ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
         else:
             output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                           demand_in=load, ist_in=ist, multithreaded=True, start_node = sn, customer_list=cl)
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=True, start_node = sn, customer_list=cl, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
             #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 
     #TODO: generate the map information required for the prep out method
@@ -310,7 +313,7 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
     output_dict["vehicles"] = arrivals_final
     return output_dict#output[0],output[1], arrivals_final
 
-def calculate_demand_dict(customer_list, demand_list, start_node, cancelled_customers):
+def calculate_demand_dict_tsp_scenario(customer_list, demand_list, start_node, cancelled_customers):
 
     demand_dict = {}
 
@@ -331,6 +334,42 @@ def calculate_demand_dict(customer_list, demand_list, start_node, cancelled_cust
     #demand_dict[start_node] =
     return demand_dict
 
+
+def calculate_demand_dict_vrp(customer_list, locations):
+
+    demand_dict = {}
+
+    demand_dict[0] = 0
+
+    #print(customer_list)
+    #print(demand_list)
+
+    for i in range(0,len(customer_list)):
+
+        demand_dict[customer_list[i]] = list(filter(lambda x:x["id"]==customer_list[i],locations))[0]["demand"]
+
+
+    #demand_dict[start_node] =
+    return demand_dict
+
+def calculate_demand_dict_from_locs(locations):
+
+    demand_dict = {}
+
+    for elem in locations:
+        demand_dict[elem["id"]] = elem["demand"]
+
+    return demand_dict
+
+
+def calculate_demand_dict_from_demand_list(demands):
+    demand_dict = {}
+
+    for i in range(0, len(demands)):
+        demand_dict[i] = demands[i]
+
+    return demand_dict
+
 def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded, cancelled=[], do_load_unload=True):
 
     if mode == "TDVRP":
@@ -347,6 +386,7 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         load = load
         ist = vehicle_start_times
         pm = mode
+        demand_dict = calculate_demand_dict_from_demand_list(demands=load)
 
     elif mode == "TSP":
 
@@ -366,7 +406,7 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         pm = mode
         multithreaded = multithreaded
 
-        demand_dict = calculate_demand_dict(customer_list=cl, demand_list=load, start_node=start_node, cancelled_customers=cancelled)
+        demand_dict = calculate_demand_dict_from_demand_list(demands=load)
 
         M = 1
         q = len(customers)*len(customers) # never run out of capacity, for TSP the capacity constraint is not important
@@ -385,14 +425,14 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
             # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
 
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list=cl)
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl, multithreaded=False)
+            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=False)
             #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl, multithreaded=False)
         else:
             # good example
             # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
             output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
-                                              demand_in=load, ist_in=ist, customer_list=cl, multithreaded=True)
+                                              demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=True)
             #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl)
 
     elif pm == "TSP":
@@ -407,7 +447,7 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
                                            customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
         else:
             output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=q, W_in=W, duration_in=duration,
-                                           demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node=sn,
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=True, start_node=sn,
                                            customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
             # output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
 

@@ -1,3 +1,4 @@
+import datetime
 import json
 from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple, Union
@@ -259,7 +260,7 @@ def solve_scenario(
     duration: List[List[List[float]]],
     demands: Optional[List[int]],
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -347,15 +348,15 @@ def solve_scenario(
 
 
 def run(
-    n: int = 21,
-    m: int = 3,
-    k: int = 4,
+    n: int = 51,
+    m: int = 4,
+    k: int = 10,
     q: int = 5,
     tsp_period: int = 1,
-    ignore_customers: List[int] = [1],
-    cancel_customers: List[int] = [2],
+    ignore_customers: List[int] = [1,3],
+    cancel_customers: List[int] = [2,4],
     durations_query_row_id: int = 3,
-    locations_query_row_id: int = 4,
+    locations_query_row_id: int = 1,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
@@ -382,6 +383,7 @@ def run(
     :return: List of location ids to visit where first and last element of each 1D inner list (cycle) is DEPOT and list
         of vehicle finish times in terms of seconds
     """
+    start = datetime.datetime.now()
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
@@ -408,6 +410,7 @@ def run(
         vrp_algo_params_path=vrp_algo_params_path,
         tsp_algo_params_path=tsp_algo_params_path,
     )
+    print("Time elapsed: ", datetime.datetime.now() - start)
     return vehicles_routes, vehicles_finish_times, vehicles_max_time, vehicles_sum_time
 
 

@@ -57,7 +57,9 @@ class handler(BaseHTTPRequestHandler):
                      multithreaded=params_ga["multi_threaded"],
                      customers=params["customers"],
                      iteration_count=0,
-                     random_perm_count=0)
+                     random_perm_count=0,
+                     cancelled_customers = [],
+                     do_load_unload = True) # TODO
 
         # TODO: Run algorithm
         #result = {
