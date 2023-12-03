@@ -9,6 +9,7 @@ from src.vrp.ant_colony.aco_hybrid import solve as solve_vrp_aco
 from src.vrp.brute_force.brute_force import solve as solve_vrp_bf
 from src.tsp.ant_colony.aco_hybrid import solve as solve_tsp_aco
 from src.tsp.brute_force.brute_force import solve as solve_tsp_bf
+from src.tsp.simulated_annealing.simulated_annealing import solve as solve_tsp_sa
 from src.utilities.helper.locations_helper import convert_locations, get_demands_from_locations
 
 DEPOT = 0  # depot
@@ -101,7 +102,23 @@ def run_tsp_algo(
         )
         tsp_sol = tsp_sol[0][1]
     elif algo == "sa":
-        ...
+        tsp_sol = solve_tsp_sa(
+            start_time=vehicle_start_time,
+            start_node=vehicle_start_node,
+            customers=customers,
+            duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
+            threshold=tsp_algo_params["threshold"],
+            n_iterations=tsp_algo_params["n_iterations"],
+            alpha=tsp_algo_params["alpha"],
+            cooling=tsp_algo_params["cooling"],
+            init=tsp_algo_params["init"],
+            termination=tsp_algo_params["termination"],
+            neighborhood=tsp_algo_params["neighborhood"],
+        )
+        tsp_sol = tsp_sol[1]
     elif algo == "ga":
         ...
     else:
@@ -350,7 +367,7 @@ def solve_scenario(
 
 def run(
     n: int = 21,
-    m: int = 3,
+    m: int = 4,
     k: int = 4,
     q: int = 5,
     tsp_period: int = 1,
@@ -362,7 +379,7 @@ def run(
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_sa_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
