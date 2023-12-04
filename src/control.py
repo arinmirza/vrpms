@@ -364,11 +364,13 @@ if __name__ == "__main__":
 
 
     #21,22,23,24,25,26,27,28,29,30,
-    capacities =  [5, 5, 5]
-    startTimes =  [0, 0, 0]
-    ignoredCustomers = [21,22,23,24,25,26,27,28,29,30,31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+    #16,17,18,19,20,21,22,23,24,25,
+    #31,32,33,34,35,36, 37, 38, 39, 40,41,42,43,44,45,46,47,48,49,50,
+    capacities =  [20,20,20,20,20,20,20,20,20,20]
+    startTimes =  [0,0,0,0,0,0,0,0,0,0]
+    ignoredCustomers = [51, 52, 53, 54, 55, 56, 57]
     completedCustomers = []
-    multiThreaded = False
+    multiThreaded = True
     result = run_GA(locations=locations,
                  durations=durations,
                  initial_start_times=startTimes,
@@ -382,7 +384,9 @@ if __name__ == "__main__":
                  random_perm_count=0,
                  customers=None,
                  cancelled_customers=[],
-                 do_load_unload=False)
+                 do_load_unload=False,
+                 max_k=len(capacities),
+                 k_lower_limit=False)
     #randomPermutationCount =  0,
     #iterationCount = 0
 

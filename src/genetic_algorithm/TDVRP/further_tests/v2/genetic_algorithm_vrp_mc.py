@@ -770,7 +770,7 @@ def intelligent_permutation(customer_list, k, q, rand_perm_count = RANDOM_PERM_C
         perm_basis = []
 
     return final_perms
-def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_list, demand_dict ,permutations = None):
+def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_list, demand_dict , max_k=0,k_lower_limit=True,permutations = None):
     """
                 Main method that controls the mode of the genetic algorithm
                 If no input is given than it starts with population generation and runs genetic algorithm
@@ -798,7 +798,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
         NODES_LIST = []
         NODES = []
         if len(customer_list) != 0:
-            NODES =  copy.deepcopy(customer_list)
+            NODES = copy.deepcopy(customer_list)
         else:
             NODES.extend(range(1, N + 1))
 
@@ -822,6 +822,19 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
             NODES.append(DEPOT)
 
         NODES_LIST.append(NODES)
+
+        if not k_lower_limit:
+
+            if max_k == 0:
+                max_k = M*2
+
+            for current_k in range(K+1, max_k+1):
+                new_nodes_wo_k_limit = copy.deepcopy(customer_list)
+                for _ in range(current_k-1):
+                    new_nodes_wo_k_limit.append(DEPOT)
+                NODES_LIST.append(new_nodes_wo_k_limit)
+
+
 
         #NODES_LIST.append(NODES)
         random_generated_perm = []
@@ -912,7 +925,7 @@ def calculate_demand_dict(customer_list, demand_list):
     return demand_dict
 
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer_list, multithreaded):
+def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer_list, multithreaded,max_k,k_lower_limit=True):
 
     N = N_in  # number of shops to be considered
     K = k_in
@@ -954,7 +967,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the run method, thus tqdm library does not prepare any inputs
     inputs = tqdm(num_cores * [1], disable=True)
-    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = demand_dict, ist_in = vehicles_start_times, permutations=None, customer_list=customer_list, demand_dict = demand_dict) for i in inputs)
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = demand_dict, ist_in = vehicles_start_times, permutations=None, customer_list=customer_list, demand_dict = demand_dict, k_lower_limit=k_lower_limit, max_k=max_k) for i in inputs)
 
     # save the output of the current iteration
     #entries.append(copy.deepcopy(processed_list))
@@ -968,7 +981,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer
     while iteration_count < ITERATION_COUNT:
         # tqdm library prepares the previously generated permutations for the next iteration
         inputs = tqdm(processed_list, disable=True)
-        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = demand_dict, ist_in = vehicles_start_times, permutations=i, demand_dict=demand_dict, customer_list=customer_list) for i in inputs)
+        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = demand_dict, ist_in = vehicles_start_times, permutations=i, demand_dict=demand_dict, customer_list=customer_list, k_lower_limit=k_lower_limit, max_k=max_k) for i in inputs)
 
         #
         current_best_entries = []
@@ -1006,7 +1019,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer
         if (iteration_count % ITERATION_NEW_POPULATION_THRESHOLD) == 0 and iteration_count != ITERATION_COUNT:
             processed_list = Parallel(n_jobs=num_cores)(
                 delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=demand_dict,
-                            ist_in=vehicles_start_times, permutations=None, demand_dict = demand_dict, customer_list=customer_list) for i in inputs)
+                            ist_in=vehicles_start_times, permutations=None, demand_dict = demand_dict, customer_list=customer_list, k_lower_limit=k_lower_limit, max_k=max_k) for i in inputs)
             print("new pop...")
         #if iteration_count == ITERATION_COUNT:
         #    processed_list = Parallel(n_jobs=num_cores)(
@@ -1061,7 +1074,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer
 
         processed_list = Parallel(n_jobs=num_cores)(
             delayed(ga)(N_in=N, M_in=M, k_in=K, q_in=Q, W_in=DEPOT, duration_in=DIST_DATA, demand_in=demand_dict,
-                        ist_in=vehicles_start_times, permutations=best, demand_dict = demand_dict, customer_list=customer_list) for i in inputs)
+                        ist_in=vehicles_start_times, permutations=best, demand_dict = demand_dict, customer_list=customer_list, k_lower_limit=k_lower_limit, max_k=max_k) for i in inputs)
 
         #
         current_best_entries = []
@@ -1105,11 +1118,16 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer
         #print("**********************************************")
         iteration_count = iteration_count + 1
 
-        if all_equal(current_best_entries):
-            if all_equal_count >=5:
+        if all_equal(current_best_entries) and num_cores != 1:
+            print("all same check +++")
+            if all_equal_count >= (ITERATION_COUNT//4)//4:
+                print("all same equal stop")
                 break
             else:
                 all_equal_count = all_equal_count +1
+        else:
+            if num_cores == 1:
+                print("skip all same check - 2nd ga run on best dat")
 
     print("SECOND ITER END")
 

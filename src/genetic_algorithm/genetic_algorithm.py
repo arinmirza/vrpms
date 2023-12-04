@@ -19,7 +19,7 @@ from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as genetic_al
 #from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp_mc
 #from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
 #from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
-from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp_mc
+from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp
 #from src.utilities.vrp_helper import get_load_data
 from src.utilities.vrp_helper import solution_to_arrivals
 #from src.supabase_help.get_supabase_matrix import get_data
@@ -229,7 +229,7 @@ def map_id_coordinate(json_obj):
 
     return coordinate_index_map
 
-def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers, cancelled_customers, do_load_unload):
+def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers, cancelled_customers, do_load_unload, max_k=0,k_lower_limit=True):
     if mode == "TDVRP":
         inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities, initial_start_times=initial_start_times, ignored_customers=ignored_customers, completed_customers=completed_customers, multithreaded=multithreaded, random_perm_count=random_perm_count, iteration_count=iteration_count, mode=mode, start_node=start_node)
 
@@ -283,13 +283,13 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
             #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list = cl)
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=False, demand_dict=demand_dict)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=False, demand_dict=demand_dict, max_k=max_k,k_lower_limit=k_lower_limit)
 
         else:
             # good example
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=True, demand_dict=demand_dict)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=True, demand_dict=demand_dict, max_k=max_k,k_lower_limit=k_lower_limit)
 
     elif pm == "TSP":
 
@@ -303,6 +303,16 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
 
     #TODO: generate the map information required for the prep out method
     #data = get_supabase_matrix()
+
+    currently_used_vehicle_count = len(output[2].keys())
+
+    if currently_used_vehicle_count < M:
+
+        while len(output[2].keys()) < M:
+
+            output[2][len(output[2].keys())] = [[]]
+
+
 
     map = map_id_coordinate(locations)
     #TODO: set the inputs etc
@@ -425,14 +435,14 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
             # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
 
             #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list=cl)
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=False)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=False)
             #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl, multithreaded=False)
         else:
             # good example
             # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
-            output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
-                                              demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=True)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
+                                           demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=True)
             #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl)
 
     elif pm == "TSP":

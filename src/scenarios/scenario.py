@@ -348,7 +348,7 @@ def solve_scenario(
 
 
 def run(
-    n: int = 51,
+    n: int = 31,
     m: int = 4,
     k: int = 10,
     q: int = 5,
