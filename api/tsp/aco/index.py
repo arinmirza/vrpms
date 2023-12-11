@@ -43,9 +43,27 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Retrieve data from database
+        if "locations" not in params and "locations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": f"locations or locationsKey should be provided"}]
+        if "durations" not in params and "durations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": f"durations or durationsKey should be provided"}]
+
+        if len(errors) > 0:
+            fail(self, errors)
+            return
+
+        # Retrieve data from database
         database = DatabaseTSP(params["auth"])
-        locations = database.get_locations_by_id(params["locations_key"], errors)
-        durations = database.get_durations_by_id(params["durations_key"], errors)
+        locations = (
+            params["locations"]
+            if "locations" in params
+            else database.get_locations_by_id(params["locations_key"], errors)
+        )
+        durations = (
+            params["durations"]
+            if "durations" in params
+            else database.get_locations_by_id(params["durations_key"], errors)
+        )
 
         if len(errors) > 0:
             fail(self, errors)

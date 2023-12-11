@@ -165,7 +165,7 @@ def solve(
                         duration=duration,
                         load=load,
                         do_loading_unloading=do_loading_unloading,
-                        cancelled_customers=cancelled_customers
+                        cancelled_customers=cancelled_customers,
                     )
                     results.append(
                         (
