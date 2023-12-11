@@ -44,9 +44,9 @@ class handler(BaseHTTPRequestHandler):
 
         # Retrieve data from database
         if "locations" not in params and "locations_key" not in params:
-            errors += [{"what": "Missing parameter", "reason": f"locations or locationsKey should be provided"}]
+            errors += [{"what": "Missing parameter", "reason": "locations or locationsKey should be provided"}]
         if "durations" not in params and "durations_key" not in params:
-            errors += [{"what": "Missing parameter", "reason": f"durations or durationsKey should be provided"}]
+            errors += [{"what": "Missing parameter", "reason": "durations or durationsKey should be provided"}]
 
         if len(errors) > 0:
             fail(self, errors)
@@ -62,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
         durations = (
             params["durations"]
             if "durations" in params
-            else database.get_locations_by_id(params["durations_key"], errors)
+            else database.get_durations_by_id(params["durations_key"], errors)
         )
 
         if len(errors) > 0:
