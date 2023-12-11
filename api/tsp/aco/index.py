@@ -56,12 +56,12 @@ class handler(BaseHTTPRequestHandler):
         database = DatabaseTSP(params["auth"])
         locations = (
             params["locations"]
-            if "locations" in params
+            if "locations" in params and params["locations"] is not None
             else database.get_locations_by_id(params["locations_key"], errors)
         )
         durations = (
             params["durations"]
-            if "durations" in params
+            if "durations" in params and params["durations"] is not None
             else database.get_durations_by_id(params["durations_key"], errors)
         )
 
