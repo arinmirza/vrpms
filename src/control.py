@@ -353,7 +353,7 @@ if __name__ == "__main__":
 
     params = {
         "auth":"",
-         "locations_key": 1,
+         "locations_key": 4,
         "durations_key": 3
     }
     # Example dict format
@@ -366,27 +366,55 @@ if __name__ == "__main__":
     #21,22,23,24,25,26,27,28,29,30,
     #16,17,18,19,20,21,22,23,24,25,
     #31,32,33,34,35,36, 37, 38, 39, 40,41,42,43,44,45,46,47,48,49,50,
-    capacities =  [20,20,20,20,20,20,20,20,20,20]
-    startTimes =  [0,0,0,0,0,0,0,0,0,0]
-    ignoredCustomers = [51, 52, 53, 54, 55, 56, 57]
+    #16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,
+    #31,32,33,34,35,36, 37, 38, 39, 40,41,42,43,44,45,46,47,48,49,50,
+    #capacities =  [10,10,10,10,10,10,10,10,10,10]
+    #startTimes =  [0,0,0,0,0,0,0,0,0,0]
+    #ignoredCustomers = [50,51, 52, 53, 54, 55, 56, 57]
+    #[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,51, 52, 53, 54, 55, 56, 57]
+
+
+    capacities = [10]
+    startTime_TSP = 0
+    ignoredCustomers = []
     completedCustomers = []
     multiThreaded = True
+
     result = run_GA(locations=locations,
-                 durations=durations,
-                 initial_start_times=startTimes,
-                 capacities=capacities,
-                 ignored_customers=ignoredCustomers,
-                 completed_customers=completedCustomers,
-                 start_node=None,
-                 mode="TDVRP",
-                 multithreaded=multiThreaded,
-                 iteration_count=0,
-                 random_perm_count=0,
-                 customers=None,
-                 cancelled_customers=[],
-                 do_load_unload=False,
-                 max_k=len(capacities),
-                 k_lower_limit=False)
+                    durations=durations,
+                    initial_start_times=startTime_TSP,
+                    capacities=capacities,
+                    ignored_customers=ignoredCustomers,
+                    completed_customers=completedCustomers,
+                    start_node=None,
+                    mode="TSP",
+                    multithreaded=multiThreaded,
+                    iteration_count=0,
+                    random_perm_count=0,
+                    customers=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+                    cancelled_customers=[],
+                    do_load_unload=True,
+                    max_k=-1,  # len(capacities)*2,
+                    k_lower_limit=True)
+
+    print(result)
+
+    #result = run_GA(locations=locations,
+    #             durations=durations,
+    #             initial_start_times=startTimes,
+    #             capacities=capacities,
+    #             ignored_customers=ignoredCustomers,
+    #             completed_customers=completedCustomers,
+    #             start_node=None,
+    #             mode="TSP",
+    #             multithreaded=multiThreaded,
+    #             iteration_count=0,
+    #             random_perm_count=0,
+    #             customers=None,
+    #             cancelled_customers=[],
+    #             do_load_unload=False,
+    #             max_k=-1,#len(capacities)*2,
+    #             k_lower_limit=True)
     #randomPermutationCount =  0,
     #iterationCount = 0
 

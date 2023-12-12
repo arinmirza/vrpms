@@ -29,7 +29,7 @@ M = 1
 DIST_DATA = None
 vehicles_start_times = None
 IGNORE_LONG_TRIP = True # used in the duration calculation method
-RANDOM_PERM_COUNT = 125 # Genetic Algorithm initial sample size
+RANDOM_PERM_COUNT = 5000 # Genetic Algorithm initial sample size
 DIST_DATA, LOAD = get_based_and_load_data(input_file_load = None, n=N+1, per_km_time=0.25) # generate the distance data matrix
 #DIST_DATA = get_data()#DIST_DATA = get_data()
 MIN_ENTRY_COUNT = 25 # used for deciding on making or skipping the selection & replacement step
@@ -1021,6 +1021,8 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_
     #print(f"Time: {exec_time}")
 
     #print("END")
+
+
 
     print("Best route", best_route_max_time)
     print("Best sum time",best_route_sum_time)

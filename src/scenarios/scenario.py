@@ -348,13 +348,13 @@ def solve_scenario(
 
 
 def run(
-    n: int = 31,
-    m: int = 4,
-    k: int = 10,
+    n: int = 21,
+    m: int = 3,
+    k: int = 4,
     q: int = 5,
     tsp_period: int = 1,
-    ignore_customers: List[int] = [1,3],
-    cancel_customers: List[int] = [2,4],
+    ignore_customers: List[int] = [1],
+    cancel_customers: List[int] = [2],
     durations_query_row_id: int = 3,
     locations_query_row_id: int = 1,
     per_km_time: int = 1,
