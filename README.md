@@ -36,12 +36,13 @@ The project is divided into two important directories, `/api` and `/src`.
 Python imports can be tricky. To prevent confusion and import issues, it is encouraged to use absolute imports everywhere.
 
 The module `src/foo.py` can import another module `src/utilities/baz.py` as follows:
-```python
-import src.utilities.baz                     # absolute import
-from src.utilities.baz import some_function  # absolute import
 
-import .utilities.baz                        # relative import
-from .utilities.baz import some_function     # relative import
+```python
+import src.utilities1.baz  # absolute import
+from src.utilities1.baz import some_function  # absolute import
+
+import.utilities.baz  # relative import
+from .utilities.baz import some_function  # relative import
 ```
 
 ### Testing locally

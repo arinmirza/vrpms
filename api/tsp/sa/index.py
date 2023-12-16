@@ -3,9 +3,9 @@ from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseTSP
 from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_sa_parameters
-from src.tsp.simulated_annealing.simulated_annealing import run_request
-from src.utilities.helper.data_helper import convert_locations
-from src.utilities.helper.result_2_output import tsp_result_2_output
+from src.brute_force_tsp.simulated_annealing.simulated_annealing import run_request
+from src.utilities.utilities1.helper import convert_locations
+from src.utilities.utilities1.helper import tsp_result_2_output
 
 
 class handler(BaseHTTPRequestHandler):

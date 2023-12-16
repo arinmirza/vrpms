@@ -1,115 +1,35 @@
+# Genetic Algorithm Control Script
+# Yusuf Serdar Degerli
+# TUM MSc Informatics & Management Student
+# Interdisciplinary Project with SAP
+
 """
-    Genetic Algorithm method works for both TSP and VRP
+    Genetic Algorithm method works for both TSP and TDVRP
     The algorithm can run using a single core or multiple cores
-    The program requires the following inputs:
-                                            :param multithreaded: (False/True) single core or multi core execution (default is Single Core)
-                                            :param N: number of customers
-                                            :param W: warehouse 
-                                            :param M: number of drivers
-                                            :param k: number of cycles
-                                            :param q: capacity of vehicle
-                                            :param duration: time dependent duration data between nodes
-                                            :param load: demand of locations
-                                            ??????????????:param ignored_customers: List of customers to be ignored by the algorithm
-                                            :param inital_start_times: List of start times for the given number of drivers
+
 """
+
+from src.genetic_algorithm.TSP.genetic_algorithm_tsp import run as genetic_algorithm_tsp
+from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp import run as genetic_algorithm_vrp
+from src.utilities.utilities1.vrp_helper import solution_to_arrivals
+from src.utilities.utilities2.helper import result_2_output
 import copy
 
-from src.genetic_algorithm.TSP.genetic_algorithm_tsp_sc import run as genetic_algorithm_tsp
-#from src.genetic_algorithm.TSP.genetic_algorithm_tsp_mc import run as genetic_algorithm_tsp_mc
-#from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc import run as genetic_algorithm_vrp_sc
-#from src.genetic_algorithm.TDVRP.genetic_algorithm_vrp_sc_nolib import run as genetic_algorithm_vrp_sc_nolib
-from src.genetic_algorithm.TDVRP.further_tests.v2.genetic_algorithm_vrp_mc import run as genetic_algorithm_vrp
-#from src.utilities.vrp_helper import get_load_data
-from src.utilities.vrp_helper import solution_to_arrivals
-from src.utilities2.helper import result_2_output
-#from src.supabase_help.get_supabase_matrix import get_data
-#from supabase import create_client, Client
-
-
-
-#TODO TEST
-#from src.genetic_algorithm.TDVRP.further_tests.SC.genetic_algorithm_vrp_SC import run as test_sc_new
-from src.genetic_algorithm.TDVRP.further_tests.SC.good.genetic_algorithm_vrp_SC import run_normal as test_sc_new
-import numpy as np
-#import math
-def get_stats(matrix, k, q):
-    sum_all_pairs = []
-
-    for i in range(0, len(matrix)):
-        group = []
-        for j in range(0, len(matrix[i])):
-            group.append(sum(matrix[i][j]))
-
-        group = sum(group)
-        sum_all_pairs.append(group)
-
-    sap = np.asarray(sum_all_pairs)
-    N = (len(sap)-1)
-    # stdev = numpy.std(a = sum_all_pairs, axis = 0, keepdims=True)
-    perc = sap / sap.sum()
-    perc = perc * 100
-    # perc = np.percentile(sap)
-    #s_perc = np.asarray(sorted(perc, reverse=False))
-
-    gaps = []
-    gaps.append(0)
-
-    for i in range(1, len(perc)-1):
-        gaps.append(perc[i + 1] - perc[i])
-
-        #gaps.append([
-        #    abs(perc[i] - perc[i-1]),
-        #    abs(perc[i+1]-perc[i])
-        #])
-
-    # ALONE
-    # MID: ALONE OR TOGETHER WITH LOW COST NODES
-    # LOW: TOGETHER WITH OTHER LOWS OR MIDS
-    orig_perc = copy.deepcopy(perc)
-
-    #min_num_elem_per_cycle = math.ceil(N / k)
-
-    #max_num_elem_per_cycle = q
-
-    alone_nodes = []
-    #n_gaps = np.asarray(gaps)
-
-    # set a threshold for having ALONE NODES
-    while k * q >= N:#max_num_elem_per_cycle > min_num_elem_per_cycle:
-        current_max_selection_index = np.argmax(perc)
-
-        addYN = True
-        for i in range(0,len(perc)):
-            if i != current_max_selection_index:
-                ratio = (perc[current_max_selection_index] / perc[i])
-                if not (ratio >= 1.5):
-                    addYN = False
-
-        if addYN:
-            alone_nodes.append(current_max_selection_index)
-            perc[current_max_selection_index] = -1
-            #max_num_elem_per_cycle = max_num_elem_per_cycle - 1
-            k = k -1
-            N = N -1
-        else:
-            break
-    return alone_nodes
-
-def calculate_demand_dict(customer_list, demand_list):
+def calculate_demand_dict_from_locs(locations):
 
     demand_dict = {}
-    demand_dict[0] = 0
-    for i in range(0,len(customer_list)):
 
-        demand_dict[customer_list[i]] =  demand_list[i+1]
-
+    for elem in locations:
+        demand_dict[elem["id"]] = elem["demand"]
 
     return demand_dict
 
-def get_demands(locations, customer_list):
+def get_demands(locations, customer_list, start_node):
     demand_list = []
-    for elem in customer_list:
+    cl = copy.deepcopy(customer_list)
+    if start_node != None:
+        cl.append(start_node)
+    for elem in cl:
         for row in locations:
             if elem == row["id"]:
                 demand_list.append(row["demand"])
@@ -126,7 +46,7 @@ def get_customer_list(locations, ignored_customers, completed_customers):
 
 def get_k(q, demand_list):
 
-    # k = (sum of demands + q - 1)/q
+    # FORMULA of K: k = (sum of demands + q - 1)/q
 
     demands_sum = sum(demand_list)
 
@@ -139,39 +59,33 @@ def prepare_ga_inputs(locations, durations, capacities, initial_start_times, ign
 
     inputs = {}
 
-    #TODO: prepare customer_list
     customer_list = get_customer_list(locations=locations, ignored_customers=ignored_customers, completed_customers=completed_customers)
     inputs["cl"] = customer_list
-    # TODO: prepare N
+
     N = len(customer_list)
     inputs["N"] = N
 
-    #TODO: prepare M
     inputs["M"] = len(capacities)
 
-    #TODO: prepare q
     inputs["q"] = capacities[0]
 
-    #TODO: prepare demands_list
-    demand_list = get_demands(locations=locations, customer_list=customer_list)
+    demand_list = get_demands(locations=locations, customer_list=customer_list, start_node=None)
     demand_list.insert(0,0)
     inputs["load"] = demand_list
 
-    #TODO: prepare k
     inputs["k"] = get_k(q=inputs["q"], demand_list=demand_list)
 
-    #TODO: prepare start_times
     inputs["ist"] = initial_start_times
 
-    #TODO: prepare mode
     inputs["pm"] = mode
 
-    #TODO:prepare sn
     inputs["sn"] = start_node
 
     return inputs
 
 def prepare_output_format(duration, tours, initial_start_times, map, M, q):
+
+    # Prepares the output data structure which will be used in the UI visualization page
 
     if initial_start_times is None:
         initial_start_times = [0 for _ in range(M)]
@@ -199,7 +113,7 @@ def prepare_output_format(duration, tours, initial_start_times, map, M, q):
                 lat = map[node]["lat"]
                 lng = map[node]["lng"]
                 arrival = arrivals[i][j][k]
-                tour.append({"lat": lat, "lng": lng, "arrivalTime": arrival})  # , "node":node
+                tour.append({"lat": lat, "lng": lng, "arrivalTime": arrival})
             vehicle_tours.append(tour)
         arrivals_final.append(vehicle_tours)
 
@@ -216,12 +130,9 @@ def prepare_output_format(duration, tours, initial_start_times, map, M, q):
 
     return arrivals_out
 
-#TODO: delete the get_supabase_matrix method and get the data from arin
-
-
 def map_id_coordinate(json_obj):
     coordinate_index_map = {}
-    #TODO: arin json gonderiyor zaten
+
     for elem in json_obj:
         id = elem["id"]
         lat = elem["lat"]
@@ -230,39 +141,43 @@ def map_id_coordinate(json_obj):
 
     return coordinate_index_map
 
-def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded, random_perm_count, iteration_count, mode, start_node, customers, cancelled_customers, do_load_unload, max_k=0,k_lower_limit=True):
+def run_GA(locations, durations, capacities, initial_start_times, ignored_customers, completed_customers, multithreaded,
+           random_perm_count, iteration_count, mode, start_node, customers, cancelled_customers, do_load_unload,
+           max_k=0,k_lower_limit=True):
+
+    print("Genetic Algorithm")
+
+    # Input Preparation for GA TDVRP or TSP
     if mode == "TDVRP":
-        inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities, initial_start_times=initial_start_times, ignored_customers=ignored_customers, completed_customers=completed_customers, multithreaded=multithreaded, random_perm_count=random_perm_count, iteration_count=iteration_count, mode=mode, start_node=start_node)
+        inputs = prepare_ga_inputs(locations=locations, durations=durations, capacities=capacities,
+                                   initial_start_times=initial_start_times, ignored_customers=ignored_customers,
+                                   completed_customers=completed_customers, multithreaded=multithreaded,
+                                   random_perm_count=random_perm_count, iteration_count=iteration_count,
+                                   mode=mode, start_node=start_node)
 
-        print("Genetic Algorithm")
-
-        algo_inputs = inputs#["algorithm_inputs"]
-
-        N = algo_inputs["N"] # locations - ignored - completed
-        M = algo_inputs["M"] # ok capacities length
-        q = algo_inputs["q"] # capaciteler ayni her arabada -> capaties[0]
-        k = algo_inputs["k"] if ("k" in algo_inputs) else N/4 # k*q>n-1
-        W = 0#algo_inputs["W"] if ("W" in algo_inputs) else 0
-        duration =durations#algo_inputs["duration"] # arin veriyor #durations
-        multithreaded = multithreaded#algo_inputs["multithreaded"] # arin veriyor default False # multithreaded
-        cl = algo_inputs["cl"] # locations - ignored - completed
-        sn = algo_inputs["sn"] # tsp icin arinin index api daha hazir degil ama bu gelicek
-        load = algo_inputs["load"]# if ("load" in algo_inputs) else get_load_data(input_file_load=None, n=N+1 if cl == [] else len(cl)+1) # locations tablosundan cekicez
+        algo_inputs = inputs
+        N = algo_inputs["N"]
+        M = algo_inputs["M"]
+        q = algo_inputs["q"]
+        k = algo_inputs["k"] if ("k" in algo_inputs) else N/4
+        W = 0
+        duration =durations
+        multithreaded = multithreaded
+        cl = copy.deepcopy(algo_inputs["cl"])
+        sn = algo_inputs["sn"]
+        load = algo_inputs["load"]
         demand_dict = calculate_demand_dict_from_locs(locations)
-        #calculate_demand_dict_vrp(customer_list=cl, locations=locations)
-        # TODO: prepare LOAD yerine demand_dict gonder
-        ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None # arin vericek
+        ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None
         pm = algo_inputs["pm"]
 
     elif mode == "TSP":
         duration = durations
-        ist = [initial_start_times] # here initial start times is a single value
+        ist = [initial_start_times]
         sn = start_node if start_node != None else 0
-        cl = customers
-        #cl.append(sn) # TODO: cunku sn customer list icinde yok
+        cl = copy.deepcopy(customers) # start node must not be included in the customers list
         multithreaded = multithreaded
         N = len(customers)
-        demand_list = get_demands(locations=locations, customer_list=cl)
+        demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
         demand_list.insert(0, 0)
         load = demand_list
         demand_dict = calculate_demand_dict_from_locs(locations)
@@ -271,37 +186,36 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
         M=1
         q = len(customers)
 
-    output = None
-
-    #hc_nodes = get_stats(matrix=duration, k = k, q=q)
-
-    #print("CUSTOMER_LIST --->", cl)
-    #print("DEMAND_LIST  ---> ",load)
-
     if pm == "TDVRP":
 
         if not k_lower_limit:
+            # k_lower_limit equals to False means that max_k can be set by the user
 
-            if max_k == -1 or max_k < k: # -1 means, let the program decide
-                # program always sets the max_k as the double of regular k
+            if max_k == -1 or max_k < k:
+                # if user max_k input is -1 -> program will decide
+                # program sets the max_k as the double of regular k
                 max_k = k*2
 
                 if M*2 > max_k:
+                    # depending on the number of vehicles the program changes the max_k
                     max_k = M*2
 
 
         if not multithreaded:
-            #output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
-            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
-            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list = cl)
-            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=False, demand_dict=demand_dict, max_k=max_k,k_lower_limit=k_lower_limit, population_count=random_perm_count, iteration_count=iteration_count)
+
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W,
+                                           duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=False,
+                                           demand_dict=demand_dict, max_k=max_k,k_lower_limit=k_lower_limit,
+                                           population_count=random_perm_count, iteration_count=iteration_count)
 
         else:
-            # good example
-            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
-            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist, customer_list = cl, multithreaded=True, demand_dict=demand_dict, max_k=max_k,k_lower_limit=k_lower_limit, population_count=random_perm_count, iteration_count=iteration_count)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, ist_in=ist,
+                                           customer_list = cl, multithreaded=True, demand_dict=demand_dict, max_k=max_k,
+                                           k_lower_limit=k_lower_limit, population_count=random_perm_count,
+                                           iteration_count=iteration_count)
 
+        # TDVRP Output Formatting
         currently_used_vehicle_count = len(output[2].keys())
         sum_time = output[1]
         last_completed_driver_time = output[0]
@@ -320,7 +234,6 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
                 output[2][len(output[2].keys())] = [[]]
 
         map = map_id_coordinate(locations)
-        # TODO: set the inputs etc
         arrivals_final = prepare_output_format(duration=duration, tours=output[2], initial_start_times=ist, map=map,
                                                M=M, q=q)
 
@@ -340,69 +253,27 @@ def run_GA(locations, durations, capacities, initial_start_times, ignored_custom
     elif pm == "TSP":
 
         if not multithreaded:
-           #N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
-            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration, demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node = sn, customer_list=cl, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, population_count=random_perm_count, iteration_count=iteration_count)
+            output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=False,
+                                           start_node = sn, customer_list=cl, cancelled_customers=cancelled_customers,
+                                           do_load_unload=do_load_unload, population_count=random_perm_count,
+                                           iteration_count=iteration_count)
         else:
             output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=N, W_in=W, duration_in=duration,
-                                           demand_dict=demand_dict, ist_in=ist, multithreaded=True, start_node = sn, customer_list=cl, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, population_count=random_perm_count, iteration_count=iteration_count)
-            #output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
+                                           demand_dict=demand_dict, ist_in=ist, multithreaded=True, start_node = sn,
+                                           customer_list=cl, cancelled_customers=cancelled_customers,
+                                           do_load_unload=do_load_unload, population_count=random_perm_count,
+                                           iteration_count=iteration_count)
 
         output_dict = result_2_output.tsp_result_2_output(start_time=initial_start_times, start_node=sn, duration=duration, locations=locations, tsp_result={"route":output[2][0]}, load=load, do_loading_unloading=do_load_unload, cancelled_customers=cancelled_customers)
         output_dict["time_diff"] = output[4]
 
-    #TODO: generate the map information required for the prep out method
-    #data = get_supabase_matrix()
-
-    return output_dict#output[0],output[1], arrivals_final
-
-def calculate_demand_dict_tsp_scenario(customer_list, demand_list, start_node, cancelled_customers):
-
-    demand_dict = {}
-
-    demand_dict[0] = 0
-
-    #print(customer_list)
-    #print(demand_list)
-
-    for i in range(0,len(customer_list)):
-
-        demand_dict[customer_list[i]] = demand_list[customer_list[i]]
-
-    for cancelled in cancelled_customers:
-        demand_dict[cancelled] = demand_list[cancelled]
-
-    demand_dict[start_node] = demand_list[start_node]
-
-    #demand_dict[start_node] =
-    return demand_dict
+    return output_dict
 
 
-def calculate_demand_dict_vrp(customer_list, locations):
-
-    demand_dict = {}
-
-    demand_dict[0] = 0
-
-    #print(customer_list)
-    #print(demand_list)
-
-    for i in range(0,len(customer_list)):
-
-        demand_dict[customer_list[i]] = list(filter(lambda x:x["id"]==customer_list[i],locations))[0]["demand"]
-
-
-    #demand_dict[start_node] =
-    return demand_dict
-
-def calculate_demand_dict_from_locs(locations):
-
-    demand_dict = {}
-
-    for elem in locations:
-        demand_dict[elem["id"]] = elem["demand"]
-
-    return demand_dict
-
+#######################################################################################################################
+#######################################################################################################################
+# SCENARIO RUN_GA AND HELPER METHODS
 
 def calculate_demand_dict_from_demand_list(demands):
     demand_dict = {}
@@ -412,9 +283,11 @@ def calculate_demand_dict_from_demand_list(demands):
 
     return demand_dict
 
-def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded, cancelled=[], do_load_unload=True):
+def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded,
+                          cancelled=[], do_load_unload=True):
 
     if mode == "TDVRP":
+
         N = n
         M = m
         q = q
@@ -422,7 +295,6 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         W = 0
         duration = duration
         multithreaded = multithreaded
-        #customers_old =
         cl = copy.deepcopy(customers)
         sn = start_node
         load = load
@@ -437,45 +309,33 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
         W = 0
         duration = duration
         multithreaded = multithreaded
-
         cl = copy.deepcopy(customers)
-        #if start_node not in cl and start_node != W:
-        #cl.append(start_node)  # TODO: cunku sn customer list icinde yok
-
         sn = start_node
         load = load
         ist = vehicle_start_times
         pm = mode
         multithreaded = multithreaded
-
         demand_dict = calculate_demand_dict_from_demand_list(demands=load)
-
         M = 1
-        q = len(customers)*len(customers) # never run out of capacity, for TSP the capacity constraint is not important
+        # never runs out of capacity, for TSP the capacity constraint is not important
+        q = len(customers)*len(customers)
 
     output = None
 
-    # hc_nodes = get_stats(matrix=duration, k = k, q=q)
-
-    # print("CUSTOMER_LIST --->", cl)
-    # print("DEMAND_LIST  ---> ",load)
 
     if pm == "TDVRP":
 
         if not multithreaded:
-            # output = genetic_algorithm_vrp_sc(N=N, M=M, k=k, q=q, W=W, duration=duration, demand=load, ist=ist)
-            # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, hc_nodes = hc_nodes)
-
-            #output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_in=load,ist_in=ist, customer_list=cl)
-            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration, demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=False,  max_k=k,k_lower_limit=True)
-            #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl, multithreaded=False)
+            output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
+                                           demand_dict=demand_dict, ist_in=ist, customer_list=cl,
+                                           multithreaded=False,  max_k=k,k_lower_limit=True, population_count=125,
+                                           iteration_count=48)
         else:
-            # good example
-            # output = test_sc_new(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist)
 
             output = genetic_algorithm_vrp(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,
-                                           demand_dict=demand_dict, ist_in=ist, customer_list=cl, multithreaded=True, max_k=k,k_lower_limit=True)
-            #output = genetic_algorithm_vrp_mc(N_in=N, M_in=M, k_in=k, q_in=q, W_in=W, duration_in=duration,demand_in=load, ist_in=ist, customer_list=cl)
+                                           demand_dict=demand_dict, ist_in=ist, customer_list=cl,
+                                           multithreaded=True, max_k=k,k_lower_limit=True, population_count=125,
+                                           iteration_count=48)
 
     elif pm == "TSP":
 
@@ -486,15 +346,13 @@ def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_t
             # N_in = N, M_in = M, k_in = k, q_in = q, W_in = W, duration_in = duration, demand_in = load, ist_in = ist
             output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=q, W_in=W, duration_in=duration,
                                            demand_dict=demand_dict, ist_in=ist, multithreaded=False, start_node=sn,
-                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
+                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload
+                                           ,population_count=125, iteration_count=15)
         else:
             output = genetic_algorithm_tsp(N_in=N, M_in=1, k_in=0, q_in=q, W_in=W, duration_in=duration,
                                            demand_dict=demand_dict, ist_in=ist, multithreaded=True, start_node=sn,
-                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload)
-            # output = genetic_algorithm_tsp_sc(N=N, M=1, k=0, q=q, W=W, duration=duration, demand=load,  multithreaded=False)
-
-    # TODO: generate the map information required for the prep out method
-    # data = get_supabase_matrix()
+                                           customer_list=cl, cancelled_customers=cancelled, do_load_unload=do_load_unload
+                                           ,population_count=125, iteration_count=15)
 
 
-    return output  # output[0],output[1], arrivals_final
+    return output
