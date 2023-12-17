@@ -30,7 +30,18 @@ def parse_vrp_sa_parameters(content: dict, errors):
 
 
 def parse_vrp_aco_parameters(content: dict, errors):
-    return {"n_hyperparams": get_parameter("n_hyperparams", content, errors)}
+    return {
+        "n_hyperparams": get_parameter("n_hyperparams", content, errors),
+        "aco_sols": get_parameter("aco_sols", content, errors, optional=True),
+        "consider_depots": get_parameter("consider_depots", content, errors, optional=True),
+        "pheromone_uses_first_hour": get_parameter("pheromone_uses_first_hour", content, errors, optional=True),
+        "range_n_iterations": get_parameter("range_n_iterations", content, errors, optional=True),
+        "range_n_sub_iterations": get_parameter("range_n_sub_iterations", content, errors, optional=True),
+        "range_q": get_parameter("range_q", content, errors, optional=True),
+        "range_alpha": get_parameter("range_alpha", content, errors, optional=True),
+        "range_beta": get_parameter("range_beta", content, errors, optional=True),
+        "range_rho": get_parameter("range_rho", content, errors, optional=True),
+    }
 
 
 def parse_common_tsp_parameters(content: dict, errors):

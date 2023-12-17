@@ -46,16 +46,23 @@ def get_random_by_log(low: Union[int, float], high: Union[int, float]) -> float:
     return random_value
 
 
-def get_hyperparams() -> Dict[str, Union[int, float]]:
+def get_hyperparams(
+    range_n_iterations: Tuple[int, int] = RANGE_N_ITERATIONS,
+    range_n_sub_iterations: Tuple[int, int] = RANGE_N_SUB_ITERATIONS,
+    range_q: Tuple[float, float] = RANGE_Q,
+    range_alpha: Tuple[int, int] = RANGE_ALPHA,
+    range_beta: Tuple[int, int] = RANGE_BETA,
+    range_rho: Tuple[float, float] = RANGE_RHO,
+) -> Dict[str, Union[int, float]]:
     """
     Gets a random hyperparameter settings based on the given ranges
     """
-    n_iterations = int(get_random_by_log(RANGE_N_ITERATIONS[0], RANGE_N_ITERATIONS[1]))
-    n_sub_iterations = int(get_random_by_log(RANGE_N_SUB_ITERATIONS[0], RANGE_N_SUB_ITERATIONS[1]))
-    q = get_random_by_log(RANGE_Q[0], RANGE_Q[1])
-    alpha = random.randrange(RANGE_ALPHA[0], RANGE_ALPHA[1] + 1)
-    beta = random.randrange(RANGE_BETA[0], RANGE_BETA[1] + 1)
-    rho = random.uniform(RANGE_RHO[0], RANGE_RHO[1])
+    n_iterations = int(get_random_by_log(range_n_iterations[0], range_n_iterations[1]))
+    n_sub_iterations = int(get_random_by_log(range_n_sub_iterations[0], range_n_sub_iterations[1]))
+    q = get_random_by_log(range_q[0], range_q[1])
+    alpha = random.randrange(range_alpha[0], range_alpha[1] + 1)
+    beta = random.randrange(range_beta[0], range_beta[1] + 1)
+    rho = random.uniform(range_rho[0], range_rho[1])
     hyperparams = {
         "N_ITERATIONS": n_iterations,
         "N_SUB_ITERATIONS": n_sub_iterations,
@@ -122,6 +129,12 @@ def solve(
     aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
     consider_depots: List[bool] = [False, True],
     pheromone_uses_first_hour: List[bool] = [False, True],
+    range_n_iterations: Tuple[int, int] = RANGE_N_ITERATIONS,
+    range_n_sub_iterations: Tuple[int, int] = RANGE_N_SUB_ITERATIONS,
+    range_q: Tuple[float, float] = RANGE_Q,
+    range_alpha: Tuple[int, int] = RANGE_ALPHA,
+    range_beta: Tuple[int, int] = RANGE_BETA,
+    range_rho: Tuple[float, float] = RANGE_RHO,
     is_print_allowed: bool = False,
 ) -> List[Tuple]:
     """
@@ -161,7 +174,9 @@ def solve(
 
     all_hyperparams = []
     for _ in range(n_hyperparams):
-        hyperparams = get_hyperparams()
+        hyperparams = get_hyperparams(
+            range_n_iterations, range_n_sub_iterations, range_q, range_alpha, range_beta, range_rho
+        )
         all_hyperparams.append(hyperparams)
         hyperparams_zero = hyperparams.copy()
         hyperparams_zero["Q"], hyperparams_zero["RHO"] = 0, 1
@@ -243,11 +258,45 @@ def run_request(
     available_customers: List[int],
     vehicles_start_times: Optional[List[float]],
     n_hyperparams: int,
+    aco_sols: Optional[List[str]] = None,
+    consider_depots: Optional[List[bool]] = None,
+    pheromone_uses_first_hour: Optional[List[bool]] = None,
+    range_n_iterations: Optional[List[int]] = None,
+    range_n_sub_iterations: Optional[List[int]] = None,
+    range_q: Optional[List[float]] = None,
+    range_alpha: Optional[List[int]] = None,
+    range_beta: Optional[List[int]] = None,
+    range_rho: Optional[List[float]] = None,
 ) -> Dict:
     sum_demand = 0
     for customer in available_customers:
         sum_demand += load[customer]
     k = (sum_demand + q - 1) // q
+    params = {}
+    if aco_sols:
+        aco_sols_ = []
+        if "ACO_VRP_1" in aco_sols:
+            aco_sols_.append(ACO_VRP_1)
+        if "ACO_VRP_2" in aco_sols:
+            aco_sols_.append(ACO_VRP_2)
+        if aco_sols_:
+            params["aco_sols"] = tuple(aco_sols_)
+    if consider_depots:
+        params["consider_depots"] = tuple(consider_depots)
+    if pheromone_uses_first_hour:
+        params["pheromone_uses_first_hour"] = tuple(pheromone_uses_first_hour)
+    if range_n_iterations:
+        params["range_n_iterations"] = (range_n_iterations[0], range_n_iterations[1])
+    if range_n_sub_iterations:
+        params["range_n_sub_iterations"] = (range_n_sub_iterations[0], range_n_sub_iterations[1])
+    if range_q:
+        params["range_q"] = (range_q[0], range_q[1])
+    if range_alpha:
+        params["range_alpha"] = (range_alpha[0], range_alpha[1])
+    if range_beta:
+        params["range_beta"] = (range_beta[0], range_beta[1])
+    if range_rho:
+        params["range_rho"] = (range_rho[0], range_rho[1])
     results = solve(
         k=k,
         q=q,
@@ -256,6 +305,8 @@ def run_request(
         customers=available_customers,
         vehicles_start_times=vehicles_start_times,
         n_hyperparams=n_hyperparams,
+        is_print_allowed=False,
+        **params,
     )
     result = results[0]
     result_dict = {

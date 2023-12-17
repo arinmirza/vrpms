@@ -90,6 +90,15 @@ class handler(BaseHTTPRequestHandler):
             available_customers=available_customers,
             vehicles_start_times=params["start_times"],
             n_hyperparams=params_aco["n_hyperparams"],
+            aco_sols=params["aco_sols"],
+            consider_depots=params["consider_depots"],
+            pheromone_uses_first_hour=params["pheromone_uses_first_hour"],
+            range_n_iterations=params["range_n_iterations"],
+            range_n_sub_iterations=params["range_n_sub_iterations"],
+            range_q=params["range_q"],
+            range_alpha=params["range_alpha"],
+            range_beta=params["range_beta"],
+            range_rho=params["range_rho"],
         )
         result = vrp_result_2_output(
             vehicles_start_times=params["start_times"],
