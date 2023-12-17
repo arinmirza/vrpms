@@ -280,11 +280,11 @@ def run_request(
         if "ACO_VRP_2" in aco_sols:
             aco_sols_.append(ACO_VRP_2)
         if aco_sols_:
-            params["aco_sols"] = tuple(aco_sols_)
+            params["aco_sols"] = aco_sols_
     if consider_depots:
-        params["consider_depots"] = tuple(consider_depots)
+        params["consider_depots"] = consider_depots
     if pheromone_uses_first_hour:
-        params["pheromone_uses_first_hour"] = tuple(pheromone_uses_first_hour)
+        params["pheromone_uses_first_hour"] = pheromone_uses_first_hour
     if range_n_iterations:
         params["range_n_iterations"] = (range_n_iterations[0], range_n_iterations[1])
     if range_n_sub_iterations:
