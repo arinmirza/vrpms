@@ -1,6 +1,7 @@
 import datetime
 import math
 import random
+import numpy as np
 
 from collections import defaultdict
 from src.tsp.ant_colony.aco_1 import ACO_TSP_1
@@ -21,8 +22,8 @@ INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
-RANGE_N_ITERATIONS = (5, 25)
-RANGE_N_SUB_ITERATIONS = (2, 5)
+RANGE_N_ITERATIONS = (25, 50)
+RANGE_N_SUB_ITERATIONS = (5, 10)
 RANGE_Q = (1, 1000)
 RANGE_ALPHA = (2, 5)
 RANGE_BETA = (2, 5)
@@ -43,16 +44,23 @@ def get_random_by_log(low: Union[int, float], high: Union[int, float]) -> float:
     return random_value
 
 
-def get_hyperparams() -> Dict[str, Union[int, float]]:
+def get_hyperparams(
+    range_n_iterations: Tuple[int, int] = RANGE_N_ITERATIONS,
+    range_n_sub_iterations: Tuple[int, int] = RANGE_N_SUB_ITERATIONS,
+    range_q: Tuple[float, float] = RANGE_Q,
+    range_alpha: Tuple[int, int] = RANGE_ALPHA,
+    range_beta: Tuple[int, int] = RANGE_BETA,
+    range_rho: Tuple[float, float] = RANGE_RHO,
+) -> Dict[str, Union[int, float]]:
     """
     Gets a random hyperparameter settings based on the given ranges
     """
-    n_iterations = int(get_random_by_log(RANGE_N_ITERATIONS[0], RANGE_N_ITERATIONS[1]))
-    n_sub_iterations = int(get_random_by_log(RANGE_N_SUB_ITERATIONS[0], RANGE_N_SUB_ITERATIONS[1]))
-    q = get_random_by_log(RANGE_Q[0], RANGE_Q[1])
-    alpha = random.randrange(RANGE_ALPHA[0], RANGE_ALPHA[1] + 1)
-    beta = random.randrange(RANGE_BETA[0], RANGE_BETA[1] + 1)
-    rho = random.uniform(RANGE_RHO[0], RANGE_RHO[1])
+    n_iterations = int(get_random_by_log(range_n_iterations[0], range_n_iterations[1]))
+    n_sub_iterations = int(get_random_by_log(range_n_sub_iterations[0], range_n_sub_iterations[1]))
+    q = get_random_by_log(range_q[0], range_q[1])
+    alpha = random.randrange(range_alpha[0], range_alpha[1] + 1)
+    beta = random.randrange(range_beta[0], range_beta[1] + 1)
+    rho = random.uniform(range_rho[0], range_rho[1])
     hyperparams = {
         "N_ITERATIONS": n_iterations,
         "N_SUB_ITERATIONS": n_sub_iterations,
@@ -105,8 +113,14 @@ def solve(
     n_hyperparams: int,
     n_best_results: int = 1,
     ignore_long_trip: bool = False,
-    aco_sols: List = [ACO_TSP_1, ACO_TSP_2],
-    pheromone_uses_first_hour: List[bool] = [False, True],
+    aco_sols: List = [ACO_TSP_2],  # [ACO_TSP_1, ACO_TSP_2]
+    pheromone_uses_first_hour: List[bool] = [False],  # [False, True]
+    range_n_iterations: Tuple[int, int] = RANGE_N_ITERATIONS,
+    range_n_sub_iterations: Tuple[int, int] = RANGE_N_SUB_ITERATIONS,
+    range_q: Tuple[float, float] = RANGE_Q,
+    range_alpha: Tuple[int, int] = RANGE_ALPHA,
+    range_beta: Tuple[int, int] = RANGE_BETA,
+    range_rho: Tuple[float, float] = RANGE_RHO,
     is_print_allowed: bool = False,
 ) -> List[Tuple]:
     """
@@ -137,7 +151,9 @@ def solve(
 
     all_hyperparams = []
     for _ in range(n_hyperparams):
-        hyperparams = get_hyperparams()
+        hyperparams = get_hyperparams(
+            range_n_iterations, range_n_sub_iterations, range_q, range_alpha, range_beta, range_rho
+        )
         all_hyperparams.append(hyperparams)
         hyperparams_zero = hyperparams.copy()
         hyperparams_zero["Q"], hyperparams_zero["RHO"] = 0, 1
@@ -217,7 +233,38 @@ def run_request(
     do_loading_unloading: bool,
     cancelled_customers: List[int],
     n_hyperparams: int = 20,
+    aco_sols: Optional[List[str]] = None,
+    pheromone_uses_first_hour: Optional[List[bool]] = None,
+    range_n_iterations: Optional[List[int]] = None,
+    range_n_sub_iterations: Optional[List[int]] = None,
+    range_q: Optional[List[float]] = None,
+    range_alpha: Optional[List[int]] = None,
+    range_beta: Optional[List[int]] = None,
+    range_rho: Optional[List[float]] = None,
 ):
+    params = {}
+    if aco_sols:
+        aco_sols_ = []
+        if "ACO_TSP_1" in aco_sols:
+            aco_sols_.append(ACO_TSP_1)
+        if "ACO_TSP_2" in aco_sols:
+            aco_sols_.append(ACO_TSP_2)
+        if aco_sols_:
+            params["aco_sols"] = aco_sols_
+    if pheromone_uses_first_hour:
+        params["pheromone_uses_first_hour"] = pheromone_uses_first_hour
+    if range_n_iterations:
+        params["range_n_iterations"] = (range_n_iterations[0], range_n_iterations[1])
+    if range_n_sub_iterations:
+        params["range_n_sub_iterations"] = (range_n_sub_iterations[0], range_n_sub_iterations[1])
+    if range_q:
+        params["range_q"] = (range_q[0], range_q[1])
+    if range_alpha:
+        params["range_alpha"] = (range_alpha[0], range_alpha[1])
+    if range_beta:
+        params["range_beta"] = (range_beta[0], range_beta[1])
+    if range_rho:
+        params["range_rho"] = (range_rho[0], range_rho[1])
     results = solve(
         duration=duration,
         load=load,
@@ -227,6 +274,8 @@ def run_request(
         do_loading_unloading=do_loading_unloading,
         cancelled_customers=cancelled_customers,
         n_hyperparams=n_hyperparams,
+        is_print_allowed=False,
+        **params,
     )
     result = results[0]
     result_dict = {
@@ -237,7 +286,9 @@ def run_request(
 
 
 def run(
-    n: int = 8,
+    n: int = 21,
+    aco_sols: List = [ACO_TSP_1, ACO_TSP_2],
+    pheromone_uses_first_hour: List[bool] = [False, True],
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
@@ -245,7 +296,7 @@ def run(
     current_time: float = 0,
     current_location: int = DEPOT,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> Dict:
+) -> Optional[Dict]:
     """
     Gets input data, try different hyperparamater settings and solve TSP with ACO
 
@@ -270,28 +321,45 @@ def run(
         duration, _ = get_based_and_load_data(None, n, per_km_time)
     customers = [i for i in range(1, n) if i != current_location]
     load = [int(i > 0) for i in range(n)]
-    results = solve(
-        duration=duration,
-        load=load,
-        customers=customers,
-        current_time=current_time,
-        current_location=current_location,
-        do_loading_unloading=True,
-        cancelled_customers=[],
-        n_hyperparams=80,
-        n_best_results=1,
-    )
-    result = results[0]
-    result_dict = {
-        "route_time": result[0],
-        "route": result[1],
-        "best_iter": result[2],
-        "hyperparams": result[3],
-        "pheromone_use_first_hour": result[4],
-        "aco_method": result[5],
-    }
-    print(f"result_dict = {result_dict}")
-    return result_dict
+    result_hyperparams = []
+    for aco_sol in aco_sols:
+        for use_first_hour in pheromone_uses_first_hour:
+            run_durations = []
+            run_runtimes = []
+            while len(run_durations) < 10:
+                time_start = datetime.datetime.now()
+                results = solve(
+                    duration=duration,
+                    load=load,
+                    customers=customers,
+                    current_time=current_time,
+                    current_location=current_location,
+                    do_loading_unloading=True,
+                    cancelled_customers=[],
+                    n_hyperparams=50,
+                    n_best_results=1,
+                    is_print_allowed=False,
+                    aco_sols=[aco_sol],
+                    pheromone_uses_first_hour=[use_first_hour],
+                )
+                if results:
+                    time_end = datetime.datetime.now()
+                    time_diff = (time_end - time_start).total_seconds()
+                    run_runtimes.append(time_diff)
+                    result = results[0]
+                    run_durations.append(result[0])
+                else:
+                    print(f"No solution: aco={aco_sol} , pheromonene={use_first_hour}")
+            result_hyperparams.append(
+                (
+                    (aco_sol, use_first_hour),
+                    (np.mean(run_durations), np.std(run_durations), np.mean(run_runtimes), np.std(run_runtimes)),
+                )
+            )
+    result_hyperparams.sort(key=lambda x: x[1][0])
+    for key, val in result_hyperparams:
+        print(f"{key}: {val}")
+    return None
 
 
 if __name__ == "__main__":

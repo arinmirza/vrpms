@@ -87,6 +87,14 @@ class handler(BaseHTTPRequestHandler):
             do_loading_unloading=do_loading_unloading,
             cancelled_customers=cancel_customers,
             n_hyperparams=params_aco["n_hyperparams"],
+            aco_sols=params_aco["aco_sols"],
+            pheromone_uses_first_hour=params_aco["pheromone_uses_first_hour"],
+            range_n_iterations=params_aco["range_n_iterations"],
+            range_n_sub_iterations=params_aco["range_n_sub_iterations"],
+            range_q=params_aco["range_q"],
+            range_alpha=params_aco["range_alpha"],
+            range_beta=params_aco["range_beta"],
+            range_rho=params_aco["range_rho"],
         )
         result = tsp_result_2_output(
             start_time=params["start_time"],
