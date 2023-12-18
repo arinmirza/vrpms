@@ -58,11 +58,6 @@ class handler(BaseHTTPRequestHandler):
             else database.get_durations_by_id(params["durations_key"], errors)
         )
 
-        # Retrieve data from database
-        #database = DatabaseVRP(params["auth"])
-        #locations = database.get_locations_by_id(params["locations_key"], errors)
-        #durations = database.get_durations_by_id(params["durations_key"], errors)
-
         if len(errors) > 0:
             fail(self, errors)
             return
@@ -77,16 +72,13 @@ class handler(BaseHTTPRequestHandler):
                      start_node=None,
                      mode="TDVRP",
                      multithreaded=params_ga["multi_threaded"],
-                     iteration_count=0,
-                     random_perm_count=0,
+                     iteration_count=params_ga["iteration_count"],
+                     random_perm_count=params_ga["random_permutationCount"],
                      customers=None,
                      cancelled_customers=[],
-                     do_load_unload=False) # TODO CHECK
-        #result = {
-        #    "durationMax": 0,
-        #    "durationSum": 0,
-        #    "vehicles": [],
-        #}
+                     do_load_unload=False,
+                     max_k=params_ga["max_k"],
+                     k_lower_limit=params_ga["k_lower_limit"])
 
         # Save results
         if params["auth"]:

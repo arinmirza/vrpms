@@ -37,11 +37,6 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Retrieve data from database
-        #database = DatabaseTSP(params["auth"])
-        #locations = database.get_locations_by_id(params["locations_key"], errors)
-        #durations = database.get_durations_by_id(params["durations_key"], errors)
-
-        # Retrieve data from database
         if "locations" not in params and "locations_key" not in params:
             errors += [{"what": "Missing parameter", "reason": "locations or locationsKey should be provided"}]
         if "durations" not in params and "durations_key" not in params:
@@ -68,7 +63,6 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
         result = run(locations=locations,
                      durations=durations,
                      initial_start_times=params["start_time"],
@@ -79,16 +73,12 @@ class handler(BaseHTTPRequestHandler):
                      mode="TSP",
                      multithreaded=params_ga["multi_threaded"],
                      customers=params["customers"],
-                     iteration_count=0,
-                     random_perm_count=0,
-                     cancelled_customers = [],
-                     do_load_unload = True) # TODO
-
-        # TODO: Run algorithm
-        #result = {
-        #    "duration": 0,
-        #    "vehicle": [],
-        #}
+                     iteration_count=params_ga["iteration_count"],
+                     random_perm_count=params_ga["random_permutationCount"],
+                     cancelled_customers = params["cancel_customers"],
+                     do_load_unload = params["do_loading_unloading"],
+                     max_k=-1,
+                     k_lower_limit=True)
 
         # Save results
         if params["auth"]:

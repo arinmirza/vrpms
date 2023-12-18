@@ -592,7 +592,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, start_node, customer_l
 
     return res
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_dict, population_count=250, iteration_count=48 ,start_node = None, customer_list = [],  cancelled_customers = [], do_load_unload = True):
+def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_dict ,start_node = None, customer_list = [],  cancelled_customers = [], do_load_unload = True, population_count=125, iteration_count=15):
     N = N_in  # number of shops to be considered
     K = k_in # number of tours to be considered
     Q = q_in # capacity of the vehicle = N

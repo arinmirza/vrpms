@@ -784,7 +784,7 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, customer_li
 
     return res
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer_list, multithreaded,population_count, iteration_count,max_k,k_lower_limit=True):
+def run(N_in, M_in, k_in, q_in, W_in, duration_in, demand_dict, ist_in, customer_list, multithreaded,max_k,k_lower_limit=True,population_count=125, iteration_count=48):
 
     N = N_in  # number of shops to be considered
     K = k_in # number of tours to be considered
