@@ -1,6 +1,7 @@
 import datetime
 import math
 import random
+import numpy as np
 
 from collections import defaultdict
 from src.vrp.ant_colony.aco_1 import ACO_VRP_1
@@ -24,8 +25,8 @@ INPUT_FOLDER_PATH = "../../../data/google_api/dynamic/float"
 INPUT_FILE_NAME_PREFIX = "dynamic_duration_float"
 INPUT_FILES_TIME = [f"{INPUT_FOLDER_PATH}/{INPUT_FILE_NAME_PREFIX}_{hour}.txt" for hour in range(N_TIME_ZONES)]
 
-RANGE_N_ITERATIONS = (5, 25)
-RANGE_N_SUB_ITERATIONS = (2, 5)
+RANGE_N_ITERATIONS = (25, 50)
+RANGE_N_SUB_ITERATIONS = (5, 10)
 RANGE_Q = (1, 1000)
 RANGE_ALPHA = (2, 5)
 RANGE_BETA = (2, 5)
@@ -126,9 +127,9 @@ def solve(
     n_best_results: int = 1,
     ignore_long_trip: bool = False,
     objective_func_type: Literal["min_max_time", "min_sum_time"] = "min_max_time",
-    aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
-    consider_depots: List[bool] = [False, True],
-    pheromone_uses_first_hour: List[bool] = [False, True],
+    aco_sols: List = [ACO_VRP_2],  # [ACO_VRP_1, ACO_VRP_2]
+    consider_depots: List[bool] = [False],  # [False, True]
+    pheromone_uses_first_hour: List[bool] = [False],  # [False, True]
     range_n_iterations: Tuple[int, int] = RANGE_N_ITERATIONS,
     range_n_sub_iterations: Tuple[int, int] = RANGE_N_SUB_ITERATIONS,
     range_q: Tuple[float, float] = RANGE_Q,
@@ -246,7 +247,8 @@ def solve(
             )
 
     time_diff = time_end - time_start
-    print(f"\nTime elapsed = {time_diff.total_seconds()}")
+    if is_print_allowed:
+        print(f"\nTime elapsed = {time_diff.total_seconds()}")
 
     return results[:n_best_results]
 
@@ -323,13 +325,16 @@ def run(
     m: int = 4,
     k: int = 10,
     q: int = 5,
+    aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
+    consider_depots: List[bool] = [False, True],
+    pheromone_uses_first_hour: List[bool] = [False, True],
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-) -> Dict:
+) -> Optional[Dict]:
     """
     Gets input data, try different hyperparamater settings and solve VRP with ACO
 
@@ -355,30 +360,46 @@ def run(
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
     customers = [i for i in range(1, n)]
     vehicles_start_times = [0 for _ in range(m)]
-    results = solve(
-        k=k,
-        q=q,
-        duration=duration,
-        load=load,
-        customers=customers,
-        vehicles_start_times=vehicles_start_times,
-        n_hyperparams=10,
-        n_best_results=1,
-    )
-    result = results[0]
-    result_dict = {
-        "route_max_time": result[0],
-        "route_sum_time": result[1],
-        "vehicles_routes": result[2],
-        "vehicles_times": result[3],
-        "best_iter": result[4],
-        "hyperparams": result[5],
-        "consider_depot": result[6],
-        "pheromone_use_first_hour": result[7],
-        "aco_method": result[8],
-    }
-    print(f"result_dict = {result_dict}")
-    return result_dict
+    result_hyperparams = []
+    for aco_sol in aco_sols:
+        for consider_depot in consider_depots:
+            for use_first_hour in pheromone_uses_first_hour:
+                run_durations = []
+                run_runtimes = []
+                while len(run_durations) < 10:
+                    time_start = datetime.datetime.now()
+                    results = solve(
+                        k=k,
+                        q=q,
+                        duration=duration,
+                        load=load,
+                        customers=customers,
+                        vehicles_start_times=vehicles_start_times,
+                        n_hyperparams=10,
+                        n_best_results=1,
+                        is_print_allowed=False,
+                        aco_sols=[aco_sol],
+                        consider_depots=[consider_depot],
+                        pheromone_uses_first_hour=[use_first_hour],
+                    )
+                    if results:
+                        time_end = datetime.datetime.now()
+                        time_diff = (time_end - time_start).total_seconds()
+                        run_runtimes.append(time_diff)
+                        result = results[0]
+                        run_durations.append(result[0])
+                    else:
+                        print(f"No solution: aco={aco_sol} , depots={consider_depot} , pheromonene={use_first_hour}")
+                result_hyperparams.append(
+                    (
+                        (aco_sol, consider_depot, use_first_hour),
+                        (np.mean(run_durations), np.std(run_durations), np.mean(run_runtimes), np.std(run_runtimes)),
+                    )
+                )
+    result_hyperparams.sort(key=lambda x: x[1][0])
+    for key, val in result_hyperparams:
+        print(f"{key}: {val}")
+    return None
 
 
 if __name__ == "__main__":
