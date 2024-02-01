@@ -1,5 +1,3 @@
-# metehan-aco
-
 import src.solver as solver
 import src.utilities.helper as helper
 
