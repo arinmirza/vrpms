@@ -86,7 +86,7 @@ class handler(BaseHTTPRequestHandler):
                 name=params["name"],
                 description=params["description"],
                 locations=remove_unused_locations_tsp(locations=locations, customers=params["customers"],
-                                                      start_node=params, depot=0),
+                                                      start_node=params["start_node"], depot=0),
                 vehicle=result["vehicles"],
                 duration_max=result["durationMax"],
                 duration_sum=result["durationSum"],
