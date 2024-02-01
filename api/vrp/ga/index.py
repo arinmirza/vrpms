@@ -77,8 +77,8 @@ class handler(BaseHTTPRequestHandler):
                      customers=None,
                      cancelled_customers=[],
                      do_load_unload=False,
-                     max_k=params_ga["max_k"],
-                     k_lower_limit=params_ga["k_lower_limit"])
+                     max_k=params_ga["max_k"] if params_ga["max_k"] != None else -1 ,
+                     k_lower_limit=params_ga["k_lower_limit"] if params_ga["k_lower_limit"] != None else True)
 
         # Save results
         if params["auth"]:

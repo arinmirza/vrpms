@@ -19,7 +19,7 @@ if __name__ == "__main__":
     startTime_TSP = 0
     ignoredCustomers = []
     completedCustomers = []
-    multiThreaded = True
+    multiThreaded = False
 
     result = run_GA(locations=locations,
                     durations=durations,
@@ -27,13 +27,13 @@ if __name__ == "__main__":
                     capacities=capacities,
                     ignored_customers=ignoredCustomers,
                     completed_customers=completedCustomers,
-                    start_node=3,
+                    start_node=None,
                     mode="TSP",
                     multithreaded=multiThreaded,
                     iteration_count=30,
-                    random_perm_count=200,
-                    customers=[1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                    random_perm_count=125,
+                    customers=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
                     cancelled_customers=[],
-                    do_load_unload=False,
+                    do_load_unload=True,
                     max_k=-1,  # len(capacities)*2,
                     k_lower_limit=True)

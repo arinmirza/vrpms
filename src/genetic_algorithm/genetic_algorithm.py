@@ -285,6 +285,10 @@ def calculate_demand_dict_from_demand_list(demands):
 
 def run_GA_local_scenario(n, m, k, q, duration, customers, load, vehicle_start_times, mode, start_node, multithreaded,
                           cancelled=[], do_load_unload=True):
+    """
+        In real life scenario runs, regular method can be used, this method is used to run the scenearios in local
+        environment without the additional input output formatting etc.
+    """
 
     if mode == "TDVRP":
 
