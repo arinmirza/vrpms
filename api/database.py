@@ -76,7 +76,7 @@ class DatabaseVRP(Database):
 
 
 class DatabaseTSP(Database):
-    def save_solution(self, name, description, locations, vehicle,  duration_max, duration_sum, errors):
+    def save_solution(self, name, description, locations, vehicles, duration, errors):
         user = self.client.auth.get_user()
         email = user.model_dump()["user"]["email"] if user else None
 
@@ -97,10 +97,10 @@ class DatabaseTSP(Database):
             "name": name,
             "description": description,
             "owner": email,
-            "durationMax": duration_max,
-            "durationSum": duration_sum,
+            "durationMax": duration,
+            "durationSum": duration,
             "locations": locations,
-            "vehicles": vehicle,
+            "vehicles": vehicles,
         }
 
         try:

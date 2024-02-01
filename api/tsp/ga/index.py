@@ -5,7 +5,12 @@ from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_ga_parameters
 from src.genetic_algorithm.genetic_algorithm import run_GA as run
 from api.helpers import remove_unused_locations_tsp
-
+from src.utilities.utilities2.helper.result_2_output import tsp_result_2_output
+from src.utilities.utilities2.helper.locations_helper import (
+    convert_locations,
+    remove_unused_locations_tsp,
+    get_demands_from_locations,
+)
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -80,16 +85,33 @@ class handler(BaseHTTPRequestHandler):
                      max_k=-1,
                      k_lower_limit=True)
 
+        #new_locations = convert_locations(locations)
+        #demands = get_demands_from_locations(durations, new_locations)
+        filtered_locations = remove_unused_locations_tsp(locations, params["customers"], params["start_node"])
+
+        '''    
+        result = tsp_result_2_output(
+            start_time=params["start_time"],
+            start_node=params["start_node"],
+            duration=durations,
+            load=demands,
+            locations=new_locations,
+            do_loading_unloading=params["do_loading_unloading"],
+            cancelled_customers=params["cancel_customers"],
+            tsp_result=tsp_result,
+        )
+        '''
+
         # Save results
         if params["auth"]:
+            duration = int(result["duration"])
+            vehicles = [{"tours": [result["vehicle"]], "totalDuration": result["duration"]}]  # no capacity
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=remove_unused_locations_tsp(locations=locations, customers=params["customers"],
-                                                      start_node=params["start_node"], depot=0),
-                vehicle=result["vehicles"],
-                duration_max=result["durationMax"],
-                duration_sum=result["durationSum"],
+                locations=filtered_locations,
+                vehicles=vehicles,
+                duration=duration,
                 errors=errors,
             )
 
