@@ -341,7 +341,7 @@ def inversion_mutation(permutations,  VST, dist_data, M, Q,load, demand_dict, sn
 
     return permutations
 
-def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, demand_in, ist_in, demand_dict, sn, cancelled_customers, do_load_unload):
+def genetic_algorithm(population, N, M, k, q, W, duration, demand, ist, demand_dict, sn, cancelled_customers, do_load_unload):
     """
                           Apply Mutation and Selection & Replacement operations
                           based on the random probabilities generated
@@ -349,11 +349,11 @@ def genetic_algorithm(population, N_in, M_in, k_in, q_in, W_in, duration_in, dem
                           :param population: all available permutations
     """
 
-    Q = q_in
-    M = M_in
-    DIST_DATA = duration_in
-    LOAD = demand_in
-    vehicles_start_times = ist_in
+    Q = q
+    M = M
+    DIST_DATA = duration
+    LOAD = demand
+    vehicles_start_times = ist
 
     new_population = None # empty variable for the output population
 
@@ -523,7 +523,7 @@ def check_neighbor(perm):
 
     return True
 
-def ga(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, start_node, customer_list, population_count, demand_dict,cancelled_customers=[], do_load_unload=True,permutations = None):
+def ga(N, M, k, q, W, duration, ist, start_node, customer_list, population_count, demand_dict, cancelled_customers=[], do_load_unload=True, permutations = None):
     """
                 Main method that controls the mode of the genetic algorithm
                 If no input is given than it starts with population generation and runs genetic algorithm
@@ -535,14 +535,14 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, start_node, customer_l
     # main method of the program
     # all threads run this method in parallel
 
-    N = N_in  # number of shops to be considered
-    K = k_in # number of tours to be considered
-    Q = q_in # capacity of vehicle = N
-    M = M_in # number of vehicles = 1
-    DEPOT = W_in # DEPOT index
-    DIST_DATA = duration_in # duration data
+    N = N  # number of shops to be considered
+    K = k # number of tours to be considered
+    Q = q # capacity of vehicle = N
+    M = M # number of vehicles = 1
+    DEPOT = W # DEPOT index
+    DIST_DATA = duration # duration data
     LOAD = demand_dict # demands
-    vehicles_start_times = ist_in # start times
+    vehicles_start_times = ist # start times
     RANDOM_PERM_COUNT = population_count
 
     # if the given input to this method is none, then a new population is generated from scratch
@@ -579,27 +579,27 @@ def ga(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, start_node, customer_l
         random_generated_perm = sorted(random_generated_perm, key=lambda x: x[2], reverse=False)
 
         # genetic algorithm code is called
-        res = genetic_algorithm(population = random_generated_perm, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, demand_dict=demand_dict, sn = start_node, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
+        res = genetic_algorithm(population = random_generated_perm, N= N, M= M, k= K, q= Q, W= DEPOT, duration= DIST_DATA, demand= LOAD, ist= vehicles_start_times, demand_dict=demand_dict, sn = start_node, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
 
         # results are sorted based on duration of sequences  (i.e. x[2])
         res = sorted(res, key=lambda x: x[2], reverse=False)
 
     else:
         # permutations exist, do not generate new data and continue with the given input
-        res = genetic_algorithm(population = permutations, N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, demand_in = LOAD, ist_in = vehicles_start_times, demand_dict=demand_dict, sn=start_node, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
+        res = genetic_algorithm(population = permutations, N= N, M= M, k= K, q= Q, W= DEPOT, duration= DIST_DATA, demand= LOAD, ist= vehicles_start_times, demand_dict=demand_dict, sn=start_node, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload)
         # results are sorted based on duration of sequences  (i.e. x[2])
         res = sorted(res, key=lambda x: x[2], reverse=False)
 
     return res
 
-def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_dict ,start_node = None, customer_list = [],  cancelled_customers = [], do_load_unload = True, population_count=125, iteration_count=15):
-    N = N_in  # number of shops to be considered
-    K = k_in # number of tours to be considered
-    Q = q_in # capacity of the vehicle = N
-    M = M_in # number of vehicles = 1
-    DEPOT = W_in # DEPOT index
-    DIST_DATA = duration_in # duration data
-    vehicles_start_times = ist_in
+def run(N, M, k, q, W, duration, ist, multithreaded, demand_dict, start_node = None, customer_list = [], cancelled_customers = [], do_load_unload = True, population_count=125, iteration_count=15):
+    N = N  # number of shops to be considered
+    K = k # number of tours to be considered
+    Q = q # capacity of the vehicle = N
+    M = M # number of vehicles = 1
+    DEPOT = W # DEPOT index
+    DIST_DATA = duration # duration data
+    vehicles_start_times = ist
     ITERATION_COUNT = iteration_count
 
     start_time = datetime.now()  # used for runtime calculation
@@ -614,7 +614,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_
     # run num_cores many threads in parallel
     # at the beginning there exists no input for the ga method, permutations will be equal to None
     inputs = tqdm(num_cores * [1], disable=True)
-    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, ist_in = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=None, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, demand_dict=demand_dict, population_count=population_count) for i in inputs)
+    processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N = N, M = M, k = K, q = Q, W = DEPOT, duration = DIST_DATA, ist = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=None, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, demand_dict=demand_dict, population_count=population_count) for i in inputs)
 
     iteration_count = 0
     best = []
@@ -622,7 +622,7 @@ def run(N_in, M_in, k_in, q_in, W_in, duration_in, ist_in, multithreaded,demand_
     while iteration_count < ITERATION_COUNT:
 
         inputs = tqdm(processed_list, disable=True)
-        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N_in = N, M_in = M, k_in = K, q_in = Q, W_in = DEPOT, duration_in = DIST_DATA, ist_in = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=i, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, demand_dict=demand_dict, population_count=population_count) for i in inputs)
+        processed_list = Parallel(n_jobs=num_cores)(delayed(ga)(N = N, M = M, k = K, q = Q, W = DEPOT, duration = DIST_DATA, ist = vehicles_start_times, start_node = start_node, customer_list = customer_list, permutations=i, cancelled_customers=cancelled_customers, do_load_unload=do_load_unload, demand_dict=demand_dict, population_count=population_count) for i in inputs)
 
         for elem in processed_list:
 

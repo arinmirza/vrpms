@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Literal, Optional, Tuple
 from src.utilities.vehicles_priority_queue.vehicles_pq import VehiclesPQ
-from src.utilities.utilities2.helper.data_helper import (
+from src.utilities.helper.data_helper import (
     get_based_and_load_data,
     get_google_and_load_data,
     get_mapbox_and_load_data,

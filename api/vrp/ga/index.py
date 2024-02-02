@@ -62,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
+        # Run the algorithm
         result = run(locations=locations,
                      durations=durations,
                      initial_start_times=params["start_times"],

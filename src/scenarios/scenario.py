@@ -4,13 +4,21 @@ from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from api.database import Database
-from src.utilities.utilities2.helper.tsp_helper import route_solution_to_arrivals
-from src.utilities.utilities2.helper.data_helper import get_based_and_load_data, get_google_and_load_data
+#from src.utilities.utilities2.helper.tsp_helper import route_solution_to_arrivals
+#from src.utilities.utilities2.helper.data_helper import get_based_and_load_data, get_google_and_load_data
 from src.brute_force_vrp.brute_force import solve as solve_vrp_bf
 from src.brute_force_tsp.brute_force.brute_force import solve as solve_tsp_bf
-from src.utilities.utilities2.helper.locations_helper import convert_locations, get_demands_from_locations
-import copy
+#from src.utilities.utilities2.helper.locations_helper import convert_locations, get_demands_from_locations
 from src.genetic_algorithm.genetic_algorithm import run_GA_local_scenario as run_ga
+import copy
+
+from api.database import Database
+from src.utilities.helper.tsp_helper import route_solution_to_arrivals
+from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
+
+from src.utilities.helper.locations_helper import convert_locations, get_demands_from_locations
+
+
 
 DEPOT = 0  # depot
 SELF_CYCLE = [DEPOT, DEPOT]
@@ -359,7 +367,7 @@ def run(
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
     vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_2.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
