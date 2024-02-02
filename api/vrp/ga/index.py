@@ -87,8 +87,8 @@ class handler(BaseHTTPRequestHandler):
                 description=params["description"],
                 locations=remove_unused_locations(locations, params["ignored_customers"], params["completed_customers"]),
                 vehicles=result["vehicles"],
-                duration_max=result["durationMax"],
-                duration_sum=result["durationSum"],
+                duration_max=int(result["durationMax"]),
+                duration_sum=int(result["durationSum"]),
                 errors=errors,
             )
 
