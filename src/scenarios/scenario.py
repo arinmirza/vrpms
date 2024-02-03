@@ -428,8 +428,8 @@ def run(
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_sa_1.json",
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_aco_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
