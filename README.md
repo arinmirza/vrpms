@@ -36,12 +36,13 @@ The project is divided into two important directories, `/api` and `/src`.
 Python imports can be tricky. To prevent confusion and import issues, it is encouraged to use absolute imports everywhere.
 
 The module `src/foo.py` can import another module `src/utilities/baz.py` as follows:
-```python
-import src.utilities.baz                     # absolute import
-from src.utilities.baz import some_function  # absolute import
 
-import .utilities.baz                        # relative import
-from .utilities.baz import some_function     # relative import
+```python
+import src.utilities1.baz  # absolute import
+from src.utilities1.baz import some_function  # absolute import
+
+import.utilities.baz  # relative import
+from .utilities.baz import some_function  # relative import
 ```
 
 ### Testing locally
@@ -69,3 +70,26 @@ However, keep in mind this only works for local development and the environment 
 ### Deployment
 
 Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms.vercel.app
+
+
+### Formatting
+
+Code is formatted with black, and it can be set up as pre-commit-hooks via pre-commit. To get started, install the dependencies.
+
+    $ pip install -r requirements.dev
+
+Then install the pre-commit hooks:
+
+    $ pre-commit install
+
+Format the entire codebase under the root:
+
+    $ black --line-length 120 .
+
+You can set up black as a file watcher in PyCharm so that your code is automatically formatted on each save, as documented in the black docs_.
+
+### Test
+
+You should install the required packages for testing first.
+
+    $ pip install -r requirements.test

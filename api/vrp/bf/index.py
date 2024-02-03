@@ -1,23 +1,38 @@
+import datetime
 import json
 from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
-from api.helpers import fail, success, remove_unused_locations
+from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters
+from src.vrp.brute_force.brute_force import run_request
+from src.utilities.helper.locations_helper import (
+    convert_locations,
+    get_available_and_all_ignored_customers,
+    get_demands_from_locations,
+    remove_unused_locations_vrp,
+)
+from src.utilities.helper.result_2_output import vrp_result_2_output
 
 
 class handler(BaseHTTPRequestHandler):
-
     def do_GET(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
+        self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write("Hi, this is the VRP Brute Force endpoint".encode('utf-8'))
+        self.wfile.write("Hi, this is the VRP Brute Force endpoint".encode("utf-8"))
+
+    def do_OPTIONS(self):
+        self.send_response(200, "ok")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "*")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        self.end_headers()
 
     def do_POST(self):
         # Read
-        content_length = int(self.headers.get('Content-Length', 0))
-        content_string = str(self.rfile.read(content_length).decode('utf-8'))
-        content = json.loads(content_string) if content_string else dict()
+        content_length = int(self.headers.get("Content-Length", 0))
+        content_string = str(self.rfile.read(content_length).decode("utf-8"))
+        content = json.loads(content_string)
 
         # Parse parameters
         errors = []
@@ -28,35 +43,81 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Retrieve data from database
-        database = DatabaseVRP(params['auth'])
-        locations = database.get_locations_by_id(params['locations_key'], errors)
-        durations = database.get_durations_by_id(params['durations_key'], errors)
+        if "locations" not in params and "locations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": "locations or locationsKey should be provided"}]
+        if "durations" not in params and "durations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": "durations or durationsKey should be provided"}]
 
         if len(errors) > 0:
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
-        result = {
-            'durationMax': 0,
-            'durationSum': 0,
-            'vehicles': [],
-        }
+        # Retrieve data from database
+        database = DatabaseVRP(params["auth"])
+        locations = (
+            params["locations"]
+            if "locations" in params and params["locations"] is not None
+            else database.get_locations_by_id(params["locations_key"], errors)
+        )
+        durations = (
+            params["durations"]
+            if "durations" in params and params["durations"] is not None
+            else database.get_durations_by_id(params["durations_key"], errors)
+        )
+
+        if len(errors) > 0:
+            fail(self, errors)
+            return
+
+        time_start = datetime.datetime.now()
+
+        new_locations = convert_locations(locations)
+        available_customers, all_ignored_customers = get_available_and_all_ignored_customers(
+            locations=new_locations,
+            ignored_customers=params["ignored_customers"],
+            completed_customers=params["completed_customers"],
+        )
+        demands = get_demands_from_locations(durations, new_locations)
+        filtered_locations = remove_unused_locations_vrp(
+            locations, params["ignored_customers"], params["completed_customers"]
+        )
+
+        vrp_result = run_request(
+            q=params["capacities"][0],
+            duration=durations,
+            load=demands,
+            available_customers=available_customers,
+            vehicles_start_times=params["start_times"],
+        )
+        result = vrp_result_2_output(
+            vehicles_start_times=params["start_times"],
+            duration=durations,
+            load=demands,
+            locations=new_locations,
+            vrp_result=vrp_result,
+            capacities=params["capacities"],
+        )
+
+        time_end = datetime.datetime.now()
+        time_diff = (time_end - time_start).total_seconds()
+        result["time_diff"] = time_diff
 
         # Save results
-        if params['auth']:
+        if params["auth"]:
+            duration_max = int(result["durationMax"])
+            duration_sum = int(result["durationSum"])
             database.save_solution(
-                name=params['name'],
-                description=params['description'],
-                locations=remove_unused_locations(locations, params['ignored_customers'], params['completed_customers']),
-                vehicles=result['vehicles'],
-                duration_max=result['durationMax'],
-                duration_sum=result['durationSum'],
-                errors=errors)
+                name=params["name"],
+                description=params["description"],
+                locations=filtered_locations,
+                vehicles=result["vehicles"],
+                duration_max=duration_max,
+                duration_sum=duration_sum,
+                errors=errors,
+            )
 
-        if len(errors) > 0:
-            fail(self, errors)
-            return
+        if errors:
+            result["errors"] = errors
 
         # Respond
         success(self, result)
