@@ -23,7 +23,7 @@ def parse_vrp_ga_parameters(content: dict, errors):
         "random_permutationCount": get_parameter("randomPermutationCount", content, errors),
         "iteration_count": get_parameter("iterationCount", content, errors),
         "max_k": get_parameter("max_k", content, errors),
-        "k_lower_limit": get_parameter("k_lower_limit", content, errors)
+        "k_lower_limit": get_parameter("k_lower_limit", content, errors),
     }
 
 
@@ -67,7 +67,7 @@ def parse_tsp_ga_parameters(content: dict, errors):
     return {
         "multi_threaded": get_parameter("multiThreaded", content, errors),
         "random_permutationCount": get_parameter("randomPermutationCount", content, errors),
-        "iteration_count": get_parameter("iterationCount", content, errors)
+        "iteration_count": get_parameter("iterationCount", content, errors),
     }
 
 
@@ -95,4 +95,3 @@ def parse_tsp_aco_parameters(content: dict, errors):
         "range_beta": get_parameter("range_beta", content, errors, optional=True),
         "range_rho": get_parameter("range_rho", content, errors, optional=True),
     }
-

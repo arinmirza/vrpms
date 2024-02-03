@@ -5,6 +5,8 @@ from api.helpers import fail, success
 from api.parameters import parse_common_vrp_parameters, parse_vrp_ga_parameters
 from src.genetic_algorithm.genetic_algorithm import run_GA as run
 from api.helpers import remove_unused_locations
+
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -14,8 +16,8 @@ class handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(200, "ok")
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', '*')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "*")
         self.send_header("Access-Control-Allow-Headers", "*")
         self.send_header("Access-Control-Allow-Headers", "*")
         self.end_headers()
@@ -63,29 +65,33 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Run the algorithm
-        result = run(locations=locations,
-                     durations=durations,
-                     initial_start_times=params["start_times"],
-                     capacities=params["capacities"],
-                     ignored_customers=params["ignored_customers"],
-                     completed_customers=params["completed_customers"],
-                     start_node=None,
-                     mode="TDVRP",
-                     multithreaded=params_ga["multi_threaded"],
-                     iteration_count=params_ga["iteration_count"],
-                     random_perm_count=params_ga["random_permutationCount"],
-                     customers=None,
-                     cancelled_customers=[],
-                     do_load_unload=False,
-                     max_k=params_ga["max_k"] if params_ga["max_k"] != None else -1 ,
-                     k_lower_limit=params_ga["k_lower_limit"] if params_ga["k_lower_limit"] != None else True)
+        result = run(
+            locations=locations,
+            durations=durations,
+            initial_start_times=params["start_times"],
+            capacities=params["capacities"],
+            ignored_customers=params["ignored_customers"],
+            completed_customers=params["completed_customers"],
+            start_node=None,
+            mode="TDVRP",
+            multithreaded=params_ga["multi_threaded"],
+            iteration_count=params_ga["iteration_count"],
+            random_perm_count=params_ga["random_permutationCount"],
+            customers=None,
+            cancelled_customers=[],
+            do_load_unload=False,
+            max_k=params_ga["max_k"] if params_ga["max_k"] != None else -1,
+            k_lower_limit=params_ga["k_lower_limit"] if params_ga["k_lower_limit"] != None else True,
+        )
 
         # Save results
         if params["auth"]:
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=remove_unused_locations(locations, params["ignored_customers"], params["completed_customers"]),
+                locations=remove_unused_locations(
+                    locations, params["ignored_customers"], params["completed_customers"]
+                ),
                 vehicles=result["vehicles"],
                 duration_max=int(result["durationMax"]),
                 duration_sum=int(result["durationSum"]),
@@ -98,4 +104,3 @@ class handler(BaseHTTPRequestHandler):
 
         # Respond
         success(self, result)
-

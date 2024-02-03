@@ -8,11 +8,11 @@ PASSWORD: str = "yusufgym123!"
 
 # Connect and login
 supabase: Client = create_client(URL, KEY)
-supabase.auth.sign_in_with_password({ 'email': EMAIL, 'password': PASSWORD })
+supabase.auth.sign_in_with_password({"email": EMAIL, "password": PASSWORD})
 session = supabase.auth.get_session()
 
 # Print tokens
 if session:
     access_token = session.access_token
     refresh_token = session.refresh_token
-    print('access_token:', access_token)
+    print("access_token:", access_token)

@@ -126,19 +126,33 @@ def run_tsp_algo(
     elif algo == "ga":
         customers_adjusted = copy.deepcopy(customers)
 
-        #if vehicle_start_node != 0 and vehicle_start_node != None: #len(load) <= len(customers):
+        # if vehicle_start_node != 0 and vehicle_start_node != None: #len(load) <= len(customers):
         #    customers_adjusted.append(vehicle_start_node)
         #    load.append(1)
         #    n = n + 1
         #    q = q + 1
 
-        #load = [1] * len(customers_adjusted)
-        #load.insert(0, 0)
+        # load = [1] * len(customers_adjusted)
+        # load.insert(0, 0)
         n = len(customers_adjusted)
-        q = len(customers_adjusted)*len(customers_adjusted)
+        q = len(customers_adjusted) * len(customers_adjusted)
 
-        tsp_sol = run_ga(n=len(customers), m=1, k=1, q=q, duration=duration, vehicle_start_times = [vehicle_start_time], mode="TSP", start_node=vehicle_start_node, load = load, multithreaded=True if tsp_algo_params["multithreaded"]=="N" else False, customers=customers_adjusted,do_load_unload=do_loading_unloading, cancelled=cancelled_customers,)
-        tsp_sol = (tsp_sol[2][0])
+        tsp_sol = run_ga(
+            n=len(customers),
+            m=1,
+            k=1,
+            q=q,
+            duration=duration,
+            vehicle_start_times=[vehicle_start_time],
+            mode="TSP",
+            start_node=vehicle_start_node,
+            load=load,
+            multithreaded=True if tsp_algo_params["multithreaded"] == "N" else False,
+            customers=customers_adjusted,
+            do_load_unload=do_loading_unloading,
+            cancelled=cancelled_customers,
+        )
+        tsp_sol = tsp_sol[2][0]
     else:
         raise "Algo not defined"
     return tsp_sol
@@ -283,9 +297,19 @@ def run_vrp_algo(
         # if 0 in customers:# and (customers.count(0) > 1):
         #    customers = [i for i in customers if i != 0]
         # customers.append(0)
-        vrp_sol = run_ga(n=len(customers), m=len(vehicles_start_times), k=k, q=q, duration=duration, customers=customers, load=demands,
-                         vehicle_start_times=vehicles_start_times, mode="TDVRP", start_node=None,
-                         multithreaded=True if vrp_algo_params["multithreaded"] == "Y" else False)
+        vrp_sol = run_ga(
+            n=len(customers),
+            m=len(vehicles_start_times),
+            k=k,
+            q=q,
+            duration=duration,
+            customers=customers,
+            load=demands,
+            vehicle_start_times=vehicles_start_times,
+            mode="TDVRP",
+            start_node=None,
+            multithreaded=True if vrp_algo_params["multithreaded"] == "Y" else False,
+        )
         vrp_sol = vrp_sol[2]
         # run_ga(locations, durations=duration, capacities=[q]*m, initial_start_times=vehicles_start_times, ignored_customers=[], completed_customers=[], multithreaded=True, random_perm_count=0, iteration_count=0, mode="TDVRP", start_node=None, customers=customers)
     else:
@@ -460,4 +484,3 @@ def run(
 
 if __name__ == "__main__":
     run()
-

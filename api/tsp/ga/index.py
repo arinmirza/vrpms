@@ -5,7 +5,7 @@ from api.helpers import fail, success
 from api.parameters import parse_common_tsp_parameters, parse_tsp_ga_parameters
 from src.genetic_algorithm.genetic_algorithm import run_GA as run
 from api.helpers import remove_unused_locations_tsp
-from src.utilities.helper.locations_helper import (remove_unused_locations_tsp)
+from src.utilities.helper.locations_helper import remove_unused_locations_tsp
 
 
 class handler(BaseHTTPRequestHandler):
@@ -17,8 +17,8 @@ class handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(200, "ok")
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', '*')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "*")
         self.send_header("Access-Control-Allow-Headers", "*")
         self.send_header("Access-Control-Allow-Headers", "*")
         self.end_headers()
@@ -65,22 +65,24 @@ class handler(BaseHTTPRequestHandler):
             fail(self, errors)
             return
 
-        result = run(locations=locations,
-                     durations=durations,
-                     initial_start_times=params["start_time"],
-                     capacities=None,
-                     ignored_customers=None,
-                     completed_customers=None,
-                     start_node=params["start_node"],
-                     mode="TSP",
-                     multithreaded=params_ga["multi_threaded"],
-                     customers=params["customers"],
-                     iteration_count=params_ga["iteration_count"],
-                     random_perm_count=params_ga["random_permutationCount"],
-                     cancelled_customers = params["cancel_customers"],
-                     do_load_unload = params["do_loading_unloading"],
-                     max_k=-1,
-                     k_lower_limit=True)
+        result = run(
+            locations=locations,
+            durations=durations,
+            initial_start_times=params["start_time"],
+            capacities=None,
+            ignored_customers=None,
+            completed_customers=None,
+            start_node=params["start_node"],
+            mode="TSP",
+            multithreaded=params_ga["multi_threaded"],
+            customers=params["customers"],
+            iteration_count=params_ga["iteration_count"],
+            random_perm_count=params_ga["random_permutationCount"],
+            cancelled_customers=params["cancel_customers"],
+            do_load_unload=params["do_loading_unloading"],
+            max_k=-1,
+            k_lower_limit=True,
+        )
 
         filtered_locations = remove_unused_locations_tsp(locations, params["customers"], params["start_node"])
 
@@ -103,4 +105,3 @@ class handler(BaseHTTPRequestHandler):
 
         # Respond
         success(self, result)
-

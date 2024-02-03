@@ -119,4 +119,3 @@ class handler(BaseHTTPRequestHandler):
 
         # Respond
         success(self, result)
-

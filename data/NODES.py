@@ -28,9 +28,9 @@ NODES = [
     (27, 10, "V3  Nymphenburger Schloss"),
     (28, 5, "V3  Sendlinger Tor"),
     (29, 25, "V3  Garching Forschungszentrum"),
-    (30, 35, "V3  Klinikum Großhadern")
-
+    (30, 35, "V3  Klinikum Großhadern"),
 ]
+
 
 def get_nodes():
     return NODES

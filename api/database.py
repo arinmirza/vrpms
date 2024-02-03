@@ -108,4 +108,3 @@ class DatabaseTSP(Database):
             return self.client.table("solutions").insert(data).execute()
         except Exception as exception:
             errors += [{"what": "Database write error", "reason": str(exception)}]
-
