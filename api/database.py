@@ -4,10 +4,8 @@ from supabase.lib.client_options import ClientOptions
 
 
 class Database:
-    # _url: str = os.environ.get('SUPABASE_URL') or ''
-    # _key: str = os.environ.get('SUPABASE_KEY') or ''
-    _url = "https://pkeygmzuwfucblldmkjn.supabase.co"
-    _key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s"
+    _url: str = os.environ.get("SUPABASE_URL") or ""
+    _key: str = os.environ.get("SUPABASE_KEY") or ""
     client: Client
 
     def __init__(self, auth=None):
@@ -18,24 +16,27 @@ class Database:
 
     def login(self, token: str):
         """Login with the JWT token of a specific user."""
-        self.client.auth.set_session(access_token=token, refresh_token=token)
-
-    def get_locations_by_id(self, id, errors):
         try:
-            result = self.client.table("locations").select("*").eq("id", id).execute()
+            self.client.auth.set_session(access_token=token, refresh_token=token)
+        except:
+            pass
+
+    def get_locations_by_id(self, id, errors, table_name="locations", column_name="locations"):
+        try:
+            result = self.client.table(table_name).select("*").eq("id", id).execute()
             if not len(result.data):
                 raise (Exception(f"No location set found with given id {id}"))
-            return result.data[0]["locations"]
+            return result.data[0][column_name]
         except Exception as exception:
             errors += [{"what": "Database read error", "reason": str(exception)}]
             return None
 
-    def get_durations_by_id(self, id, errors):
+    def get_durations_by_id(self, id, errors, table_name="durations", column_name="matrix"):
         try:
-            result = self.client.table("durations").select("*").eq("id", id).execute()
+            result = self.client.table(table_name).select("*").eq("id", id).execute()
             if not len(result.data):
                 raise (Exception(f"No duration matrix found with given id {id}"))
-            return result.data[0]["matrix"]
+            return result.data[0][column_name]
         except Exception as exception:
             errors += [{"what": "Database read error", "reason": str(exception)}]
             return None
@@ -107,3 +108,4 @@ class DatabaseTSP(Database):
             return self.client.table("solutions").insert(data).execute()
         except Exception as exception:
             errors += [{"what": "Database write error", "reason": str(exception)}]
+

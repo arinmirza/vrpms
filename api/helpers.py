@@ -31,3 +31,4 @@ def remove_unused_locations_tsp(locations, customers, start_node, depot=0):
     customers_ids = customers.copy()
     customers_ids.extend([start_node, depot])
     return [loc for loc in locations if loc["id"] in customers_ids]
+

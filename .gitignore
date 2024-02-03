@@ -162,3 +162,9 @@ cython_debug/
 ## Vscode
 .vscode/
 .vercel
+
+# MacOS
+.DS_Store
+
+# Token Generator
+src/utilities/helper/token_generator.py

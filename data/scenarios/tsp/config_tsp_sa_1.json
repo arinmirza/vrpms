@@ -1,0 +1,2 @@
+{"algo": "sa", "threshold": 50, "n_iterations": 1000, "alpha": 0.1, "cooling": 0.9, "init": "nearest_neighbor",
+"neighborhood": "2-opt", "termination": "max_steps"}

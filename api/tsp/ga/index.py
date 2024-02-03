@@ -7,6 +7,7 @@ from src.genetic_algorithm.genetic_algorithm import run_GA as run
 from api.helpers import remove_unused_locations_tsp
 from src.utilities.helper.locations_helper import (remove_unused_locations_tsp)
 
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -102,3 +103,4 @@ class handler(BaseHTTPRequestHandler):
 
         # Respond
         success(self, result)
+

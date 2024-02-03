@@ -1,24 +1,20 @@
+import copy
 import datetime
 import json
+
 from collections import defaultdict
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 from api.database import Database
-#from src.utilities.utilities2.helper.tsp_helper import route_solution_to_arrivals
-#from src.utilities.utilities2.helper.data_helper import get_based_and_load_data, get_google_and_load_data
-from src.brute_force_vrp.brute_force import solve as solve_vrp_bf
-from src.brute_force_tsp.brute_force.brute_force import solve as solve_tsp_bf
-#from src.utilities.utilities2.helper.locations_helper import convert_locations, get_demands_from_locations
 from src.genetic_algorithm.genetic_algorithm import run_GA_local_scenario as run_ga
-import copy
-
-from api.database import Database
 from src.utilities.helper.tsp_helper import route_solution_to_arrivals
 from src.utilities.helper.data_helper import get_based_and_load_data, get_google_and_load_data
-
+from src.vrp.ant_colony.aco_hybrid import solve as solve_vrp_aco
+from src.vrp.brute_force.brute_force import solve as solve_vrp_bf
+from src.tsp.ant_colony.aco_hybrid import solve as solve_tsp_aco
+from src.tsp.brute_force.brute_force import solve as solve_tsp_bf
+from src.tsp.simulated_annealing.simulated_annealing import solve as solve_tsp_sa
 from src.utilities.helper.locations_helper import convert_locations, get_demands_from_locations
-
-
 
 DEPOT = 0  # depot
 SELF_CYCLE = [DEPOT, DEPOT]
@@ -43,7 +39,7 @@ def remove_customers_to_be_cancelled(
     :param vehicle_id: ID of the vehicle (for print purposes)
     :param customers: Remaining customers in the VRP tours
     :param cancel_customers: Customers to cancel orders
-    :param cycle: A cycle in the vehicles_priority_queue solution, i.e. [DEPOT, customer_i, ..., DEPOT]
+    :param cycle: A cycle in the vrp solution, i.e. [DEPOT, customer_i, ..., DEPOT]
     :return: customers_to_be_cancelled
     """
     print(f"remove_customers_to_be_cancelled for {vehicle_id}")
@@ -95,9 +91,38 @@ def run_tsp_algo(
         )
         tsp_sol = tsp_sol[1]
     elif algo == "aco":
-        ...
+        tsp_sol = solve_tsp_aco(
+            duration=duration,
+            load=load,
+            customers=customers,
+            current_time=vehicle_start_time,
+            current_location=vehicle_start_node,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
+            n_hyperparams=tsp_algo_params["n_hyperparams"],
+            n_best_results=1,
+            is_print_allowed=False,
+            ignore_long_trip=False,
+        )
+        tsp_sol = tsp_sol[0][1]
     elif algo == "sa":
-        ...
+        tsp_sol = solve_tsp_sa(
+            start_time=vehicle_start_time,
+            start_node=vehicle_start_node,
+            customers=customers,
+            duration=duration,
+            load=load,
+            do_loading_unloading=do_loading_unloading,
+            cancelled_customers=cancelled_customers,
+            threshold=tsp_algo_params["threshold"],
+            n_iterations=tsp_algo_params["n_iterations"],
+            alpha=tsp_algo_params["alpha"],
+            cooling=tsp_algo_params["cooling"],
+            init=tsp_algo_params["init"],
+            termination=tsp_algo_params["termination"],
+            neighborhood=tsp_algo_params["neighborhood"],
+        )
+        tsp_sol = tsp_sol[1]
     elif algo == "ga":
         customers_adjusted = copy.deepcopy(customers)
 
@@ -130,7 +155,7 @@ def tsp_optimize(
     tsp_algo_params: Dict,
 ) -> Tuple[List[int], float]:
     """
-    Run TSP optimization on the given customers, considering the brute_force_tsp frequency
+    Run TSP optimization on the given customers, considering the tsp frequency
 
     :param tsp_period: Frequency of the TSP to run in terms of the number of locations
     :param vehicle_id: ID of the vehicle (for print purposes)
@@ -238,11 +263,23 @@ def run_vrp_algo(
         )
         vrp_sol = vrp_sol[2]
     elif algo == "aco":
-        ...
+        vrp_sol = solve_vrp_aco(
+            k=k,
+            q=q,
+            duration=duration,
+            customers=customers,
+            load=demands,
+            vehicles_start_times=vehicles_start_times,
+            n_hyperparams=vrp_algo_params["n_hyperparams"],
+            n_best_results=1,
+            ignore_long_trip=False,
+            objective_func_type="min_max_time",
+            is_print_allowed=False,
+        )
+        vrp_sol = vrp_sol[0][2]
     elif algo == "sa":
         ...
     elif algo == "ga":
-
         # if 0 in customers:# and (customers.count(0) > 1):
         #    customers = [i for i in customers if i != 0]
         # customers.append(0)
@@ -265,8 +302,8 @@ def solve_scenario(
     cancel_customers: List[int],
     duration: List[List[List[float]]],
     demands: Optional[List[int]],
-    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_1.json",
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_bf_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -288,8 +325,9 @@ def solve_scenario(
         vrp_algo_params = json.loads(j.read())
     with open(tsp_algo_params_path, "r") as j:
         tsp_algo_params = json.loads(j.read())
-    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vehicles_priority_queue json"
-    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid brute_force_tsp json"
+
+    assert "algo" in vrp_algo_params and vrp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid vrp json"
+    assert "algo" in tsp_algo_params and tsp_algo_params["algo"] in ["bf", "aco", "sa", "ga"], "Invalid tsp json"
 
     vehicles_times = [0 for _ in range(m)]
     vehicles_routes = defaultdict(list)
@@ -362,12 +400,12 @@ def run(
     ignore_customers: List[int] = [1],
     cancel_customers: List[int] = [2],
     durations_query_row_id: int = 3,
-    locations_query_row_id: int = 1,
+    locations_query_row_id: int = 4,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
-    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_ga_1.json",
-    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_ga_2.json",
+    vrp_algo_params_path: str = "../../data/scenarios/vrp/config_vrp_aco_1.json",
+    tsp_algo_params_path: str = "../../data/scenarios/tsp/config_tsp_sa_1.json",
 ) -> Tuple[defaultdict, List[float], float, float]:
     """
     Runs the given scenario and simulate the entire day with a couple of VRPs and TSP optimizations for each VRP
@@ -422,3 +460,4 @@ def run(
 
 if __name__ == "__main__":
     run()
+

@@ -107,3 +107,4 @@ def vrp_result_2_output(
         vehicles.append(vehicle_dict)
     output = {"durationMax": route_max_time, "durationSum": route_sum_time, "vehicles": vehicles}
     return output
+
