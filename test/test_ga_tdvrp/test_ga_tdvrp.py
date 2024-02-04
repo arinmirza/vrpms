@@ -11,13 +11,9 @@ if __name__ == "__main__":
     locations = database.get_locations_by_id(params["locations_key"], {})
     durations = database.get_durations_by_id(params["durations_key"], {})
 
-    capacities = [5, 5, 5]
-    startTimes = [0, 0, 0]
+    capacities = [5, 5, 5, 5]
+    startTimes = [0, 0, 0, 5]
     ignoredCustomers = [
-        26,
-        27,
-        28,
-        29,
         30,
         31,
         32,
