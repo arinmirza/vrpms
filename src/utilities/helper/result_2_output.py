@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 DEPOT = 0  # depot
+N_TIME_ZONES = 12  # number of hours
 TIME_UNITS = 3600  # hour = 60*60 seconds
 
 LOADING_TIME_INIT = 30
@@ -30,6 +31,7 @@ def tsp_result_2_output(
         location = locations[node]
         lat, lng = location["lat"], location["lng"]
         hour = int(current_time / TIME_UNITS)
+        hour = min(hour, N_TIME_ZONES - 1)
         current_time += duration[current_node][node][hour]
         tour.append({"lat": lat, "lng": lng, "arrivalTime": current_time})
 
@@ -85,6 +87,7 @@ def vrp_result_2_output(
                     location = locations[node]
                     lat, lng = location["lat"], location["lng"]
                     hour = int(current_time / TIME_UNITS)
+                    hour = min(hour, N_TIME_ZONES - 1)
                     current_time += duration[current_node][node][hour]
                     cycle_output.append({"lat": lat, "lng": lng, "arrivalTime": current_time})
                     if node != DEPOT:
