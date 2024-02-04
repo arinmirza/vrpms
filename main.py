@@ -28,5 +28,9 @@ def run(capacities, vehicles_start_times, all_tours):
 if __name__ == "__main__":
     capacities = [5, 5, 5]
     vehicles_start_times = [0, 0, 0]
-    all_tours = [[[0, 19, 20, 16, 23, 0]],[[0, 8, 9, 6, 5, 4, 0], [0, 12, 11, 25, 1, 24, 0]],[[0, 7, 10, 13, 15, 14, 0], [0, 17, 0], [0, 2, 18, 22, 3, 21, 0]]]
+    all_tours = [
+        [[0, 19, 20, 16, 23, 0]],
+        [[0, 8, 9, 6, 5, 4, 0], [0, 12, 11, 25, 1, 24, 0]],
+        [[0, 7, 10, 13, 15, 14, 0], [0, 17, 0], [0, 2, 18, 22, 3, 21, 0]],
+    ]
     run(capacities, vehicles_start_times, all_tours)

@@ -10,8 +10,8 @@ def get_parameter(name: str, content: dict, errors, optional=False):
 
 def remove_unused_locations(locations, ignored_customers, completed_customers):
     disregard = ignored_customers + completed_customers
-    return [loc for loc in locations if loc['id'] not in disregard]
-    
+    return [loc for loc in locations if loc["id"] not in disregard]
+
 
 def fail(handler: BaseHTTPRequestHandler, errors):
     handler.send_response(400)

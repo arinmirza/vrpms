@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 DEPOT = 0
 TIME_UNITS = 3600  # hour = 60*60 seconds
+TIME_ZONES = 12  # number of hours
 
 LOADING_TIME_INIT = 30
 LOADING_TIME_PER_UNIT = 10
@@ -25,6 +26,7 @@ def route_solution_to_arrivals(
 
     for node_idx, node in enumerate(route):
         hour = int(current_time / TIME_UNITS)
+        hour = min(hour, TIME_ZONES - 1)
         current_time += duration[current_node][node][hour]
         arrivals_cycle.append(current_time)
 

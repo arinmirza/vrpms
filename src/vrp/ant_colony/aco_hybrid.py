@@ -322,15 +322,19 @@ def run_request(
 
 def run(
     n: int = 51,
-    m: int = 4,
+    m: int = 2,
     k: int = 10,
     q: int = 5,
-    aco_sols: List = [ACO_VRP_1, ACO_VRP_2],
-    consider_depots: List[bool] = [False, True],
-    pheromone_uses_first_hour: List[bool] = [False, True],
+    n_exp_runs: int = 10,
+    n_hyperparams: int = 5,
+    aco_sols: List = [ACO_VRP_2],  # [ACO_VRP_1, ACO_VRP_2]
+    consider_depots: List[bool] = [False],  # [False, True]
+    pheromone_uses_first_hour: List[bool] = [False],  # [False, True]
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
+    durations_query_row_id: int = 4,
+    locations_query_row_id: int = 4,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
@@ -353,7 +357,9 @@ def run(
     duration_data_type = duration_data_type.lower()
     assert duration_data_type in ["mapbox", "google", "based"], "Duration data type is not valid"
     if duration_data_type == "mapbox":
-        duration, load = get_mapbox_and_load_data(supabase_url, supabase_key, supabase_url_key_file, n)
+        duration, load = get_mapbox_and_load_data(
+            supabase_url, supabase_key, supabase_url_key_file, n, durations_query_row_id, locations_query_row_id
+        )
     elif duration_data_type == "google":
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
@@ -366,7 +372,7 @@ def run(
             for use_first_hour in pheromone_uses_first_hour:
                 run_durations = []
                 run_runtimes = []
-                while len(run_durations) < 10:
+                while len(run_durations) < n_exp_runs:
                     time_start = datetime.datetime.now()
                     results = solve(
                         k=k,
@@ -375,7 +381,7 @@ def run(
                         load=load,
                         customers=customers,
                         vehicles_start_times=vehicles_start_times,
-                        n_hyperparams=10,
+                        n_hyperparams=n_hyperparams,
                         n_best_results=1,
                         is_print_allowed=False,
                         aco_sols=[aco_sol],
@@ -387,6 +393,7 @@ def run(
                         time_diff = (time_end - time_start).total_seconds()
                         run_runtimes.append(time_diff)
                         result = results[0]
+                        print(result)
                         run_durations.append(result[0])
                     else:
                         print(f"No solution: aco={aco_sol} , depots={consider_depot} , pheromonene={use_first_hour}")
