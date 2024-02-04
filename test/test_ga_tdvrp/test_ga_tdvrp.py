@@ -4,20 +4,18 @@ from src.genetic_algorithm.genetic_algorithm import run_GA
 
 if __name__ == "__main__":
 
-    params = {"auth": "", "locations_key": 4, "durations_key": 3}
+    # Non-Unit Demand Benchmark Case-1 Settings
+
+    params = {"auth": "", "locations_key": 8, "durations_key": 3}
 
     # Retrieve data from database
     database = DatabaseVRP(params["auth"])
     locations = database.get_locations_by_id(params["locations_key"], {})
     durations = database.get_durations_by_id(params["durations_key"], {})
 
-    capacities = [5, 5, 5]
+    capacities = [80, 80, 80]
     startTimes = [0, 0, 0]
     ignoredCustomers = [
-        26,
-        27,
-        28,
-        29,
         30,
         31,
         32,
@@ -60,8 +58,8 @@ if __name__ == "__main__":
         start_node=None,
         mode="TDVRP",
         multithreaded=multiThreaded,
-        iteration_count=48,
-        random_perm_count=125,
+        iteration_count=144,
+        random_perm_count=1000,
         customers=None,
         cancelled_customers=[],
         do_load_unload=False,
