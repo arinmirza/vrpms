@@ -146,6 +146,14 @@ You should install the required packages for testing first.
 - Example Request Screenshot
         <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
 
+## List of available endpoints for heuristic algorithms:
+- https://vrpms-main.vercel.app/api/vrp/ga
+- https://vrpms-main.vercel.app/api/tsp/ga
+- https://vrpms-main.vercel.app/api/vrp/aco
+- https://vrpms-main.vercel.app/api/tsp/aco
+- https://vrpms-main.vercel.app/api/vrp/sa
+- https://vrpms-main.vercel.app/api/tsp/sa
+
 # How to run local benchmark tests?
 
 vrpms/test/test_ga_tdvrp is an example of the test script folder. Basically the user can see how we send parameters to our methods. This allows the user to play around with the parameters.
