@@ -96,6 +96,29 @@ You should install the required packages for testing first.
 
 # How to send POSTMAN queries to Vercel deployment?
 ## Example: Sending a TDVRP Request to Genetic Algorithm endpoint in Vercel Deployment
-    Send to the following address
-    $ https://vrpms-main.vercel.app/api/vrp/ga
-    $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
+    1) Send to the following address
+        $ https://vrpms-main.vercel.app/api/vrp/ga
+        
+        - Explanation of the address is as follows
+        $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
+
+    2) Use the following body as the case-1 example (single core, 48 iterations, 125 population count)
+
+        {
+            "solutionName": "GA-TDVRP-MAIN-BRANCH-UNIT-DEMAND-CASE-1",
+            "solutionDescription": "IDP-Postman-Request-Example",
+            "locationsKey": 4,
+            "durationsKey": 3,
+            "capacities": [5, 5, 5],
+            "startTimes":[0, 0, 0],
+            "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
+            "completedCustomers":[],
+            "multiThreaded": false,
+            "randomPermutationCount": 125,
+            "iterationCount": 48,
+            "max_k": -1,
+            "k_lower_limit": true,
+            "auth": "eyJhbGciOiJIUzI1NiIsImtpZCI6IldwN1FVNGhMeGJLODRqMzgiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzA3MTA2MjMyLCJpYXQiOjE3MDcxMDI2MzIsImlzcyI6Imh0dHBzOi8vcGtleWdtenV3ZnVjYmxsZG1ram4uc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjNhOTI0Y2FjLTgzMWQtNDU0Ny1iZjQzLTRmMWYyNTdiOTNiMSIsImVtYWlsIjoieXVzdWZzZXJkYXIxNzAwQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnt9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzA3MTAyNjMyfV0sInNlc3Npb25faWQiOiIzMjI1MDdkYy1mY2YxLTRlNDQtYmM0Zi03MTZmYTEwNGEyMzcifQ.6YN1cCJEaxE-c68vvbbLVg9FpsbNcPQ5YCOB5FFZ5S0"
+    }
+    
+    
