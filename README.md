@@ -124,7 +124,7 @@ You should install the required packages for testing first.
     }
 
     - Example Request Screenshot
-    <img width="1264" alt="image" src="https://github.com/arinmirza/vrpms/assets/24421056/af64f65c-222e-426b-ad09-41969d468f4f">
+        <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
 
     
     
