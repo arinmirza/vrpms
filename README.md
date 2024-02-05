@@ -2,7 +2,6 @@
 
 Vehicle Routing Problem microservice for IDP project at TUM.
 
-
 ## Development
 
 ### Setting up the virtual environment
@@ -45,12 +44,6 @@ import.utilities.baz  # relative import
 from .utilities.baz import some_function  # relative import
 ```
 
-### Testing locally
-
-You can run and test the functionality from the `main.py` file inside the root `vrpms` directory. Make sure the virtual environment is activated. Import some modules that you want to test and run `python main.py`.
-
-*Trying to run modules individually (e.g. running `solver.py` by itself) will not work because of the import hierarchy.*
-
 ### Secrets
 
 Make sure not to put any API keys and other secrets in the application code, which needs to be placed in the `.env` file at the top level for local development. These can be set and then accessed as follows:
@@ -65,6 +58,30 @@ import os
 MY_API_KEY = os.getenv('MY_API_KEY')
 ```
 However, keep in mind this only works for local development and the environment variables need to be configured at Vercel for deployments.
+
+## Alternative Approach for saving keys
+In case the user faces problems accessing to the _location_ or _duration_ data saved in the Supabase Database, the following can be done.
+
+If the user has PyCharm IDE, there can be different run profiles generated. The following keys of the Supabase Database can be used to access _location_ and _duration_ data.
+
+SUPABASE_URL = https://pkeygmzuwfucblldmkjn.supabase.co
+SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s
+
+These values must be added following the screenshots provided.
+
+- Please click on the highlighted area to open run configurations list.
+
+- <img width="1369" alt="Screenshot 2024-02-05 at 06 21 55" src="https://github.com/arinmirza/vrpms/assets/24421056/f2486732-40df-459b-b53b-f51dd151370d">
+
+- Then click on the edit configurations options.
+- <img width="385" alt="Screenshot 2024-02-05 at 06 22 05" src="https://github.com/arinmirza/vrpms/assets/24421056/7234b35f-b9b4-4e92-a934-f9f01c3a971f">
+
+- Then click on the icon highlighted in the picture.
+- <img width="766" alt="Screenshot 2024-02-05 at 06 22 12" src="https://github.com/arinmirza/vrpms/assets/24421056/39cbeb42-d97f-49d5-a7ae-f1bf94d4ef8b">
+
+- Add the provided _SUPABASE_URL_ _SUPABASE_KEY_ key value pairs to the highlighted section.
+- <img width="496" alt="Screenshot 2024-02-05 at 06 22 24" src="https://github.com/arinmirza/vrpms/assets/24421056/891ff10d-8365-4bf7-ada4-63d68d47596c">
+
 
 
 ### Deployment
