@@ -93,3 +93,9 @@ You can set up black as a file watcher in PyCharm so that your code is automatic
 You should install the required packages for testing first.
 
     $ pip install -r requirements.test
+
+# How to send POSTMAN queries to Vercel deployment?
+## Example: Sending a TDVRP Request to Genetic Algorithm endpoint in Vercel Deployment
+    Send to the following address
+    $ https://vrpms-main.vercel.app/api/vrp/ga
+    $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
