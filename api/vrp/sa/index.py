@@ -58,7 +58,7 @@ class handler(BaseHTTPRequestHandler):
         result = solve(
             durations=durations,
             locations=locations,
-            customer_count=len(locations),
+            customer_count=len(locations) - 1,
             vehicle_count=len(params["capacities"]),
             vehicle_capacity=params["capacities"][0],
             max_cycles=params_sa["max_cycles"],
