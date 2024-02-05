@@ -95,6 +95,7 @@ You should install the required packages for testing first.
     $ pip install -r requirements.test
 
 # How to send POSTMAN queries to Vercel deployment?
+
 ## Example: Sending a TDVRP Request to Genetic Algorithm endpoint in Vercel Deployment
     1) Send to the following address
         $ https://vrpms-main.vercel.app/api/vrp/ga
@@ -118,7 +119,13 @@ You should install the required packages for testing first.
             "iterationCount": 48,
             "max_k": -1,
             "k_lower_limit": true,
-            "auth": "eyJhbGciOiJIUzI1NiIsImtpZCI6IldwN1FVNGhMeGJLODRqMzgiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzA3MTA2MjMyLCJpYXQiOjE3MDcxMDI2MzIsImlzcyI6Imh0dHBzOi8vcGtleWdtenV3ZnVjYmxsZG1ram4uc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjNhOTI0Y2FjLTgzMWQtNDU0Ny1iZjQzLTRmMWYyNTdiOTNiMSIsImVtYWlsIjoieXVzdWZzZXJkYXIxNzAwQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnt9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzA3MTAyNjMyfV0sInNlc3Npb25faWQiOiIzMjI1MDdkYy1mY2YxLTRlNDQtYmM0Zi03MTZmYTEwNGEyMzcifQ.6YN1cCJEaxE-c68vvbbLVg9FpsbNcPQ5YCOB5FFZ5S0"
+            "auth": "authentication token is only necessary for saving to the DB, in this test it is not necessary.
+                     if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a                      token"
     }
+
+    - Example Request Screenshot
+    <img width="1264" alt="image" src="https://github.com/arinmirza/vrpms/assets/24421056/af64f65c-222e-426b-ad09-41969d468f4f">
+
+    
     
     
