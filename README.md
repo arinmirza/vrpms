@@ -97,33 +97,36 @@ You should install the required packages for testing first.
 # How to send POSTMAN queries to Vercel deployment?
 
 ## Example: Sending a TDVRP Request to Genetic Algorithm endpoint in Vercel Deployment
-    1) Send to the following address
-        $ https://vrpms-main.vercel.app/api/vrp/ga
-        
-        - Explanation of the address is as follows
-        $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
+1) Send to the following address
+    $ https://vrpms-main.vercel.app/api/vrp/ga
+    
+    - Explanation of the address is as follows
+    $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
 
-    2) Use the following body as the case-1 example (single core, 48 iterations, 125 population count)
+2) Use the following body as the case-1 example (single core, 48 iterations, 125 population count)
 
-        {
-            "solutionName": "GA-TDVRP-MAIN-BRANCH-UNIT-DEMAND-CASE-1",
-            "solutionDescription": "IDP-Postman-Request-Example",
-            "locationsKey": 4,
-            "durationsKey": 3,
-            "capacities": [5, 5, 5],
-            "startTimes":[0, 0, 0],
-            "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
-            "completedCustomers":[],
-            "multiThreaded": false,
-            "randomPermutationCount": 125,
-            "iterationCount": 48,
-            "max_k": -1,
-            "k_lower_limit": true,
-            "auth": "authentication token is only necessary for saving to the DB, in this test it is not necessary.
-                     if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a                      token"
-    }
+```json
+    {
+        "solutionName": "GA-TDVRP-MAIN-BRANCH-UNIT-DEMAND-CASE-1",
+        "solutionDescription": "IDP-Postman-Request-Example",
+        "locationsKey": 4,
+        "durationsKey": 3,
+        "capacities": [5, 5, 5],
+        "startTimes":[0, 0, 0],
+        "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
+        "completedCustomers":[],
+        "multiThreaded": false,
+        "randomPermutationCount": 125,
+        "iterationCount": 48,
+        "max_k": -1,
+        "k_lower_limit": true,
+        "auth": "authentication token is only necessary for saving to the DB, in this test it is not necessary.
+                 if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a token"
+}
+```
 
-    - Example Request Screenshot
+
+- Example Request Screenshot
         <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
 
     
