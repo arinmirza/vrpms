@@ -28,7 +28,13 @@ def parse_vrp_ga_parameters(content: dict, errors):
 
 
 def parse_vrp_sa_parameters(content: dict, errors):
-    return {}
+    return {
+        "max_cycles": get_parameter("maxCycles", content, errors),
+        "initial_temperature": get_parameter("initialTemperature", content, errors),
+        "cooldown_factor": get_parameter("cooldownFactor", content, errors),
+        "step_length": get_parameter("slowdownMultiplier", content, errors),
+        "terminate_after": get_parameter("totalIterations", content, errors),
+    }
 
 
 def parse_vrp_aco_parameters(content: dict, errors):
