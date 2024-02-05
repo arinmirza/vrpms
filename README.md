@@ -134,14 +134,19 @@ You should install the required packages for testing first.
         "durationsKey": 3,
         "capacities": [5, 5, 5],
         "startTimes":[0, 0, 0],
+<<<<<<< Updated upstream
         "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
                             41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
+=======
+        "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
+>>>>>>> Stashed changes
         "completedCustomers":[],
         "multiThreaded": false,
         "randomPermutationCount": 125,
         "iterationCount": 48,
         "max_k": -1,
         "k_lower_limit": true,
+<<<<<<< Updated upstream
         "auth": "authentication token is only necessary for saving to the DB,
                  in this test it is not necessary. If you would like to get a 
                  token for saving to the DB, run the get_token.py file with your 
@@ -149,10 +154,18 @@ You should install the required packages for testing first.
 }
 ```
 - DISCLAIMER: The Vercel Deployment uses free-tier servers. Thus, heuristic algorithms can be called only with certain hyper-parameter settings. For example running multi core Genetic Algorithm with 5000 population and 144 iteration count is not possible with the Vercel deployment. Because the platform has a time limit for the free-tier servers. Thus, the user has to either buy premium servers or should check the following section called __How to run local simulations?__.
+=======
+        "auth": "authentication token is only necessary for saving to the DB, in this test it is not necessary.
+                 if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a token"
+}
+```
+
+>>>>>>> Stashed changes
 
 - Example Request Screenshot
         <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
 
+<<<<<<< Updated upstream
 ## List of available endpoints for heuristic algorithms:
 - https://vrpms-main.vercel.app/api/vrp/ga
 - https://vrpms-main.vercel.app/api/tsp/ga
@@ -183,3 +196,8 @@ The user can change the inputs of the simulation by changing the inputs of the "
 <img width="644" alt="Screenshot 2024-02-05 at 06 10 04" src="https://github.com/arinmirza/vrpms/assets/24421056/5fbe77bf-7431-4b52-a72f-a5ec2908f16d">
 
 
+=======
+    
+    
+    
+>>>>>>> Stashed changes
