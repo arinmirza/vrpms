@@ -322,19 +322,19 @@ def run_request(
 
 def run(
     n: int = 51,
-    m: int = 2,
-    k: int = 10,
-    q: int = 5,
+    m: int = 3,
+    k: int = 5,
+    q: int = 80,
     n_exp_runs: int = 10,
-    n_hyperparams: int = 5,
+    n_hyperparams: int = 25,
     aco_sols: List = [ACO_VRP_2],  # [ACO_VRP_1, ACO_VRP_2]
     consider_depots: List[bool] = [False],  # [False, True]
     pheromone_uses_first_hour: List[bool] = [False],  # [False, True]
     supabase_url: Optional[str] = None,
     supabase_key: Optional[str] = None,
     supabase_url_key_file: Optional[str] = "../../../data/supabase/supabase_url_key.txt",
-    durations_query_row_id: int = 4,
-    locations_query_row_id: int = 4,
+    durations_query_row_id: int = 3,
+    locations_query_row_id: int = 8,
     per_km_time: int = 1,
     input_file_load: Optional[str] = None,
     duration_data_type: Literal["mapbox", "google", "based"] = "mapbox",
@@ -364,7 +364,8 @@ def run(
         duration, load = get_google_and_load_data(INPUT_FILES_TIME, input_file_load, n)
     else:
         duration, load = get_based_and_load_data(input_file_load, n, per_km_time)
-    customers = [i for i in range(1, n)]
+    # customers = [i for i in range(1, n)]
+    customers = [i for i in range(1, 30)]
     vehicles_start_times = [0 for _ in range(m)]
     result_hyperparams = []
     for aco_sol in aco_sols:
