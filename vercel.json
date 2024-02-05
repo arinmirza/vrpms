@@ -12,6 +12,15 @@
           "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
         }
       ]
+
     }
-  ]
+  ],
+  "functions": {
+    "api/vrp/ga/index.py": { "maxDuration": 300 },
+    "api/vrp/sa/index.py": { "maxDuration": 300 },
+    "api/vrp/aco/index.py": { "maxDuration": 300 },
+    "api/tsp/ga/index.py": { "maxDuration": 300 },
+    "api/tsp/sa/index.py": { "maxDuration": 300 },
+    "api/tsp/aco/index.py": { "maxDuration": 300 }
+  }
 }
