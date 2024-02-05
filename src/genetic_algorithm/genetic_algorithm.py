@@ -24,6 +24,11 @@ def calculate_demand_dict_from_locs(locations):
 
     return demand_dict
 
+def get_load(locations):
+    load = []
+    for row in locations:
+        load.append(row["demand"])
+    return load
 
 def get_demands(locations, customer_list, start_node):
     demand_list = []
@@ -52,10 +57,17 @@ def get_k(q, demand_list):
     # FORMULA of K: k = (sum of demands + q - 1)/q
 
     demands_sum = sum(demand_list)
+    if demands_sum + 1 == len(demand_list)*1:
+        k = (demands_sum + q - 1) // q
+        max_k_auto = -1
+        k_lower_limit_auto = True
+    else:
+        k = (demands_sum + q - 1) // q
+        max_k_auto = -1
+        k_lower_limit_auto = False
 
-    k = (demands_sum + q - 1) // q
-
-    return k
+    # returns k, max_k, k_lower_limit
+    return k, max_k_auto, k_lower_limit_auto
 
 
 def prepare_ga_inputs(
@@ -88,9 +100,12 @@ def prepare_ga_inputs(
 
     demand_list = get_demands(locations=locations, customer_list=customer_list, start_node=None)
     demand_list.insert(0, 0)
-    inputs["load"] = demand_list
 
-    inputs["k"] = get_k(q=inputs["q"], demand_list=demand_list)
+    load = get_load(locations=locations)
+    #load.insert(0, 0)
+    inputs["load"] = load
+
+    inputs["k"], inputs["max_k_auto"], inputs["k_lower_limit_auto"] = get_k(q=inputs["q"], demand_list=demand_list)
 
     inputs["ist"] = initial_start_times
 
@@ -164,6 +179,10 @@ def run_GA(
         demand_dict = calculate_demand_dict_from_locs(locations)
         ist = algo_inputs["ist"] if ("ist" in algo_inputs) else None
         pm = algo_inputs["pm"]
+        max_k_auto = algo_inputs["max_k_auto"]
+        k_lower_limit_auto = algo_inputs["k_lower_limit_auto"]
+        k_lower_limit = False if not k_lower_limit or not k_lower_limit_auto else True
+        max_k = max(max_k, max_k_auto)
 
     elif mode == "TSP":
         duration = durations
@@ -172,9 +191,14 @@ def run_GA(
         cl = copy.deepcopy(customers)  # start node must not be included in the customers list
         multithreaded = multithreaded
         N = len(customers)
-        demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
-        demand_list.insert(0, 0)
-        load = demand_list
+        #demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
+        #demand_list.insert(0, 0)
+        #TODO: ??
+        load_ = get_load(locations=locations)
+        load_.insert(0,0)
+        load = load_
+
+
         demand_dict = calculate_demand_dict_from_locs(locations)
         pm = mode
         W = 0
@@ -191,9 +215,12 @@ def run_GA(
                 # program sets the max_k as the double of regular k
                 max_k = k * 2
 
-                if M * 2 > max_k:
+                if N > max_k:
                     # depending on the number of vehicles the program changes the max_k
-                    max_k = M * 2
+                    max_k = N
+
+        print("K range start: ", k)
+        print("K range end: ", max_k)
 
         if not multithreaded:
 

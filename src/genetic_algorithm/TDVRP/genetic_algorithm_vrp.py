@@ -765,7 +765,7 @@ def ga(
         if not k_lower_limit:
 
             if max_k == 0:
-                max_k = M * 2
+                max_k = N
 
             for current_k in range(K + 1, max_k + 1):
                 new_nodes_wo_k_limit = copy.deepcopy(customer_list)
