@@ -131,9 +131,23 @@ You should install the required packages for testing first.
 
 # How to run local benchmark tests?
 
-vrpms/test/test_ga_tdvrp is one example of the test script folders. Basically the user can see how do we send parameters to our methods. This allows the user to play around with the parameters.
+vrpms/test/test_ga_tdvrp is an example of the test script folder. Basically the user can see how we send parameters to our methods. This allows the user to play around with the parameters.
 
-    
-    
 <img width="457" alt="Screenshot 2024-02-05 at 06 07 18" src="https://github.com/arinmirza/vrpms/assets/24421056/1d051aa8-b392-4ff2-a75b-62f5dac0e34f">
+
+# How to run local simulations?
+
+vrpms/src/scenarios/scenario.py can be used with different paramters to run local simulations.
+
+<img width="460" alt="Screenshot 2024-02-05 at 06 09 22" src="https://github.com/arinmirza/vrpms/assets/24421056/fcb430ba-0597-48de-b3ea-2e36525abfe7">
+
+The user can change the inputs of the simulation by changing the inputs of the "run" method.
+
+- changing _vrp_algo_params_path_ changes the vrp algorithm used
+- changing _tsp_algo_params_path_ changes the tsp algorithm used
+- for example setting _vrp_algo_params_path_ = "../../data/scenarios/vrp/config_vrp_ga_1.json" would call the Genetic Algorithm with multi core option enabled
+- the detailed options available can be seen under vrpms/data/scenarios
+
+<img width="644" alt="Screenshot 2024-02-05 at 06 10 04" src="https://github.com/arinmirza/vrpms/assets/24421056/5fbe77bf-7431-4b52-a72f-a5ec2908f16d">
+
 
