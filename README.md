@@ -124,7 +124,7 @@ You should install the required packages for testing first.
                  if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a token"
 }
 ```
-
+- DISCLAIMER: The Vercel Deployment uses free-tier servers. Thus, heuristic algorithms can be called only with certain hyper-parameter settings. For example running multi core Genetic Algorithm with 5000 population and 144 iteration count is not possible with the Vercel deployment. Because the platform has a time limit for the free-tier servers. Thus, the user has to either buy premium servers or should check the following section called __How to run local simulations?__.
 
 - Example Request Screenshot
         <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
