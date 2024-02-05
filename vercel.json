@@ -19,8 +19,10 @@
     "api/vrp/ga/index.py": { "maxDuration": 300 },
     "api/vrp/sa/index.py": { "maxDuration": 300 },
     "api/vrp/aco/index.py": { "maxDuration": 300 },
+    "api/vrp/bf/index.py": { "maxDuration": 300 },
     "api/tsp/ga/index.py": { "maxDuration": 300 },
     "api/tsp/sa/index.py": { "maxDuration": 300 },
-    "api/tsp/aco/index.py": { "maxDuration": 300 }
+    "api/tsp/aco/index.py": { "maxDuration": 300 },
+    "api/tsp/bf/index.py": { "maxDuration": 300 }
   }
 }

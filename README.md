@@ -57,17 +57,18 @@ MY_API_KEY="12345678"
 import os
 MY_API_KEY = os.getenv('MY_API_KEY')
 ```
-However, keep in mind this only works for local development and the environment variables need to be configured at Vercel for deployments.
+However, keep in mind this only works for local development. The environment variables need to be configured at Vercel for deployments.
 
 ## Alternative Approach for saving keys
 In case the user faces problems accessing to the _location_ or _duration_ data saved in the Supabase Database, the following can be done.
 
 If the user has PyCharm IDE, there can be different run profiles generated. The following keys of the Supabase Database can be used to access _location_ and _duration_ data.
 
-
 **SUPABASE_URL** = https://pkeygmzuwfucblldmkjn.supabase.co
 
 **SUPABASE_KEY** = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s
+
+We provide both keys in a separate file named as `supabase_url_key.txt`.
 
 Note that these values are anonymous access keys and not secrets. Sharing these does not constitute a security risk.
 
@@ -90,7 +91,7 @@ These values must be added following the screenshots provided.
 
 ### Deployment
 
-Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms.vercel.app
+Commit and push the changes to `main` branch. The serverless function will automatically be deployed in ~20 seconds. You can run the deployed function at https://vrpms-main.vercel.app
 
 
 ### Formatting
@@ -122,7 +123,7 @@ You should install the required packages for testing first.
     $ https://vrpms-main.vercel.app/api/vrp/ga
     
     - Explanation of the address is as follows
-    $ https://vrpms-main.vercel.app/"vercel access point"/"name of the problem"/"name of the algorithm"
+    $ https://vrpms-main.vercel.app/<vercel_access_point>/<problem_name>/<algorithm_name>
 
 2) Use the following body as the case-1 example (single core, 48 iterations, 125 population count)
 
@@ -153,32 +154,34 @@ You should install the required packages for testing first.
 - Example Request Screenshot
         <img width="1264" alt="Screenshot 2024-02-05 at 04 28 32" src="https://github.com/arinmirza/vrpms/assets/24421056/c7021510-8336-4709-a215-7f97db598631">
 
-## List of available endpoints for heuristic algorithms:
+## List of available endpoints for algorithms:
 - https://vrpms-main.vercel.app/api/vrp/ga
 - https://vrpms-main.vercel.app/api/tsp/ga
 - https://vrpms-main.vercel.app/api/vrp/aco
 - https://vrpms-main.vercel.app/api/tsp/aco
 - https://vrpms-main.vercel.app/api/vrp/sa
 - https://vrpms-main.vercel.app/api/tsp/sa
+- https://vrpms-main.vercel.app/api/vrp/bf
+- https://vrpms-main.vercel.app/api/tsp/bf
 
 # How to run local benchmark tests?
 
-vrpms/test/test_ga_tdvrp is an example of the test script folder. Basically the user can see how we send parameters to our methods. This allows the user to play around with the parameters.
+`vrpms/test/test_ga_tdvrp` is an example of the test script folder. Basically the user can see how we send parameters to our methods. This allows the user to play around with the parameters.
 
 <img width="457" alt="Screenshot 2024-02-05 at 06 07 18" src="https://github.com/arinmirza/vrpms/assets/24421056/1d051aa8-b392-4ff2-a75b-62f5dac0e34f">
 
 # How to run local simulations?
 
-vrpms/src/scenarios/scenario.py can be used with different paramters to run local simulations.
+`vrpms/src/scenarios/scenario.py` can be used with different paramters to run local simulations.
 
 <img width="460" alt="Screenshot 2024-02-05 at 06 09 22" src="https://github.com/arinmirza/vrpms/assets/24421056/fcb430ba-0597-48de-b3ea-2e36525abfe7">
 
 The user can change the inputs of the simulation by changing the inputs of the "run" method.
 
-- changing _vrp_algo_params_path_ changes the vrp algorithm used
-- changing _tsp_algo_params_path_ changes the tsp algorithm used
-- for example setting _vrp_algo_params_path_ = "../../data/scenarios/vrp/config_vrp_ga_1.json" would call the Genetic Algorithm with multi core option enabled
-- the detailed options available can be seen under vrpms/data/scenarios
+- changing `vrp_algo_params_path` changes the vrp algorithm used
+- changing `tsp_algo_params_path` changes the tsp algorithm used
+- for example setting `vrp_algo_params_path` = `../../data/scenarios/vrp/config_vrp_ga_1.json` would call the Genetic Algorithm with multi core option enabled
+- the detailed options available can be seen under `vrpms/data/scenarios`
 
 <img width="644" alt="Screenshot 2024-02-05 at 06 10 04" src="https://github.com/arinmirza/vrpms/assets/24421056/5fbe77bf-7431-4b52-a72f-a5ec2908f16d">
 
