@@ -64,8 +64,11 @@ In case the user faces problems accessing to the _location_ or _duration_ data s
 
 If the user has PyCharm IDE, there can be different run profiles generated. The following keys of the Supabase Database can be used to access _location_ and _duration_ data.
 
+```
 SUPABASE_URL = https://pkeygmzuwfucblldmkjn.supabase.co
 SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s
+```
+Note that these values are anonymous access keys and not secrets. Sharing these does not constitute a security risk.
 
 These values must be added following the screenshots provided.
 
