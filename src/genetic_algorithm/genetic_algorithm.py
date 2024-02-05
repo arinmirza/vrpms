@@ -191,9 +191,6 @@ def run_GA(
         cl = copy.deepcopy(customers)  # start node must not be included in the customers list
         multithreaded = multithreaded
         N = len(customers)
-        #demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
-        #demand_list.insert(0, 0)
-        #TODO: ??
         load_ = get_load(locations=locations)
         load_.insert(0,0)
         load = load_

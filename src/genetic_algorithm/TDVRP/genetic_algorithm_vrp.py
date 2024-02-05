@@ -761,10 +761,10 @@ def ga(
 
         # k_lower_limit is False
         # Thus, k upper limit will be defined by the user
-        # If user did not specify the max_k -> simply user M*2
+        # If user did not specify the max_k -> simply use N
         if not k_lower_limit:
 
-            if max_k == 0:
+            if max_k == 0 or max_k == -1:
                 max_k = N
 
             for current_k in range(K + 1, max_k + 1):
