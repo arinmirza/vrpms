@@ -313,8 +313,7 @@ def anneal(duration_matrix: list,
     sol_max = int(solution_cost_max(duration_matrix,
                   customer_demands, vehicle_capacity, sol_optimal))
 
-    return {'plans': sol_optimal, 'sol_sum': sol_sum, 'sol_max': sol_max, 'exec_time': exec_time}, \
-           {'costs': tracer_costs, 'bests': tracer_bests, 'temps': tracer_temps}
+    return {'plans': sol_optimal, 'sol_sum': sol_sum, 'sol_max': sol_max, 'exec_time': exec_time}
 
 
 def solve(durations: list,
@@ -332,7 +331,7 @@ def solve(durations: list,
 
     # Prepare parameters for Simulated Annealing
     N = customer_count
-    duration_matrix = durations[:N+1]
+    duration_matrix = np.array(durations[:N+1])
     customer_demands = [location['demand'] for location in locations][:N+1]
 
     # Initialize results for each repeated SA call
