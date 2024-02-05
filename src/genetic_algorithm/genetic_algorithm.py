@@ -24,6 +24,11 @@ def calculate_demand_dict_from_locs(locations):
 
     return demand_dict
 
+def get_load(locations):
+    load = []
+    for row in locations:
+        load.append(row["demand"])
+    return load
 
 def get_demands(locations, customer_list, start_node):
     demand_list = []
@@ -95,7 +100,10 @@ def prepare_ga_inputs(
 
     demand_list = get_demands(locations=locations, customer_list=customer_list, start_node=None)
     demand_list.insert(0, 0)
-    inputs["load"] = demand_list
+
+    load = get_load(locations=locations)
+    #load.insert(0, 0)
+    inputs["load"] = load
 
     inputs["k"], inputs["max_k_auto"], inputs["k_lower_limit_auto"] = get_k(q=inputs["q"], demand_list=demand_list)
 
@@ -183,9 +191,14 @@ def run_GA(
         cl = copy.deepcopy(customers)  # start node must not be included in the customers list
         multithreaded = multithreaded
         N = len(customers)
-        demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
-        demand_list.insert(0, 0)
-        load = demand_list
+        #demand_list = get_demands(locations=locations, customer_list=cl, start_node=sn)
+        #demand_list.insert(0, 0)
+        #TODO: ??
+        load_ = get_load(locations=locations)
+        load_.insert(0,0)
+        load = load_
+
+
         demand_dict = calculate_demand_dict_from_locs(locations)
         pm = mode
         W = 0
