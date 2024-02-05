@@ -64,10 +64,11 @@ In case the user faces problems accessing to the _location_ or _duration_ data s
 
 If the user has PyCharm IDE, there can be different run profiles generated. The following keys of the Supabase Database can be used to access _location_ and _duration_ data.
 
-```
-SUPABASE_URL = https://pkeygmzuwfucblldmkjn.supabase.co
-SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s
-```
+
+**SUPABASE_URL** = https://pkeygmzuwfucblldmkjn.supabase.co
+
+**SUPABASE_KEY** = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrZXlnbXp1d2Z1Y2JsbGRta2puIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc5NzU0MTksImV4cCI6MjAxMzU1MTQxOX0.5TsK_pH0xsMyJWo_XPXt4NhsuS-vW6MAcj575WskZ8s
+
 Note that these values are anonymous access keys and not secrets. Sharing these does not constitute a security risk.
 
 These values must be added following the screenshots provided.
@@ -133,15 +134,18 @@ You should install the required packages for testing first.
         "durationsKey": 3,
         "capacities": [5, 5, 5],
         "startTimes":[0, 0, 0],
-        "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
+        "ignoredCustomers":[26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+                            41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57],
         "completedCustomers":[],
         "multiThreaded": false,
         "randomPermutationCount": 125,
         "iterationCount": 48,
         "max_k": -1,
         "k_lower_limit": true,
-        "auth": "authentication token is only necessary for saving to the DB, in this test it is not necessary.
-                 if you would like to get a token for saving to the DB, run the get_token.py file with your credentials to get a token"
+        "auth": "authentication token is only necessary for saving to the DB,
+                 in this test it is not necessary. If you would like to get a 
+                 token for saving to the DB, run the get_token.py file with your 
+                 credentials to get a token"
 }
 ```
 - DISCLAIMER: The Vercel Deployment uses free-tier servers. Thus, heuristic algorithms can be called only with certain hyper-parameter settings. For example running multi core Genetic Algorithm with 5000 population and 144 iteration count is not possible with the Vercel deployment. Because the platform has a time limit for the free-tier servers. Thus, the user has to either buy premium servers or should check the following section called __How to run local simulations?__.
