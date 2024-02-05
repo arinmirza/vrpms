@@ -1,8 +1,9 @@
 import json
 from http.server import BaseHTTPRequestHandler
 from api.database import DatabaseVRP
-from api.helpers import fail, success
+from api.helpers import fail, success, remove_unused_locations
 from api.parameters import parse_common_vrp_parameters, parse_vrp_sa_parameters
+from src.vrp.sa.simulated_annealing import solve
 
 
 class handler(BaseHTTPRequestHandler):
@@ -28,30 +29,59 @@ class handler(BaseHTTPRequestHandler):
             return
 
         # Retrieve data from database
-        database = DatabaseVRP(params["auth"])
-        locations = database.get_locations_by_id(params["locations_key"], errors)
-        durations = database.get_durations_by_id(params["durations_key"], errors)
+        if "locations" not in params and "locations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": "locations or locationsKey should be provided"}]
+        if "durations" not in params and "durations_key" not in params:
+            errors += [{"what": "Missing parameter", "reason": "durations or durationsKey should be provided"}]
 
         if len(errors) > 0:
             fail(self, errors)
             return
 
-        # TODO: Run algorithm
-        result = {
-            "durationMax": 0,
-            "durationSum": 0,
-            "vehicles": [],
-        }
+        # Retrieve data from database
+        database = DatabaseVRP(params["auth"])
+        locations = (
+            params["locations"]
+            if "locations" in params and params["locations"] is not None
+            else database.get_locations_by_id(params["locations_key"], errors)
+        )
+        durations = (
+            params["durations"]
+            if "durations" in params and params["durations"] is not None
+            else database.get_durations_by_id(params["durations_key"], errors)
+        )
 
+        if len(errors) > 0:
+            fail(self, errors)
+            return
+        
+        result = solve(
+            durations=durations,
+            locations=locations,
+            customer_count=len(locations),
+            vehicle_count=len(params["capacities"]),
+            vehicle_capacity=params["capacities"][0],
+            max_cycles=params_sa["max_cycles"],
+            initial_temperature=params_sa['initial_temperature'],
+            cooling_factor=params_sa["cooldown_factor"],
+            step_length=params_sa["step_length"],
+            terminate_after=params_sa["terminate_after"],
+            repeat_annealing=5,
+            ignored_customers=params["ignored_customers"])
+        
         # Save results
         if params["auth"]:
+            duration_max = int(result["durationMax"])
+            duration_sum = int(result["durationSum"])
             database.save_solution(
                 name=params["name"],
                 description=params["description"],
-                locations=locations,
+                locations=remove_unused_locations(
+                    locations, params["ignored_customers"], params["completed_customers"]
+                ),
                 vehicles=result["vehicles"],
-                duration_max=result["durationMax"],
-                duration_sum=result["durationSum"],
+                duration_max=duration_max,
+                duration_sum=duration_sum,
                 errors=errors,
             )
 
