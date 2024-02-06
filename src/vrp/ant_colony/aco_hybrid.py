@@ -271,9 +271,12 @@ def run_request(
     range_rho: Optional[List[float]] = None,
 ) -> Dict:
     sum_demand = 0
+    all_unit = True
     for customer in available_customers:
         sum_demand += load[customer]
-    k = (sum_demand + q - 1) // q
+        if load[customer] != 1:
+            all_unit = False
+    k = (sum_demand + q - 1) // q if all_unit else len(available_customers)
     params = {}
     if aco_sols:
         aco_sols_ = []
